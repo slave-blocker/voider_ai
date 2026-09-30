@@ -96,9 +96,11 @@ Flash with explicit source and target validation:
 ./scripts/flash-release-image.sh release/voider-aarch64.img.gz /dev/EXACT_CARD
 ```
 
-## Donation
+## Monero
 
 ![xmr](xmr.gif)
+
+*Long live the discrete log problem of H.*
 
 ## Contact
 
