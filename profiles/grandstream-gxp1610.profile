@@ -1,0 +1,2 @@
+PROFILE_NAME=grandstream-gxp1610
+COMPATIBILITY=full

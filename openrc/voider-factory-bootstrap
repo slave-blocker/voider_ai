@@ -1,0 +1,26 @@
+#!/sbin/openrc-run
+name="voider-factory-bootstrap"
+description="secure display-required Voider first-boot setup and optional management SSH"
+command="/usr/local/sbin/voider-factory-bootstrap"
+command_background="no"
+
+depend() {
+    need localmount seedrng sysctl
+    after networking hwdrivers modules
+    before sshd
+}
+
+start_pre() {
+    [ ! -e /etc/voider/.installed ] || return 1
+}
+
+stop() {
+    ebegin "Stopping Voider factory bootstrap"
+    if [ -s /run/voider-factory/sshd.pid ]; then
+        kill "$(cat /run/voider-factory/sshd.pid)" 2>/dev/null || true
+    fi
+    for p in buttons display udhcpc; do
+        [ ! -s "/run/voider-factory/$p.pid" ] || kill "$(cat "/run/voider-factory/$p.pid")" 2>/dev/null || true
+    done
+    eend 0
+}

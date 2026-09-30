@@ -1,0 +1,27 @@
+#!/sbin/openrc-run
+name="voider-appliance"
+description="voider BOOT/SYSTEM/STATE/RAM integrity gate"
+
+start() {
+    ebegin "Preparing read-only Voider appliance state"
+    mkdir -p /run/voider
+    /usr/local/sbin/voider-appliance-boot start
+    eend $?
+}
+
+status() {
+    if /usr/local/sbin/voider-appliance-boot gate; then
+        /usr/local/sbin/voider-appliance-boot status
+        return 0
+    fi
+    echo "voider appliance not ready"
+    return 3
+}
+depend(){
+    need localmount voider-display
+    after voider-display
+    before net
+    before voider
+    before sshd
+    before tor
+}

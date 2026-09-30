@@ -1,0 +1,106 @@
+#!/bin/sh
+# PiTFT buttons -> voider-ui events
+# Physical left-to-right GPIO mapping on the supported, rotate=270 HAT:
+#   17 = button 1
+#   22 = button 2
+#   23 = button 3
+#   27 = button 4
+
+CHIP="${CHIP:-0}"
+DEBOUNCE="${DEBOUNCE:-20ms}"
+LONG_S="${LONG_S:-0.8}"
+LOG="${LOG:-/run/voider/pitft-bridge.log}"
+UI_COMMAND="${UI_COMMAND:-/usr/local/sbin/voider-ui}"
+UI_BUTTON_MODE="${UI_BUTTON_MODE:---button}"
+RUN_DIR="${VOIDER_RUN_DIR:-/run/voider}"
+FIFO="$RUN_DIR/pitft-events.$$"
+gpiomon_pid=""
+awk_pid=""
+
+mkdir -p "$RUN_DIR"
+echo "START date=$(date) chip=$CHIP debounce=$DEBOUNCE long=$LONG_S" >> "$LOG"
+
+cleanup() {
+  trap - EXIT HUP INT TERM
+  [ -n "$gpiomon_pid" ] && kill "$gpiomon_pid" 2>/dev/null || true
+  [ -n "$awk_pid" ] && kill "$awk_pid" 2>/dev/null || true
+  [ -n "$gpiomon_pid" ] && wait "$gpiomon_pid" 2>/dev/null || true
+  [ -n "$awk_pid" ] && wait "$awk_pid" 2>/dev/null || true
+  rm -f "$FIFO"
+}
+trap cleanup EXIT
+trap 'cleanup; exit 0' HUP INT TERM
+
+rm -f "$FIFO"
+mkfifo -m 600 "$FIFO"
+gpiomon -c "$CHIP" -b pull-up -p "$DEBOUNCE" -F "%S %o %E" 17 22 23 27 >"$FIFO" &
+gpiomon_pid=$!
+awk -v LONG="$LONG_S" -v LOG="$LOG" -v UI="$UI_COMMAND" -v BUTTON_MODE="$UI_BUTTON_MODE" '
+function logmsg(s) {
+  print s >> LOG;
+  fflush(LOG);
+}
+
+function btn_of(o) {
+  if (o == 17) return 1;
+  if (o == 22) return 2;
+  if (o == 23) return 3;
+  if (o == 27) return 4;
+  return 0;
+}
+
+function monotonic_now( line, parts) {
+  if ((getline line < "/proc/uptime") <= 0) return 0;
+  close("/proc/uptime");
+  split(line, parts, " ");
+  return parts[1] + 0;
+}
+
+function fire(b, kind, cmd, rc, offset) {
+  cmd = UI " " BUTTON_MODE " " b " " kind;
+  logmsg("FIRE button=" b " kind=" kind " cmd=" cmd);
+  rc = system(cmd);
+  logmsg("DONE button=" b " kind=" kind " rc=" rc);
+  # The UI command can take seconds while it writes USB media or saves STATE.
+  # Discard presses buffered in the FIFO during that action: they refer to the
+  # previous screen and must never operate a newly displayed confirmation.
+  ignore_before = monotonic_now();
+  for (offset in down) delete down[offset];
+}
+
+{
+  t = $1;
+  o = $2;
+  e = $3;
+  b = btn_of(o);
+
+  logmsg("EVENT t=" t " gpio=" o " edge=" e " button=" b);
+
+  if (b == 0) next;
+  if (ignore_before > 0 && t <= ignore_before) {
+    logmsg("DROP stale button=" b " t=" t " completed=" ignore_before);
+    next;
+  }
+
+  if (e == "falling") {
+    down[o] = t;
+    next;
+  }
+
+  if (e == "rising" && (o in down)) {
+    dur = t - down[o];
+    kind = "short";
+    if (dur >= LONG) kind = "long";
+
+    logmsg("RELEASE gpio=" o " button=" b " duration=" dur " kind=" kind);
+    fire(b, kind);
+    delete down[o];
+  }
+}
+' <"$FIFO" &
+awk_pid=$!
+
+wait "$gpiomon_pid"
+rc=$?
+wait "$awk_pid" 2>/dev/null || true
+exit "$rc"

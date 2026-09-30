@@ -1,0 +1,33 @@
+#!/sbin/openrc-run
+name="voider-tor-netns-socks"
+description="Prepare voider Tor netns SOCKS dummy IP before Tor starts"
+
+depend(){
+ need voider-appliance net
+ before tor
+ before voider
+}
+
+start(){
+ /usr/local/sbin/voider-appliance-boot gate || return 1
+ ebegin "Preparing voider Tor netns SOCKS dummy IP"
+ /usr/local/sbin/voider-tor-netns-socks start >/dev/null 2>&1
+ eend $?
+}
+
+stop(){
+ ebegin "Keeping voider Tor netns SOCKS dummy IP"
+ eend 0
+}
+
+status(){
+ if ip addr show dev voider-socks0 2>/dev/null | grep -q '172\.30\.255\.1/32'; then
+  ebegin "status"
+  echo "voider-socks0 ready with 172.30.255.1/32"
+  eend 0
+ else
+  ebegin "status"
+  echo "voider-socks0 missing"
+  eend 3
+ fi
+}

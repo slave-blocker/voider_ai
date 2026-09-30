@@ -1,0 +1,251 @@
+# key|English|Deutsch|Български
+VOIDER|VOIDER|VOIDER|VOIDER
+POWER|Power|Aus|Стоп
+LINKS|Links|Kontakte|Връзки
+CHECK|Check|Prüfen|Провери
+NET|Net|Netz|Мрежа
+HOME|Home|Start|Начало
+SHARE|Share|Teilen|Сподели
+ADD|Add|Neu|Добави
+SYSTEM|Settings|Menü|Меню
+OPEN|Open|Öffnen|Отвори
+PREV|Prev|Zurück|Назад
+NEXT|Next|Weiter|Напред
+MORE|More|Mehr|Още
+REMOVE|Remove|Löschen|Изтрий
+BACK|Back|Zurück|Назад
+CANCEL|Cancel|Abbruch|Отказ
+ERASE|Erase|Leeren|Изтрий
+HELP|Support|Support|Поддр.
+DETAIL|Details|Details|Детайли
+FULL|Code|Code|Код
+DIFFER|Differs|Anders|Различен
+MATCH|Matches|Stimmt|Съвпада
+RETRY|Retry|Erneut|Повтори
+PATHS|Paths|Wege|Пътища
+UP|Up|Hoch|Нагоре
+DOWN|Down|Runter|Надолу
+APPLY|Apply|Anwenden|Приложи
+BACKUP|Backup|Sichern|Архив
+RESTOR|Restore|Laden|Върни
+SSH|SSH|SSH|SSH
+RESET|Reset|Reset|Нулирай
+KEY|Key|Schlüssel|Ключ
+ON|On|An|Вкл.
+OFF|Off|Aus|Изкл.
+REBOOT|Restart|Neustart|Рестарт
+INSTALL|Install|Start|Начало
+LANGUAGE|Language|Sprache|Език
+TRY|Try|Testen|Пробвай
+SAVE|Save|Speichern|Запази
+CONNECTIONS|Connections|Verbindungen|Връзки
+DIAL|Call|Anrufen|Обаждане
+CONNECTION|Manage link|Verwalten|Управление
+USB KEY|USB key|USB-Stick|USB ключ
+ERASE USB|Erase USB?|USB leeren?|Изтриване на USB?
+ADD LINK|New connection|Neue Verbindung|Нова връзка
+PAIRING|Pairing|Verbinden|Свързване
+SYSTEM CHECK|Device status|Gerätestatus|Състояние
+DEVICE CHECK|Device check|Geräteprüfung|Проверка на уреда
+YOUR CHECK|Your check|Deine Prüfung|Твоята проверка
+BOOT|Boot|Boot|Зареждане
+SYSTEM OS|System|System|Система
+SYS COMBINED|Combined|Gesamt|Обща проверка
+STATE MATCH|Your check|Deine Prüfung|Твоята проверка
+STATE FAILED|Your check|Deine Prüfung|Твоята проверка
+BOOT SHA256|Boot SHA256|Boot SHA256|Зареждане SHA256
+SYSTEM SHA256|System SHA256|System SHA256|Система SHA256
+COMBINED SHA|Combined SHA256|Gesamt SHA256|Общо SHA256
+STATE SHA256|Your SHA256|Deine SHA256|Твоята SHA256
+STATE UPDATED|New check code|Neuer Prüfcode|Нов код за проверка
+WRITE THIS DOWN|Write this down|Bitte notieren|Запиши този код
+I RECORDED IT|I recorded it|Ich habe es notiert|Записах кода
+RECORDED LINE 1|I recorded|Ich habe|Записах
+RECORDED LINE 2|it|es notiert|кода
+CHECKING USB|Checking USB|USB prüfen|Проверка на USB
+USB NOT READY|USB not detected|USB nicht erkannt|USB не е открит
+USB UNMOUNT FAILED|USB release failed|USB-Freigabe fehlgeschlagen|USB не се освободи
+USB CHANGED|USB changed|USB gewechselt|USB е сменен
+USB BUSY|USB busy|USB belegt|USB е зает
+USB CHECK FAILED|USB check failed|USB-Prüfung fehlgeschlagen|Грешка при USB проверка
+USB MOUNT FAILED|USB cannot open|USB nicht lesbar|USB не се отваря
+USB SYNC FAILED|USB save failed|USB-Speicherfehler|Грешка при USB запис
+USB VERIFY FAILED|USB verify failed|USB-Prüfung fehlgeschlagen|USB проверката не успя
+USB FORMAT FAILED|USB format failed|USB-Formatfehler|USB форматирането не успя
+USB PARTITION FAILED|USB setup failed|USB-Einrichtung fehlgeschlagen|USB подготовката не успя
+USB TOOL TIMEOUT|USB timed out|USB-Zeitlimit erreicht|USB не отговаря
+NETWORK|Network|Netzwerk|Мрежа
+AVAILABLE|Connection paths|Verbindungswege|Начини за връзка
+APPLY PATHS|Changed paths|Geänderte Wege|Променени пътища
+ADMIN SSH|Remote access|Fernzugriff|Отдалечен достъп
+SSH KEY|Access key|Zugangsschlüssel|Ключ за достъп
+SSH ON|Enable SSH?|SSH einschalten?|Включване на SSH?
+SSH OFF|Disable SSH?|SSH ausschalten?|Изключване на SSH?
+REMOVE SSH|Delete key?|Schlüssel löschen?|Изтриване на ключ?
+POWER OFF|Switch off?|Ausschalten?|Изключване?
+POWERING OFF|Switching off|Wird ausgeschaltet|Изключване
+BACKUP TITLE|Save a copy|Kopie sichern|Запис на копие
+RESTORE|Load a copy|Kopie laden|Връщане на копие
+RESET DEVICE|Factory reset|Werkseinstellungen|Фабрични настройки
+REMOVE TITLE|Delete connection?|Verbindung löschen?|Изтриване на връзка?
+SUPPORT|Diagnostics|Diagnose|Диагностика
+WORKING|Working|In Arbeit|В процес
+RESULT|Result|Ergebnis|Резултат
+CLIENTS|Clients|Clients|Клиенти
+SERVERS|Servers|Server|Сървъри
+CLIENT|Client|Client|Клиент
+SERVER|Server|Server|Сървър
+CONNECTED|Connected|Verbunden|Свързан
+CONNECTING|Connecting|Verbindet|Свързване
+OFFLINE|Offline|Offline|Без връзка
+LAN|LAN|LAN|LAN
+DIRECT|Direct|Direkt|Пряка
+PRIVATE|Private|Privat|Частна
+TOR|Tor|Tor|Tor
+NO CONNECTIONS|No connections|Keine Verbindungen|Няма връзки
+STARTING|Starting|Startet|Стартиране
+READY|Ready|Bereit|Готово
+SYSTEM NOT SAFE|Check failed|Prüfung fehlgeschlagen|Неуспешна проверка
+PHONE CABLE|Phone unplugged|Telefon fehlt|Телефонът е изключен
+NETWORK CABLE|Network unplugged|Netzkabel fehlt|Мрежата е изключена
+NO INTERNET|No Internet|Kein Internet|Няма интернет
+OTHER VOIDER OFFLINE|Peer offline|Gegenstelle offline|Другият уред е офлайн
+USB MISSING|USB not detected|USB nicht erkannt|USB не е открит
+USB READY|USB ready|USB bereit|USB е готов
+VALID VOIDER KEY|Key verified|Schlüssel geprüft|Ключът е проверен
+ALL FILES WILL GO|All files|Alle Dateien|Всички файлове
+SAFE TO REMOVE|Safe to remove|Sicher entfernen|Може да извадите USB
+KEY TRANSFER|Key ready|Schlüssel bereit|Ключът е готов
+PLEASE WAIT|Please wait|Bitte warten|Изчакай
+PASSED|Passed|Bestanden|Успешно
+FAILED|Failed|Fehlgeschlagen|Неуспешно
+CHECKING|Checking|Wird geprüft|Проверка
+NOT AVAILABLE|Unavailable|Nicht verfügbar|Недостъпно
+NEW CODE|New code|Neuer Code|Нов код
+INTERNET|Internet|Internet|Интернет
+PHONE|Phone|Telefon|Телефон
+IPV4 READY|IPv4|IPv4|IPv4
+IPV6 READY|IPv6|IPv6|IPv6
+RETRY NETWORK?|Restart network?|Netz neu starten?|Рестарт на мрежата?
+APPLY PATH CHANGES?|Apply changes?|Änderungen anwenden?|Прилагане на промените?
+SSH NOT SET UP|No SSH key|Kein SSH-Schlüssel|Няма SSH ключ
+MANAGEMENT ON|SSH on|SSH an|SSH включен
+MANAGEMENT OFF|SSH off|SSH aus|SSH изключен
+LOGIN KEY|Login key|Zugang|Входен ключ
+ENABLE SSH?|Enable access?|Zugriff einschalten?|Разрешаване на достъп?
+DISABLE SSH?|Disable access?|Zugriff ausschalten?|Спиране на достъп?
+RESTORE BACKUP?|Replace your data?|Daten ersetzen?|Замяна на данните?
+ERASE EVERYTHING?|Delete all data?|Alle Daten löschen?|Изтриване на всичко?
+FACTORY RESET?|Reset confirmed?|Reset bestätigen?|Нулиране на уреда?
+DONE|Done|Fertig|Готово
+ACTION FAILED|Action failed|Aktion fehlgeschlagen|Неуспешно действие
+TRY AGAIN|Unchanged|Unverändert|Без промяна
+INSTALL VOIDER|Voider setup|Voider Einrichtung|Настройка на Voider
+INSTALLING|Installing|Installation|Инсталиране
+INSTALL FAILED|Setup failed|Installation fehlgeschlagen|Неуспешна настройка
+INSTALL COMPLETE|Setup complete|Installation fertig|Настройката е готова
+RESTARTING|Restarting|Neustart|Рестартиране
+REBOOT FAILED|Restart failed|Neustart fehlgeschlagen|Неуспешен рестарт
+OFFLINE SETUP|Ready to install|Bereit zur Installation|Готово за инсталиране
+STATE CHANGED|Code changed|Code geändert|Кодът е променен
+COMPLETE|Complete|Abgeschlossen|Завършено
+PAIRING FAILED|Pairing failed|Verbindung fehlgeschlagen|Неуспешно свързване
+STATE SAVE FAILED|Save failed|Speichern fehlgeschlagen|Неуспешен запис
+USB NOT SAFE|USB is not safe|USB nicht sicher|USB не е безопасен
+CONNECTIONS FULL|No free slots|Alle Plätze belegt|Няма свободни места
+MAKING VOIDER KEY|Creating key|Schlüssel erstellen|Създаване на ключ
+ERASING VOIDER KEY|Erasing USB|USB wird geleert|Изтриване на USB
+SAVING CONNECTION|Saving connection|Verbindung speichern|Запис на връзката
+USB WRITE FAILED|USB write failed|USB-Schreibfehler|Грешка при USB запис
+CHECKING VOIDER KEY|Checking key|Schlüssel prüfen|Проверка на ключа
+NO BUNDLE|No connection key|Kein Verbindungsschlüssel|Няма ключ за връзка
+INVALID BUNDLE|Invalid key|Ungültiger Schlüssel|Невалиден ключ
+USB READ FAILED|USB read failed|USB-Lesefehler|Грешка при USB четене
+BUNDLE REVOKED|Key removed|Schlüssel entfernt|Премахнат ключ
+ALREADY ADDED|Already added|Bereits vorhanden|Вече е добавен
+ADDING CONNECTION|Adding connection|Verbindung hinzufügen|Добавяне на връзка
+POWER OFF FAILED|Shutdown failed|Ausschalten fehlgeschlagen|Неуспешно изключване
+ONE USB KEY ONLY|Multiple USB keys|Mehrere USB-Sticks|Няколко USB ключа
+USB IS MOUNTED|USB is in use|USB wird verwendet|USB се използва
+SYSTEM DISK|System disk|Systemlaufwerk|Системен диск
+INSERT VOIDER KEY|USB missing|USB fehlt|Няма USB ключ
+LANGUAGE SAVED|Language saved|Sprache gespeichert|Езикът е запазен
+ADMIN KEY INVALID|Invalid access key|Ungültiger Zugangsschlüssel|Невалиден ключ за достъп
+BACKUP FAILED|Backup failed|Sicherung fehlgeschlagen|Неуспешен архив
+BACKUP INVALID|Invalid backup|Ungültige Sicherung|Невалиден архив
+CHECKING BACKUP|Checking backup|Sicherung prüfen|Проверка на архива
+CHECKING PHONE CABLE|Checking phone|Telefon prüfen|Проверка на телефона
+CONNECTION REMOVED|Connection deleted|Verbindung gelöscht|Връзката е изтрита
+ERASING BACKUP KEY|Erasing backup USB|Sicherungsstick leeren|Изтриване на USB архива
+ERASING CONNECTIONS|Deleting connections|Verbindungen löschen|Изтриване на връзките
+KEY CREATION FAILED|Key creation failed|Schlüssel nicht erstellt|Неуспешно създаване на ключ
+LOGIN KEY ON USB|Safe to remove USB|USB sicher entfernen|Извадете USB безопасно
+MAKING LOGIN KEY|Creating login key|Anmeldeschlüssel erstellen|Създаване на ключ за вход
+MAKING NEW IDENTITY|Creating identity|Identität erstellen|Създаване на самоличност
+MANAGEMENT SSH OFF|SSH disabled|SSH ausgeschaltet|SSH е изключен
+MANAGEMENT SSH ON|SSH enabled|SSH eingeschaltet|SSH е включен
+NO ADMIN KEY|No access key|Kein Zugangsschlüssel|Няма ключ за достъп
+ONE PATH REQUIRED|One path needed|Ein Weg erforderlich|Нужен е един път
+PATH SETTING FAILED|Path save failed|Wege nicht gespeichert|Неуспешен запис на пътища
+PATHS APPLIED|Paths saved|Wege gespeichert|Пътищата са запазени
+PATHS UNCHANGED|Paths unchanged|Wege unverändert|Пътищата са същите
+RESET COMPLETE|Reset complete|Reset abgeschlossen|Нулирането е завършено
+RESET FAILED|Reset failed|Reset fehlgeschlagen|Неуспешно нулиране
+RESET SAVE FAILED|Reset save failed|Reset nicht gespeichert|Неуспешен запис при нулиране
+RESTORE READY|Backup restored|Sicherung geladen|Архивът е възстановен
+RETRYING NETWORK|Restarting network|Netz neu starten|Рестартиране на мрежата
+SAVING AND POWERING OFF|Saving before shutdown|Speichern vor Ausschalten|Запис преди изключване
+SAVING CLEAN STATE|Saving new data|Neue Daten speichern|Запис на новите данни
+SAVING STATE|Saving data|Daten speichern|Запис на данните
+SSH ALREADY OFF|SSH is off|SSH ist aus|SSH е изключен
+SSH ALREADY ON|SSH is on|SSH ist an|SSH е включен
+SSH KEY REMOVED|SSH key deleted|SSH-Schlüssel gelöscht|SSH ключът е изтрит
+SSH SETTING FAILED|SSH save failed|SSH nicht gespeichert|Неуспешен запис на SSH
+SSH START FAILED|SSH start failed|SSH nicht gestartet|Неуспешен старт на SSH
+SSH STOP FAILED|SSH stop failed|SSH nicht gestoppt|Неуспешно спиране на SSH
+SSH SWITCH FAILED|SSH change failed|SSH nicht geändert|Неуспешна промяна на SSH
+STARTING PRIVATE LINK|Starting private link|Private Verbindung starten|Стартиране на частна връзка
+TOR NOT READY|Tor unavailable|Tor nicht verfügbar|Tor е недостъпен
+GENERATING PRIVATE LINK|Creating private link|Private Verbindung erstellen|Създаване на частна връзка
+VERIFYING CONFIGURATION|Checking settings|Einstellungen prüfen|Проверка на настройките
+HASHING BOOT AND SYSTEM|Device check|Geräteprüfung|Проверка на уреда
+VERIFYING IMAGE|Checking image|Abbild prüfen|Проверка на образа
+FACTORY IMAGE LAYOUT|Image layout failed|Abbildaufbau fehlerhaft|Грешна структура на образа
+CHECKING OFFLINE PAYLOAD|Checking installer|Installation prüfen|Проверка на инсталатора
+OFFLINE PAYLOAD|Installer incomplete|Installation unvollständig|Непълен инсталатор
+DISPLAY NOT DETECTED|Display missing|Display fehlt|Липсващ екран
+CONFIGURING HARDWARE|Setting up hardware|Gerät einrichten|Настройка на хардуера
+IDENTITY GENERATION|Identity failed|Identität fehlgeschlagen|Неуспешна самоличност
+RUNTIME DNS|DNS setup failed|DNS-Einrichtung fehlgeschlagen|Неуспешна DNS настройка
+INSTALLING VOIDER|Preparing system|System vorbereiten|Подготовка на системата
+INSTALLER PAYLOAD|Installer failed|Installation fehlerhaft|Грешен инсталатор
+CONFIGURING SERVICES|Setting up services|Dienste einrichten|Настройка на услугите
+SERVICE CONFIGURATION|Service setup failed|Dienste nicht eingerichtet|Неуспешна настройка на услуги
+GENERATING PRIVATE IDENTITY|Creating identity|Identität erstellen|Създаване на самоличност
+FINAL VERIFICATION|Final check failed|Endprüfung fehlgeschlagen|Неуспешна крайна проверка
+unique SSH host-key generation|SSH identity failed|SSH-Identität fehlgeschlagen|Неуспешна SSH самоличност
+installed-file permission setup|File setup failed|Dateieinrichtung fehlgeschlagen|Неуспешна настройка на файлове
+OpenRC service enablement|Service setup failed|Dienste nicht eingerichtet|Неуспешна настройка на услуги
+display service enablement|Display setup failed|Display nicht eingerichtet|Неуспешна настройка на екрана
+tundup secret generation|Private key failed|Privater Schlüssel fehlt|Неуспешен частен ключ
+fixed mailbox account setup|Account setup failed|Konten nicht eingerichtet|Неуспешна настройка на профили
+strict SFTP/Tor setup|Link setup failed|Verbindung nicht eingerichtet|Неуспешна настройка на връзка
+SFTP identity publication|Link identity failed|Verbindungsidentität fehlt|Неуспешна самоличност за връзка
+installed configuration self-test|Settings check failed|Einstellungen fehlerhaft|Грешни настройки
+curated STATE commit|Data save failed|Daten nicht gespeichert|Неуспешен запис на данни
+BOOT and SYSTEM seal|Device seal failed|Gerät nicht versiegelt|Неуспешно запечатване на уреда
+SEE INSTALL LOG|Setup error|Installationsfehler|Грешка при настройката
+NETWORK READY|Network ready|Netzwerk bereit|Мрежата е готова
+CONFIRM|Confirm|Bestätigen|Потвърди
+CREATE LOGIN KEY?|Create login key?|Zugangsschlüssel erstellen?|Създаване на ключ за вход?
+REPLACE LOGIN KEY?|Replace login key?|Zugangsschlüssel ersetzen?|Смяна на ключа за вход?
+OLD KEY WILL|The old key will|Der alte Schlüssel|Старият ключ
+STOP WORKING|stop working|gilt dann nicht mehr|вече няма да работи
+REMOVE LOGIN KEY?|Remove login key?|Zugangsschlüssel löschen?|Изтриване на ключа за вход?
+USB DISCONNECTED|USB disconnected|USB getrennt|USB е изключен
+RESTORE PENDING|Restart to apply|Zum Anwenden neu starten|Рестарт за прилагане
+REPLACES SETTINGS|Replaces all settings|Ersetzt alle Einstellungen|Заменя всички настройки
+RESTART REQUIRED|Restart required|Neustart erforderlich|Нужен е рестарт
+RESTART TO APPLY|Restart to apply|Zum Anwenden neu starten|Рестарт за прилагане
+INSERT USB STICK|Insert USB stick|USB-Stick einstecken|Поставете USB памет
+USB CONFIRMATION REQUIRED|Check USB again|USB erneut prüfen|Проверете USB отново

@@ -1,0 +1,11 @@
+#!/bin/sh
+# Keep boot/runtime chatter off the PiTFT UI console.
+dmesg -n 1 2>/dev/null || true
+printf '1 4 1 7
+' > /proc/sys/kernel/printk 2>/dev/null || true
+pkill -f 'getty.*tty2' 2>/dev/null || true
+pkill -f 'agetty.*tty2' 2>/dev/null || true
+for tty in /dev/tty1 /dev/tty2; do
+    printf '\033c\033[?25l\033[2J\033[H' > "$tty" 2>/dev/null || true
+done
+exit 0

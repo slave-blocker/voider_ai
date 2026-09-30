@@ -1,0 +1,95 @@
+#!/bin/sh
+# Secure first-boot behavior for Voider's ext4-root factory architecture.
+# Installation requires the physical display. A flasher-selected public key can
+# additionally enable restricted management SSH without an open-login fallback.
+set -eu
+
+run=/run/voider-factory
+authorized=/boot/voider-authorized_keys
+installer=/opt/voider-installer
+mkdir -p "$run" /run/voider
+chmod 700 "$run"
+[ -e /run/voider/factory-install.status ] || printf 'STATE=READY\nPHASE=READY\nPROGRESS=0\n' > /run/voider/factory-install.status
+
+[ ! -e /etc/voider/.installed ] || exit 0
+
+status() {
+    state=$1
+    detail=${2:-}
+    {
+        echo "STATE=$state"
+        [ -z "$detail" ] || echo "DETAIL=$detail"
+        ip -4 -o addr show dev eth0 scope global 2>/dev/null | awk 'NR==1 {sub(/\/.*/,"",$4); print "IP=" $4}'
+    } > /run/voider/factory-bootstrap.status
+}
+
+# The factory boot has only its directly connected private LAN and inbound SSH.
+# There are no version probes, downloads, time-pool calls, or telemetry hooks.
+status STARTING "BRINGING UP ETHERNET"
+sysctl -w net.ipv6.conf.eth0.accept_ra=0 net.ipv6.conf.eth0.autoconf=0 >/dev/null
+ip -4 route flush dev eth0
+ip -6 route flush dev eth0
+ip -6 addr flush dev eth0 scope global
+: > /run/resolv.conf
+ip link set eth0 up
+cp /usr/local/sbin/voider-factory-dhcp "$run/udhcpc-hook"
+chmod 700 "$run/udhcpc-hook"
+udhcpc -b -t 5 -i eth0 -p "$run/udhcpc.pid" -s "$run/udhcpc-hook" -o -O subnet >"$run/dhcp.log" 2>&1
+
+display=0
+if "$installer/build/voider-ui" --display-probe >/run/voider/factory-display-probe 2>&1; then
+    display=1
+    "$installer/build/voider-ui" --factory-display --loop >/run/voider/factory-display.log 2>&1 &
+    echo $! > "$run/display.pid"
+    UI_COMMAND="$installer/build/voider-ui" UI_BUTTON_MODE="--factory-button" \
+        "$installer/scripts/pitft-bridge" >/run/voider/factory-buttons.log 2>&1 &
+    echo $! > "$run/buttons.pid"
+fi
+
+uplink_ip=$(ip -4 -o addr show dev eth0 scope global 2>/dev/null | awk 'NR==1 {sub(/\/.*/,"",$4); print $4}')
+if [ -n "$uplink_ip" ] && [ -s "$authorized" ] && [ "$(awk 'NF && $1 !~ /^#/ {n++} END {print n+0}' "$authorized")" -eq 1 ] &&
+   ssh-keygen -l -f "$authorized" >/dev/null 2>&1; then
+    install -m 600 "$authorized" "$run/authorized_keys"
+    rm -f "$run"/ssh_host_ed25519_key*
+    ssh-keygen -q -t ed25519 -N '' -C voider-factory-temporary -f "$run/ssh_host_ed25519_key"
+    cat > "$run/sshd_config" <<EOF
+Port 22
+ListenAddress $uplink_ip
+Protocol 2
+PidFile $run/sshd.pid
+HostKey $run/ssh_host_ed25519_key
+PermitRootLogin yes
+PubkeyAuthentication yes
+AuthenticationMethods publickey
+AuthorizedKeysFile $run/authorized_keys
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+ChallengeResponseAuthentication no
+PermitEmptyPasswords no
+UsePAM no
+AllowUsers root@10.0.0.0/8 root@172.16.0.0/12 root@192.168.0.0/16
+X11Forwarding no
+AllowAgentForwarding no
+AllowTcpForwarding no
+PermitTunnel no
+GatewayPorts no
+PrintMotd yes
+EOF
+    /usr/sbin/sshd -t -f "$run/sshd_config"
+    /usr/sbin/sshd -f "$run/sshd_config" -E "$run/sshd.log"
+    if [ "$display" -eq 1 ]; then
+        status READY "SSH KEY ONLY - USE DISPLAY"
+    else
+        status DISPLAY_REQUIRED "SSH DIAGNOSTICS ONLY"
+    fi
+else
+    if [ -s "$authorized" ] && [ -z "$uplink_ip" ]; then
+        status DISPLAY_ONLY "SSH WAITING FOR UPLINK"
+    elif [ "$display" -eq 1 ]; then
+        status DISPLAY_ONLY "NO MANAGEMENT SSH KEY"
+    else
+        status DISPLAY_REQUIRED "DISPLAY AND BUTTONS REQUIRED"
+    fi
+fi
+
+exit 0

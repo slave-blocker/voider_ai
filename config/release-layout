@@ -1,0 +1,9 @@
+# Fixed 512-byte sectors; all partitions are aligned to 1 MiB.
+# This is build/flash metadata, never sourced from an untrusted image.
+IMAGE_BYTES=940572672
+BOOT_OFFSET_BYTES=1048576
+BOOT_SIZE_BYTES=134217728
+SYSTEM_OFFSET_BYTES=135266304
+SYSTEM_SIZE_BYTES=536870912
+STATE_OFFSET_BYTES=672137216
+STATE_SIZE_BYTES=268435456

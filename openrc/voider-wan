@@ -1,0 +1,19 @@
+#!/sbin/openrc-run
+name="voider-wan"
+description="voider-owned WAN DHCP/recovery monitor"
+command="/usr/local/sbin/voider-wan"
+command_args="monitor"
+command_background="yes"
+pidfile="/run/voider-wan.pid"
+depend(){
+    need voider-appliance
+    before tor
+    before sshd
+    before voider
+    after voider-appliance
+}
+
+start_pre(){
+    /usr/local/sbin/voider-appliance-boot gate || return 1
+    rc-service networking start
+}

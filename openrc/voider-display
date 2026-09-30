@@ -1,0 +1,59 @@
+#!/sbin/openrc-run
+
+name="voider-display"
+description="voider physical 320x240 display and four buttons"
+ui_pid="/run/voider-display.pid"
+buttons_pid="/run/pitft-bridge.pid"
+
+depend() {
+    need localmount
+    before voider-appliance
+}
+
+start_pre() {
+    mkdir -p /run/voider
+    if ! /usr/local/sbin/voider-ui --display-probe >/run/voider/display-probe 2>&1; then
+        eerror "No supported physical display; service must not run on this appliance"
+        return 1
+    fi
+}
+
+start() {
+    ebegin "Starting voider physical display"
+    rm -f /run/voider/display-blank
+    start-stop-daemon --start --background --make-pidfile \
+        --pidfile "$ui_pid" --exec /usr/local/sbin/voider-ui \
+        -- --display --loop
+    rc=$?
+    if [ "$rc" -eq 0 ] && [ -x /usr/local/sbin/pitft-bridge ]; then
+        start-stop-daemon --start --background --make-pidfile \
+            --pidfile "$buttons_pid" --exec /usr/local/sbin/pitft-bridge \
+            >>/run/voider/pitft-bridge.openrc.log 2>&1
+        rc=$?
+    fi
+    eend "$rc"
+}
+
+stop() {
+    ebegin "Stopping voider physical display"
+    start-stop-daemon --stop --pidfile "$buttons_pid" --retry TERM/2/KILL/2 2>/dev/null || true
+    start-stop-daemon --stop --pidfile "$ui_pid" --retry TERM/2/KILL/2 2>/dev/null || true
+    pkill -f "/usr/local/sbin/voider-ui --display --loop" 2>/dev/null || true
+    pkill -f "/usr/local/sbin/pitft-bridge" 2>/dev/null || true
+    rm -f "$buttons_pid" "$ui_pid"
+    # Leave the mandatory panel black even when shutdown was initiated outside
+    # the display menu. This is best effort because the framebuffer may already
+    # be gone late in the OpenRC shutdown sequence.
+    /usr/local/sbin/voider-ui --blank >/dev/null 2>&1 || true
+    eend 0
+}
+
+status() {
+    if [ -s "$ui_pid" ] && kill -0 "$(cat "$ui_pid")" 2>/dev/null &&
+       [ -s "$buttons_pid" ] && kill -0 "$(cat "$buttons_pid")" 2>/dev/null; then
+        echo "voider display and buttons running"
+        return 0
+    fi
+    echo "voider display not running"
+    return 3
+}

@@ -1,0 +1,42 @@
+Voider Source-Available Personal Use License
+
+Copyright (c) Voider creator.
+
+This license applies only to creator-owned Voider materials in this repository.
+Third-party software, libraries, fonts, operating-system packages, hardware,
+hardware designs, product names, trademarks, documentation, and other materials
+remain under their own licenses and owners. If another license applies to a file,
+component, dependency, combined work, product, mark, or hardware design, that
+license or ownership right controls for that material.
+
+Permission is granted to download, read, study, modify, build, and use the
+creator-owned Voider materials for personal, private, educational, and
+noncommercial purposes.
+
+Commercial use is not granted. Without a separate signed commercial agreement
+from the creator, you may not:
+
+- sell Voider devices or devices based on Voider;
+- manufacture Voider devices for sale or commercial distribution;
+- sell, lease, host, bundle, support, certify, or distribute commercial Voider
+  builds or services;
+- use the Voider name, marks, branding, trade dress, or official-device status
+  for commercial purposes;
+- represent a product or service as official Voider, certified Voider, or
+  creator-approved Voider;
+- sublicense commercial rights to another person or company.
+
+This license does not grant rights to use third-party names, marks, logos,
+hardware designs, reseller status, certification claims, or endorsement claims.
+In particular, Voider is not affiliated with, endorsed by, certified by, or
+sponsored by Adafruit, Raspberry Pi, Alpine Linux, Tor, OpenSSH, OpenSSL,
+WireGuard, or any other third-party project or vendor.
+
+Commercial licensing is available by separate written agreement. See
+docs/legal/voider-commercial-licensing-pack.pdf and contact dollner@gmx.de.
+
+This software is provided "as is", without warranty of any kind, express or
+implied, including but not limited to warranties of merchantability, fitness for
+a particular purpose, and noninfringement. Use it at your own risk.
+
+Got complaints? Please direct them to /dev/null.

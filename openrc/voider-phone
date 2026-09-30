@@ -1,0 +1,15 @@
+#!/sbin/openrc-run
+name="voider-phone"
+description="voider phone-side gateway, DHCP, static-phone detection"
+command="/usr/local/sbin/voider-phone"
+command_args="monitor"
+command_background="yes"
+pidfile="/run/voider-phone.pid"
+depend(){
+    need voider-appliance
+    before voider
+}
+
+start_pre(){
+    /usr/local/sbin/voider-appliance-boot gate || return 1
+}
