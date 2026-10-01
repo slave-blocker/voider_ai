@@ -117,5 +117,3 @@ Remember, if your hardware is backdoored anyway, backdoored you are...
 Special thanks to Andreas Hein!
 
 A donation is the best nation!
-
-The first Voider was handmade, without AI. Keep finding flaws, roast the code, and email me. Less code, more Voider.
