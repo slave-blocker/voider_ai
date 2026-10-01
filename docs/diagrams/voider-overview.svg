@@ -1,136 +1,168 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="820" viewBox="0 0 1280 820" role="img" aria-labelledby="title desc">
-  <title id="title">Voider overview</title>
-  <desc id="desc">Voider appliance wiring and current call-plane namespaces: eth0 to Internet, eth1 to phone, shared wg0 for clients, per-slot netnsX for imported servers, and NFQUEUE SIP rewriting replacing the old replay namespace.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1020" viewBox="0 0 1600 1020" role="img" aria-labelledby="title desc">
+  <title id="title">Voider namespace wiring</title>
+  <desc id="desc">Voider network namespace wiring with explicit netns boxes, eth0 Internet uplink, eth1 phone link, shared wg0, imported-server netnsX slots, and NFQUEUE SIP rewriting replacing the old replay namespace.</desc>
   <defs>
     <style>
-      .bg { fill: #f7f4ea; }
-      .panel { fill: #fffdf7; stroke: #111; stroke-width: 2.2; }
-      .voider { fill: #f1c232; stroke: #111; stroke-width: 2.4; }
-      .netns { fill: #d9ead3; stroke: #111; stroke-width: 2.1; }
+      .bg { fill: #f8f6ee; }
+      .box { fill: #fffdf8; stroke: #111; stroke-width: 2.3; }
+      .main { fill: #fff4c2; stroke: #111; stroke-width: 2.5; }
+      .ns { fill: #eef7e8; stroke: #111; stroke-width: 2.3; }
+      .note { fill: #e8f0ff; stroke: #111; stroke-width: 2.1; }
       .phone { fill: #111; stroke: #111; stroke-width: 2; }
       .cloud { fill: #fff; stroke: #111; stroke-width: 5; }
       .line { stroke: #111; stroke-width: 2.5; fill: none; }
-      .dash { stroke: #111; stroke-width: 2.3; stroke-dasharray: 7 6; fill: none; }
-      .thin { stroke: #111; stroke-width: 1.6; fill: none; }
+      .thin { stroke: #111; stroke-width: 1.7; fill: none; }
+      .dash { stroke: #111; stroke-width: 2.2; stroke-dasharray: 8 7; fill: none; }
       .txt { font-family: Arial, Helvetica, sans-serif; fill: #111; font-size: 21px; }
       .small { font-family: Arial, Helvetica, sans-serif; fill: #111; font-size: 16px; }
-      .tiny { font-family: Arial, Helvetica, sans-serif; fill: #111; font-size: 13px; }
-      .label { font-family: Arial, Helvetica, sans-serif; fill: #111; font-weight: 700; font-size: 24px; }
-      .minihead { font-family: Arial, Helvetica, sans-serif; fill: #111; font-weight: 700; font-size: 17px; }
+      .head { font-family: Arial, Helvetica, sans-serif; fill: #111; font-size: 26px; font-weight: 700; }
+      .label { font-family: Arial, Helvetica, sans-serif; fill: #111; font-size: 18px; font-weight: 700; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fill: #111; font-size: 15px; }
     </style>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
       <path d="M0,0 L9,3 L0,6 Z" fill="#111"/>
     </marker>
-    <marker id="arrow-start" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+    <marker id="arrs" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
       <path d="M9,0 L0,3 L9,6 Z" fill="#111"/>
     </marker>
   </defs>
 
-  <rect class="bg" x="0" y="0" width="1280" height="820"/>
+  <rect class="bg" width="1500" height="940"/>
+  <text class="head" x="28" y="34">Voider namespace wiring</text>
+  <text class="small" x="28" y="62">Current code model: no replay namespace; imported-server SIP uses raw NOTRACK + NFQUEUE + voider-nfqd inside netnsX.</text>
 
-  <text class="label" x="36" y="42">Voider appliance overview</text>
-  <text class="small" x="36" y="68">Current model: phone link on eth1, uplink on eth0, shared wg0 for clients-of-us, imported servers in netnsX, SIP rewritten by NFQUEUE.</text>
-
-  <!-- Internet cloud -->
-  <g transform="translate(46 654)">
-    <path class="cloud" d="M47 86 H166 C194 86 214 67 214 43 C214 19 195 3 172 7 C159 -11 132 -7 121 11 C96 -11 59 2 57 35 C31 35 12 55 12 77 C12 96 27 111 47 111 Z"/>
-    <text class="txt" x="69" y="149">Internet</text>
+  <g transform="translate(44 130)">
+    <text class="txt" x="0" y="-48">server slot X=2</text>
+    <text class="txt" x="0" y="-22">wg2: 172.31.0.s</text>
+    <rect class="ns" x="0" y="0" width="130" height="165"/>
+    <path class="box" d="M42 34 h46 v44 h-46 z"/>
+    <path class="phone" d="M52 68 v-22 c0-16 26-16 26 0v22h-8v-22c0-6-10-6-10 0v22z"/>
+    <text class="label" x="25" y="116">netns2</text>
+    <text class="mono" x="18" y="143">veth2b</text>
   </g>
 
-  <!-- Voider main appliance -->
-  <rect class="voider" x="300" y="125" width="560" height="520" rx="8"/>
-  <text class="label" x="326" y="162">Voider appliance</text>
-  <text class="small" x="326" y="188">Raspberry Pi + PiTFT/buttons + read-only OS + curated STATE</text>
-
-  <!-- eth0 uplink -->
-  <line class="line" x1="300" y1="610" x2="236" y2="686" marker-start="url(#arrow-start)" marker-end="url(#arrow)"/>
-  <text class="minihead" x="218" y="626">eth0 uplink</text>
-  <text class="small" x="210" y="650">router / LAN</text>
-
-  <!-- eth1 phone link -->
-  <line class="line" x1="860" y1="520" x2="1028" y2="520" marker-start="url(#arrow-start)" marker-end="url(#arrow)"/>
-  <text class="minihead" x="880" y="500">eth1 phone side</text>
-  <text class="small" x="882" y="546">Voider 172.16.19.86/30</text>
-  <text class="small" x="882" y="568">phone 172.16.19.85</text>
-
-  <!-- Old phone -->
-  <g transform="translate(1038 424)">
-    <path class="phone" d="M82 23 C31 23 13 54 13 93 V136 H227 V93 C227 54 209 23 158 23 C143 23 139 31 139 43 C139 58 153 72 168 72 C181 72 190 79 190 94 V105 H50 V94 C50 79 59 72 72 72 C87 72 101 58 101 43 C101 31 97 23 82 23 Z"/>
-    <circle cx="120" cy="99" r="31" fill="#fff"/>
-    <circle cx="120" cy="99" r="20" fill="#111"/>
-    <circle cx="120" cy="99" r="9" fill="#fff"/>
-    <circle cx="78" cy="118" r="7" fill="#fff"/>
-    <circle cx="162" cy="118" r="7" fill="#fff"/>
-  <text class="txt" x="22" y="186">Ethernet phone</text>
-    <text class="small" x="35" y="212">factory reset</text>
+  <g transform="translate(272 130)">
+    <text class="txt" x="0" y="-48">server slot X=3</text>
+    <text class="txt" x="0" y="-22">wg3: 172.31.0.s</text>
+    <rect class="ns" x="0" y="0" width="130" height="165"/>
+    <path class="box" d="M42 34 h46 v44 h-46 z"/>
+    <path class="phone" d="M52 68 v-22 c0-16 26-16 26 0v22h-8v-22c0-6-10-6-10 0v22z"/>
+    <text class="label" x="25" y="116">netns3</text>
+    <text class="mono" x="18" y="143">veth3b</text>
   </g>
 
-  <!-- fixed phone link box -->
-  <rect class="panel" x="935" y="586" width="292" height="96" rx="6"/>
-  <text class="minihead" x="955" y="615">Phone call plane</text>
-  <text class="small" x="955" y="640">Direct IP call; phone dials</text>
-  <text class="small" x="955" y="663">per-boot fake 172.16.x.x peer IP</text>
+  <g transform="translate(500 130)">
+    <text class="txt" x="0" y="-48">server slot X=4</text>
+    <text class="txt" x="0" y="-22">wg4: 172.31.0.s</text>
+    <rect class="ns" x="0" y="0" width="130" height="165"/>
+    <path class="box" d="M42 34 h46 v44 h-46 z"/>
+    <path class="phone" d="M52 68 v-22 c0-16 26-16 26 0v22h-8v-22c0-6-10-6-10 0v22z"/>
+    <text class="label" x="25" y="116">netns4</text>
+    <text class="mono" x="18" y="143">veth4b</text>
+  </g>
 
-  <!-- Default namespace -->
-  <rect class="panel" x="326" y="216" width="500" height="168" rx="6"/>
-  <text class="minihead" x="348" y="246">default namespace</text>
-  <text class="small" x="348" y="274">shared server WireGuard: wg0 = 172.31.0.1/24</text>
-  <text class="small" x="348" y="300">clients-of-us: peer 172.31.0.X, call identity 172.29.X.1</text>
-  <text class="small" x="348" y="326">local server identity toward clients: 172.29.1.1</text>
-  <text class="small" x="348" y="352">media NAT covers RTP/SRTP; SIP is rewritten separately</text>
+  <text class="txt" x="705" y="203">...</text>
 
-  <!-- Imported netns -->
-  <rect class="netns" x="326" y="420" width="500" height="176" rx="6"/>
-  <text class="minihead" x="348" y="449">imported remote server slot: netnsX</text>
-  <text class="small" x="348" y="477">phone handoff: 10.X.1.1</text>
-  <text class="small" x="348" y="503">brX = 172.30.X.1, veth = 172.30.X.2</text>
-  <text class="small" x="348" y="529">wgX address from bundle: 172.31.0.s</text>
-  <text class="small" x="348" y="555">call identity from cert index s: 172.29.s.1</text>
-  <text class="small" x="348" y="581">remote server target stays 172.29.1.1 via 172.31.0.1</text>
+  <g transform="translate(860 130)">
+    <text class="txt" x="0" y="-48">server slot X=254</text>
+    <text class="txt" x="0" y="-22">wg254: 172.31.0.s</text>
+    <rect class="ns" x="0" y="0" width="145" height="165"/>
+    <path class="box" d="M50 34 h46 v44 h-46 z"/>
+    <path class="phone" d="M60 68 v-22 c0-16 26-16 26 0v22h-8v-22c0-6-10-6-10 0v22z"/>
+    <text class="label" x="34" y="116">netns254</text>
+    <text class="mono" x="24" y="143">veth254b</text>
+  </g>
 
-  <!-- NFQUEUE box -->
-  <rect class="panel" x="486" y="675" width="520" height="98" rx="6"/>
-  <text class="minihead" x="508" y="705">SIP rewrite path</text>
-  <text class="small" x="508" y="730">raw NOTRACK + NFQUEUE + voider-nfqd</text>
-  <text class="small" x="508" y="754">old replay namespace / scapy replay path is gone</text>
-  <path class="dash" d="M575 596 C625 632 655 648 704 675" marker-end="url(#arrow)"/>
-  <path class="dash" d="M772 384 C774 486 762 600 746 675" marker-end="url(#arrow)"/>
+  <text class="mono" x="44" y="329">172.30.2.2</text>
+  <text class="mono" x="58" y="420">172.30.2.1</text>
+  <text class="mono" x="272" y="329">172.30.3.2</text>
+  <text class="mono" x="286" y="420">172.30.3.1</text>
+  <text class="mono" x="500" y="329">172.30.4.2</text>
+  <text class="mono" x="514" y="420">172.30.4.1</text>
+  <text class="mono" x="860" y="329">172.30.254.2</text>
+  <text class="mono" x="874" y="420">172.30.254.1</text>
+  <line class="line" x1="109" y1="295" x2="109" y2="395" marker-start="url(#arrs)" marker-end="url(#arr)"/>
+  <line class="line" x1="337" y1="295" x2="337" y2="395" marker-start="url(#arrs)" marker-end="url(#arr)"/>
+  <line class="line" x1="565" y1="295" x2="565" y2="395" marker-start="url(#arrs)" marker-end="url(#arr)"/>
+  <line class="line" x1="932" y1="295" x2="932" y2="395" marker-start="url(#arrs)" marker-end="url(#arr)"/>
 
-  <!-- Transport order -->
-  <rect class="panel" x="36" y="116" width="224" height="212" rx="6"/>
-  <text class="minihead" x="58" y="147">Transport order</text>
-  <text class="small" x="58" y="178">1. LAN WireGuard</text>
-  <text class="small" x="58" y="205">2. direct WireGuard</text>
-  <text class="small" x="58" y="232">3. hole punch</text>
-  <text class="small" x="58" y="259">4. Tor fallback</text>
-  <text class="tiny" x="58" y="292">Healthy selected paths</text>
-  <text class="tiny" x="58" y="311">stay selected</text>
+  <rect class="main" x="24" y="435" width="1035" height="256"/>
+  <text class="head" x="56" y="478">default namespace</text>
+  <text class="small" x="56" y="506">Imported-server bridge side: brX = 172.30.X.1/30. Phone dials per-boot fake server IP, mapped to handoff 10.X.1.1.</text>
+  <text class="small" x="56" y="532">Clients-of-us use one shared WireGuard server, not one netns per client.</text>
 
-  <!-- Tor side note -->
-  <rect class="panel" x="36" y="360" width="224" height="126" rx="6"/>
-  <text class="minihead" x="58" y="391">Tor helpers</text>
-  <text class="small" x="58" y="420">tcs+ client side</text>
-  <text class="small" x="58" y="446">tds+ server netns side</text>
-  <text class="tiny" x="58" y="470">dummy SOCKS IP 172.30.255.1</text>
+  <g transform="translate(427 555)">
+    <rect class="box" x="0" y="0" width="120" height="96"/>
+    <path class="box" d="M37 18 h46 v44 h-46 z"/>
+    <path class="phone" d="M47 52 v-22 c0-16 26-16 26 0v22h-8v-22c0-6-10-6-10 0v22z"/>
+    <text class="label" x="39" y="123">wg0</text>
+  </g>
+  <text class="txt" x="560" y="585">shared WireGuard server</text>
+  <text class="txt" x="560" y="616">wg0 = 172.31.0.1/24</text>
+  <text class="small" x="560" y="645">client peer 172.31.0.X -> call identity 172.29.X.1</text>
 
-  <!-- flow arrows internal -->
-  <line class="line" x1="605" y1="384" x2="605" y2="420" marker-end="url(#arrow)"/>
-  <text class="tiny" x="618" y="407">imported-server calls</text>
-  <line class="line" x1="826" y1="300" x2="1020" y2="490" marker-end="url(#arrow)"/>
-  <line class="line" x1="826" y1="510" x2="1018" y2="532" marker-end="url(#arrow)"/>
+  <text class="mono" x="82" y="550">10.2.1.1</text>
+  <text class="mono" x="310" y="550">10.3.1.1</text>
+  <text class="mono" x="538" y="550">10.4.1.1</text>
+  <text class="mono" x="894" y="550">10.254.1.1</text>
+  <line class="thin" x1="109" y1="435" x2="109" y2="488" marker-end="url(#arr)"/>
+  <line class="thin" x1="337" y1="435" x2="337" y2="488" marker-end="url(#arr)"/>
+  <line class="thin" x1="565" y1="435" x2="565" y2="488" marker-end="url(#arr)"/>
+  <line class="thin" x1="932" y1="435" x2="932" y2="488" marker-end="url(#arr)"/>
 
-  <!-- ports and identity notes -->
-  <rect class="panel" x="924" y="118" width="310" height="228" rx="6"/>
-  <text class="minihead" x="946" y="149">Indexing notes</text>
-  <text class="small" x="946" y="180">X = local slot / dial slot</text>
-  <text class="small" x="946" y="207">s = cert/WireGuard index</text>
-  <text class="small" x="946" y="234">Do not derive s from X</text>
-  <text class="small" x="946" y="267">Imported server:</text>
-  <text class="small" x="966" y="293">netnsX, brX, wgX</text>
-  <text class="small" x="966" y="319">queue 1000 + X</text>
+  <g transform="translate(54 760)">
+    <path class="cloud" d="M48 86 H170 C198 86 218 67 218 43 C218 18 198 3 174 8 C160 -10 134 -7 122 12 C96 -12 61 2 58 34 C31 34 12 55 12 77 C12 97 28 112 48 112 Z"/>
+    <text class="txt" x="71" y="150">Internet</text>
+  </g>
+  <line class="line" x1="70" y1="691" x2="70" y2="760" marker-start="url(#arrs)" marker-end="url(#arr)"/>
+  <text class="label" x="86" y="727">eth0</text>
+  <text class="small" x="126" y="727">uplink to router/LAN/Internet</text>
 
-  <!-- appliance display hint -->
-  <rect class="panel" x="516" y="90" width="310" height="78" rx="6"/>
-  <text class="minihead" x="538" y="120">Physical UI required</text>
-  <text class="small" x="538" y="146">PiTFT 320x240 + four buttons</text>
+  <g transform="translate(1215 444)">
+    <path class="phone" d="M45 128 C45 80 82 44 147 44 C212 44 250 80 250 128 L250 174 L45 174 Z"/>
+    <path fill="#f8f6ee" d="M74 127 C79 101 102 85 126 82 C132 107 113 126 89 126 Z"/>
+    <path fill="#f8f6ee" d="M168 82 C193 85 216 101 221 127 L205 126 C181 126 162 107 168 82 Z"/>
+    <rect fill="#f8f6ee" x="100" y="127" width="95" height="20"/>
+    <circle fill="#f8f6ee" cx="148" cy="133" r="37"/>
+    <circle fill="#111" cx="148" cy="133" r="26"/>
+    <circle fill="#f8f6ee" cx="148" cy="133" r="10"/>
+    <circle fill="#f8f6ee" cx="127" cy="111" r="5"/>
+    <circle fill="#f8f6ee" cx="148" cy="105" r="5"/>
+    <circle fill="#f8f6ee" cx="169" cy="111" r="5"/>
+    <circle fill="#f8f6ee" cx="122" cy="133" r="5"/>
+    <circle fill="#f8f6ee" cx="174" cy="133" r="5"/>
+    <circle fill="#f8f6ee" cx="132" cy="154" r="5"/>
+    <circle fill="#f8f6ee" cx="164" cy="154" r="5"/>
+    <circle fill="#f8f6ee" cx="99" cy="154" r="8"/>
+    <circle fill="#f8f6ee" cx="218" cy="154" r="8"/>
+    <text class="txt" x="54" y="222">old-school phone</text>
+    <text class="mono" x="68" y="250">172.16.19.85</text>
+  </g>
+  <line class="line" x1="1059" y1="562" x2="1239" y2="562" marker-start="url(#arrs)" marker-end="url(#arr)"/>
+  <text class="label" x="1080" y="537">eth1</text>
+  <text class="small" x="1080" y="588">Voider 172.16.19.86/30</text>
+  <text class="small" x="1080" y="612">Phone 172.16.19.85</text>
+
+  <rect class="note" x="1120" y="130" width="380" height="230"/>
+  <text class="label" x="1145" y="165">SIP path changed</text>
+  <text class="small" x="1145" y="199">old diagram: replay namespace</text>
+  <text class="small" x="1145" y="224">current: no replay netns</text>
+  <text class="small" x="1145" y="257">raw NOTRACK + NFQUEUE</text>
+  <text class="small" x="1145" y="282">voider-nfqd rewrites SIP</text>
+  <text class="mono" x="1145" y="316">queue = 1000 + X</text>
+  <path class="dash" d="M1120 325 C1034 358 1000 390 955 435" marker-end="url(#arr)"/>
+
+  <rect class="box" x="330" y="735" width="575" height="174"/>
+  <text class="label" x="356" y="771">Transport selection</text>
+  <text class="small" x="356" y="803">LAN WireGuard -> direct WireGuard -> hole punch -> Tor fallback</text>
+  <text class="small" x="356" y="833">Tor creates tcs+ / tds+ tunnel devices</text>
+  <text class="small" x="356" y="858">SOCKS helper IP is 172.30.255.1</text>
+  <text class="small" x="356" y="883">Healthy selected paths stay selected until failure or removal.</text>
+
+  <rect class="box" x="940" y="735" width="520" height="174"/>
+  <text class="label" x="966" y="771">Indexing</text>
+  <text class="small" x="966" y="803">X = local slot / phone-visible dial handoff</text>
+  <text class="small" x="966" y="833">s = imported certificate/WireGuard address index</text>
+  <text class="small" x="966" y="858">Do not derive s from X</text>
+  <text class="small" x="966" y="883">netnsX may use wgX = 172.31.0.s</text>
 </svg>
