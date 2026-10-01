@@ -1,6 +1,6 @@
 # Voider
 
-![Voider overview](docs/diagrams/voider-overview.svg)
+![Voider overview](docs/diagrams/voider-overview.png)
 
 Manual: [German / English / Bulgarian](docs/manual/voider-manual-de-en-bg.pdf)
 
