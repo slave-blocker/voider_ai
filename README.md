@@ -1,5 +1,9 @@
 # Voider
 
+![Voider overview](docs/diagrams/voider-overview.svg)
+
+Manual: [German / English / Bulgarian](docs/manual/voider-manual-de-en-bg.pdf)
+
 Voider is a source-available appliance project for private phone-to-phone calling
 through small, reproducible Raspberry Pi devices and supported Ethernet phones.
 
@@ -114,4 +118,4 @@ Special thanks to Andreas Hein!
 
 A donation is the best nation!
 
-The first Voider was handmade, without AI. This one is public so you can find the flaws, roast the code, and email me. Less code, more Voider.
+The first Voider was handmade, without AI. Keep finding flaws, roast the code, and email me. Less code, more Voider.
