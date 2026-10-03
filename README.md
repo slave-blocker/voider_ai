@@ -59,9 +59,7 @@ not detected.
 
 Use a Raspberry Pi with 64-bit/aarch64 boot support and a 2x20 GPIO header for
 the display. The release image uses Alpine's Raspberry Pi kernel and bootloader,
-64-bit boot mode. The current build and installer still configure the
-`pitft28-resistive` overlay; that configuration needs to be checked against the
-2.2" HAT before claiming release-image compatibility.
+64-bit boot mode.
 
 ## Build
 
