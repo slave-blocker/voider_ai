@@ -15,7 +15,7 @@ Known items to verify before any public binary or device shipment:
 - Tor, OpenSSH, WireGuard tools, BusyBox, iptables/nftables-related packages,
   chrony, curl/wget, and other image packages: preserve per-package licenses.
 - DINish font: SIL Open Font License, included at `assets/fonts/OFL.txt`.
-- Adafruit PiTFT Plus 320x240 2.8" TFT + Resistive Touchscreen, Product ID 2298:
+- Adafruit PiTFT 2.2" HAT Mini Kit, 320x240 2.2" TFT (no touch), Product ID 2315:
   use genuine purchased modules unless you have separately verified and complied
   with any hardware design, documentation, trademark, and reseller terms.
 - Raspberry Pi hardware, boot firmware, names, and marks: follow the applicable

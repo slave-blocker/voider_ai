@@ -45,8 +45,9 @@ third-party project or vendor named here.
 
 ## Hardware
 
-The intended display is the **Adafruit PiTFT Plus 320x240 2.8" TFT +
-Resistive Touchscreen, Product ID 2298**.
+The intended display is the **Adafruit PiTFT 2.2" HAT Mini Kit —
+320x240 2.2" TFT, Product ID 2315**, with four physical buttons and no touch
+input. Voider is operated using the four buttons.
 
 Use a genuine purchased display module. If you sell devices, respect Adafruit's
 product, trademark, reseller, and documentation terms. Do not imply Adafruit
@@ -58,7 +59,9 @@ not detected.
 
 Use a Raspberry Pi with 64-bit/aarch64 boot support and a 2x20 GPIO header for
 the display. The release image uses Alpine's Raspberry Pi kernel and bootloader,
-64-bit boot mode, and the `pitft28-resistive` display overlay.
+64-bit boot mode. The current build and installer still configure the
+`pitft28-resistive` overlay; that configuration needs to be checked against the
+2.2" HAT before claiming release-image compatibility.
 
 ## Build
 
