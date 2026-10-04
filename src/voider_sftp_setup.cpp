@@ -83,9 +83,10 @@ static void write_file(const std::string&p,const std::string&s,int mode=0644){
 }
 
 static bool mailbox_name(const std::string& name){
-    if(name.size()!=6||name.rfind("vmb",0)!=0)return false;
+    if(name.size()!=6||(name.rfind("vmc",0)!=0&&name.rfind("vms",0)!=0))return false;
     int slot=toi(name.substr(3),0);
-    return vmb::slot_ok(slot)&&name==vmb::user(slot);
+    std::string role=name.rfind("vmc",0)==0?"client":"server";
+    return vmb::slot_ok(slot)&&name==vmb::user(role,slot);
 }
 static bool make_mailbox_accounts_pubkey_only(){
     // OpenSSH rejects a shadow-locked account before public-key processing.
@@ -129,24 +130,25 @@ static bool mailbox_shadow_is_np(const std::string&name){
     }
     return false;
 }
-static bool mailbox_account_valid(int slot){
-    std::string name=vmb::user(slot);
+static bool mailbox_account_valid(const std::string& role,int slot){
+    std::string name=vmb::user(role,slot);
     auto* account=getpwnam(name.c_str());
     auto* group=getgrnam(C.mailbox_group.c_str());
     return account&&group&&account->pw_dir&&account->pw_shell&&account->pw_gid==group->gr_gid&&
-           std::string(account->pw_dir)==vmb::root(C,slot).string()&&
+           std::string(account->pw_dir)==vmb::root(C,role,slot).string()&&
            std::string(account->pw_shell)=="/sbin/nologin"&&
            mailbox_shadow_is_np(name);
 }
 static int setup_accounts(){
     if(run("getent group "+C.mailbox_group+" >/dev/null 2>&1 || addgroup -S "+C.mailbox_group))return 2;
-    for(int slot=2;slot<=254;slot++){
-        std::string user=vmb::user(slot);
-        if(!getpwnam(user.c_str())&&run("adduser -S -D -H -h "+vmb::root(C,slot).string()+
+    for(const std::string role:{"client","server"})for(int slot=2;slot<=254;slot++){
+        std::string user=vmb::user(role,slot);
+        if(!getpwnam(user.c_str())&&run("adduser -S -D -H -h "+vmb::root(C,role,slot).string()+
             " -s /sbin/nologin -G "+C.mailbox_group+' '+user))return 2;
     }
     if(!make_mailbox_accounts_pubkey_only())return 2;
-    for(int slot=2;slot<=254;slot++)if(!mailbox_account_valid(slot))return 2;
+    for(const std::string role:{"client","server"})for(int slot=2;slot<=254;slot++)
+        if(!mailbox_account_valid(role,slot))return 2;
     return 0;
 }
 static bool configured_client_slot(int slot){
@@ -160,7 +162,7 @@ static bool provisioned_client_slot(int slot){
 static bool authorized_client_slot(int slot){
     fs::path material=fs::path(C.mat)/"client"/std::to_string(slot);
     return provisioned_client_slot(slot)&&fs::is_regular_file(material/"usb_secret.hex")&&
-           fs::is_regular_file(material/"tundup_psk.hex")&&fs::is_regular_file(vmb::keys(C,slot));
+           fs::is_regular_file(material/"tundup_psk.hex")&&fs::is_regular_file(vmb::keys(C,"client",slot));
 }
 static bool plain_directory(const fs::path&path){
     std::error_code error;
@@ -168,7 +170,7 @@ static bool plain_directory(const fs::path&path){
     return !error&&fs::is_directory(status)&&!fs::is_symlink(status);
 }
 static bool active_client_slot(int slot){
-    fs::path root=vmb::root(C,slot);
+    fs::path root=vmb::root(C,"client",slot);
     return authorized_client_slot(slot)&&plain_directory(root)&&plain_directory(root/"in")&&
            plain_directory(root/"out");
 }
@@ -180,13 +182,14 @@ static bool safe_directory(const fs::path& path){
     fs::create_directories(path,error);
     return !error&&fs::is_directory(fs::symlink_status(path,error))&&!error;
 }
-static bool setup_slot(int slot,bool clean){
-    if(!vmb::slot_ok(slot)||!mailbox_account_valid(slot))return false;
-    std::string user=vmb::user(slot);
+static bool setup_slot(const std::string& role,int slot,bool clean){
+    if(!vmb::role_ok(role)||!vmb::slot_ok(slot)||!mailbox_account_valid(role,slot))return false;
+    std::string user=vmb::user(role,slot);
     auto* account=getpwnam(user.c_str());
     if(!account)return false;
-    fs::path root=vmb::root(C,slot),incoming=root/"in",outgoing=root/"out";
-    if(!safe_directory(C.sftp_base)||!safe_directory(root)||
+    fs::path parent=fs::path(C.sftp_base)/(role=="client"?"clients":"servers");
+    fs::path root=vmb::root(C,role,slot),incoming=root/"in",outgoing=root/"out";
+    if(!safe_directory(C.sftp_base)||!safe_directory(parent)||!safe_directory(root)||
        !safe_directory(incoming)||!safe_directory(outgoing))return false;
     if(clean){
         for(const auto& dir:{incoming,outgoing})for(const auto& entry:fs::directory_iterator(dir)){
@@ -195,25 +198,30 @@ static bool setup_slot(int slot,bool clean){
         }
     }
     if(chown(C.sftp_base.c_str(),0,0)||chmod(C.sftp_base.c_str(),0755)||
+       chown(parent.c_str(),0,0)||chmod(parent.c_str(),0755)||
        chown(root.c_str(),0,0)||chmod(root.c_str(),0755)||
        chown(incoming.c_str(),account->pw_uid,account->pw_gid)||chmod(incoming.c_str(),0700)||
        chown(outgoing.c_str(),0,0)||chmod(outgoing.c_str(),0755))return false;
     return true;
 }
-static bool remove_slot_resources(int slot){
+static bool remove_slot_resources(const std::string& role,int slot){
     std::error_code root_error,key_error;
-    fs::remove_all(vmb::root(C,slot),root_error);
-    fs::remove(vmb::keys(C,slot),key_error);
+    fs::remove_all(vmb::root(C,role,slot),root_error);
+    fs::remove(vmb::keys(C,role,slot),key_error);
     return !root_error&&!key_error;
 }
 static int setup_slots(bool clean=true){
     fs::create_directories(C.sftp_base);
     int failures=0;
-    for(int slot=2;slot<=254;slot++){
-        if(authorized_client_slot(slot)){
-            if(!setup_slot(slot,clean)||!active_client_slot(slot))failures++;
+    for(const std::string role:{"client","server"})for(int slot=2;slot<=254;slot++){
+        bool authorized=role=="client"&&authorized_client_slot(slot);
+        if(!authorized){
+            std::error_code error;
+            fs::remove(vmb::keys(C,role,slot),error);
+            if(error)failures++;
         }
-        else if(!remove_slot_resources(slot))failures++;
+        if(!setup_slot(role,slot,clean))failures++;
+        else if(authorized&&!active_client_slot(slot))failures++;
     }
     return failures?2:0;
 }
@@ -292,7 +300,7 @@ static void setup_sshd(){
         // also denies root when a phone or inner-tunnel source is spoofed.
         "DenyUsers root@172.16.19.84/30 root@172.29.0.0/16 "
         "root@172.30.0.0/16 root@172.31.0.0/16\n"
-        "AllowUsers root@10.0.0.0/8 root@172.16.0.0/12 root@192.168.0.0/16 vmb???\n"
+        "AllowUsers root@10.0.0.0/8 root@172.16.0.0/12 root@192.168.0.0/16 vmc??? vms???\n"
         "X11Forwarding no\n"
         "AllowTcpForwarding no\n"
         "AllowAgentForwarding no\n"
@@ -305,7 +313,7 @@ static void setup_sshd(){
     std::string block =
         "# One key, account, and chroot per CAP2 pairing slot.\n"
         "Match Group " + C.mailbox_group + "\n"
-        " ChrootDirectory " + C.sftp_base + "/%u\n"
+        " ChrootDirectory %h\n"
         // Peers may write transaction records into /in, but cannot read them
         // back after close; root-owned /out records remain peer-readable.
         " ForceCommand internal-sftp -d / -u 477 -p realpath,stat,lstat,fstat,open,close,read,write,rename\n"
@@ -378,7 +386,8 @@ static int publish_identity(){
 }
 static int apply(){
     cleanup_legacy_shared_identity();
-    for(int slot=2;slot<=254;slot++)if(!mailbox_account_valid(slot))return 2;
+    for(const std::string role:{"client","server"})for(int slot=2;slot<=254;slot++)
+        if(!mailbox_account_valid(role,slot))return 2;
     setup_keys();
     if(setup_slots())return 2;
     setup_limits();
@@ -392,7 +401,7 @@ static int apply(){
     if(run("sshd -T | grep -Eq '^permitrootlogin (prohibit-password|without-password)$'")) return 9;
     if(run("sshd -T | grep -qx 'maxstartups 8:30:16'"))return 10;
     if(run("sshd -T | grep -qx 'persourcemaxstartups 8'"))return 11;
-    std::string context=" -C user=vmb002,host=localhost,addr=127.0.0.1";
+    std::string context=" -C user=vmc002,host=localhost,addr=127.0.0.1";
     if(run("sshd -T"+context+" | grep -qx 'maxsessions 1'"))return 12;
     if(run("sshd -T"+context+" | grep -q '^forcecommand internal-sftp '"))return 13;
     if(run("sshd -T"+context+" | grep -q '^authorizedkeysfile "+C.mailbox_key_dir+"/'"))return 14;
@@ -403,7 +412,7 @@ static int apply(){
 static void status(){
     std::cout<<"group="<<C.mailbox_group<<"\nbase="<<C.sftp_base<<
     "\nkeys="<<C.mailbox_key_dir<<"\nsync_onion="<<C.sync_onion<<"\n";
-    run("ls -ld "+C.sftp_base+" "+C.sftp_base+"/vmb* 2>/dev/null | head");
+    run("ls -ld "+C.sftp_base+" "+C.sftp_base+"/clients/vmb* "+C.sftp_base+"/servers/vmb* 2>/dev/null | head");
     run("grep -R \"Match Group "+C.mailbox_group+"\" /etc/ssh/sshd_config /etc/ssh/sshd_config.d 2>/dev/null || true");
 }
 static int selftest(){
@@ -425,12 +434,13 @@ static int selftest(){
     std::ofstream(material/"usb_secret.hex")<<"test\n";
     std::ofstream(material/"tundup_psk.hex")<<"test\n";
     fs::create_directories(C.mailbox_key_dir);
-    std::ofstream(vmb::keys(C,slot))<<"restrict ssh-ed25519 test\n";
+    std::ofstream(vmb::keys(C,"client",slot))<<"restrict ssh-ed25519 test\n";
     want(authorized_client_slot(slot)&&!active_client_slot(slot));
-    fs::path root=vmb::root(C,slot);
+    fs::path root=vmb::root(C,"client",slot);
     want(safe_directory(root)&&safe_directory(root/"in")&&safe_directory(root/"out")&&active_client_slot(slot));
     std::ofstream(root/"in/volatile.offer")<<"test\n";
-    want(remove_slot_resources(slot)&&!fs::exists(root)&&!fs::exists(vmb::keys(C,slot))&&
+    want(vmb::root(C,"client",slot)!=vmb::root(C,"server",slot)&&
+         remove_slot_resources("client",slot)&&!fs::exists(root)&&!fs::exists(vmb::keys(C,"client",slot))&&
          provisioned_client_slot(slot)&&!authorized_client_slot(slot)&&!active_client_slot(slot));
     fs::remove_all(work);
     std::cout<<"SFTP_LIFECYCLE_TEST cases="<<cases<<" fails="<<failures<<"\n";
@@ -443,8 +453,12 @@ int main(int ac,char**av){
     else if(cmd=="accounts")return setup_accounts();
     else if(cmd=="status")status();
     else if(cmd=="slots")return setup_slots();
-    else if(cmd=="slot"&&ac==3){int slot=toi(av[2],0);return provisioned_client_slot(slot)&&setup_slot(slot,false)?0:2;}
-    else if(cmd=="slot-remove"&&ac==3){int slot=toi(av[2],0);return vmb::slot_ok(slot)&&remove_slot_resources(slot)?0:2;}
+    else if(cmd=="slot"&&ac==4){std::string role=av[2];int slot=toi(av[3],0);return role=="client"&&provisioned_client_slot(slot)&&setup_slot(role,slot,false)?0:2;}
+    else if(cmd=="slot-remove"&&ac==4){
+        std::string role=av[2];int slot=toi(av[3],0);
+        return vmb::role_ok(role)&&vmb::slot_ok(slot)&&remove_slot_resources(role,slot)&&
+               setup_slot(role,slot,false)?0:2;
+    }
     else if(cmd=="publish-identity")return publish_identity();
     else if(cmd=="selftest")return selftest();
     else return 2;

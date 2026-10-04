@@ -2,6 +2,8 @@
 #include <cctype>
 #include <cstdlib>
 #include <ctime>
+#include <chrono>
+#include <thread>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -110,11 +112,11 @@ static bool block_admission(const std::string&role,int slot){
     std::ofstream out(admission_path(role,slot));out<<"pending\n";out.flush();return (bool)out;
 }
 static int create_mailboxes(int slot){
-    return run("/usr/local/sbin/voider-sftp-setup slot "+std::to_string(slot));
+    return run("/usr/local/sbin/voider-sftp-setup slot client "+std::to_string(slot));
 }
 
 static void remove_mailboxes(int slot){
-    run("/usr/local/sbin/voider-sftp-setup slot-remove "+std::to_string(slot)+" >/dev/null 2>&1 || true");
+    run("/usr/local/sbin/voider-sftp-setup slot-remove client "+std::to_string(slot)+" >/dev/null 2>&1 || true");
 }
 
 static int create_client(int slot){
@@ -391,6 +393,33 @@ static int remove_contact(const std::string&role,int slot){
     return rc;
 }
 
+// A runtime-only request: peerd owns teardown and restarts just this slot.
+static int reset_connection(const std::string&role,const std::string&number){
+    if(root())return 1;
+    int slot=toi(number,0);
+    if((role!="client"&&role!="server")||slot<2||slot>254||
+       number!=std::to_string(slot)||!occupied(role,slot))return 2;
+    if(run("/usr/local/sbin/voider-appliance-boot gate >/dev/null 2>&1"))return 74;
+    fs::path directory="/run/voider/peer-reset";
+    fs::create_directories(directory);chmod(directory.c_str(),0700);
+    std::string token=std::to_string(getpid())+"-"+std::to_string(
+        std::chrono::steady_clock::now().time_since_epoch().count());
+    fs::path request=directory/(token+".req"),done=request.string()+".done";
+    fs::path temporary=request.string()+".tmp";
+    {std::ofstream out(temporary);out<<role<<' '<<slot<<'\n';if(!out)return 72;}
+    fs::rename(temporary,request);
+    for(int i=0;i<300;i++){
+        if(fs::exists(done)){
+            bool ok=read1(done)=="OK";fs::remove(done);
+            operation(ok?"done":"failed",ok?"CONNECTION RESTARTED":"CONNECTION RESET FAILED");
+            return ok?0:11;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    fs::remove(request);fs::remove(done);
+    operation("failed","CONNECTION RESET FAILED");return 11;
+}
+
 static int network_recover(){
     if(root())return 1;
     operation("working","RETRYING NETWORK","25");
@@ -487,16 +516,16 @@ static int factory_reset(){
     return 0;
 }
 
-static int safe_poweroff(){
+static int safe_shutdown(bool reboot=false){
     if(root())return 1;
-    operation("working","SAVING AND POWERING OFF","50");
+    operation("working",reboot?"SAVING AND RESTARTING":"SAVING AND POWERING OFF","50");
     if(!fs::exists("/run/voider/restore-pending")&&persist()){operation("failed","STATE SAVE FAILED");return 72;}
     run("sync");
     // Fill the physical framebuffer with black and request panel power-down
     // immediately before shutdown. The UI has already shown POWERING OFF
     // while the curated state commit was running.
     run("/usr/local/sbin/voider-ui --blank >/dev/null 2>&1 || true");
-    return run("/sbin/poweroff");
+    return run(reboot?"/sbin/reboot":"/sbin/poweroff");
 }
 
 static int status(){
@@ -580,16 +609,18 @@ int main(int ac,char**av){
     if(c=="admin-ssh-disable")return admin_ssh_set(false);
     if(c=="import-device"&&ac>=3)return import_device(av[2]);
     if(c=="remove"&&ac>=4)return remove_contact(av[2],atoi(av[3]));
+    if(c=="reset-connection"&&ac==4)return reset_connection(av[2],av[3]);
     if(c=="network-recover")return network_recover();
     if(c=="paths-apply"&&ac==3)return paths_apply(av[2]);
     if(c=="backup"&&ac>=4)return backup(av[2],av[3]);
     if((c=="restore"||c=="restore-check")&&ac==4)return restore(av[2],av[3],c=="restore-check");
     if(c=="factory-reset")return factory_reset();
-    if(c=="poweroff")return safe_poweroff();
+    if(c=="poweroff")return safe_shutdown();
+    if(c=="reboot")return safe_shutdown(true);
     if(c=="show-onion")return std::cout<<read1(C.node_onion)<<"\n",0;
     std::cerr<<"usage: voider-main language-save en|de|bg|status|support|usb-select erase|read|pair-export|"
                "admin-key-new|admin-key-revoke|admin-ssh-enable|admin-ssh-disable|"
                "import-device DEVICE|remove ROLE SLOT|"
-               "network-recover|paths-apply LIST|backup DEVICE TOKEN|restore-check DEVICE TOKEN|restore DEVICE TOKEN|factory-reset|poweroff|selftest\n";
+               "network-recover|paths-apply LIST|backup DEVICE TOKEN|restore-check DEVICE TOKEN|restore DEVICE TOKEN|factory-reset|poweroff|reboot|reset-connection ROLE ID|selftest\n";
     return 2;
 }

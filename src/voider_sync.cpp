@@ -50,7 +50,9 @@ static int transfer(const Cfg& c,const std::string& role,int id,const std::strin
     std::string onion=setting(c,role,id,"SFTP_ONION");
     std::string key=setting(c,role,id,"SFTP_KEY");
     std::string hosts=setting(c,role,id,"KNOWN_HOSTS");
-    if(onion.empty()||!vmb::slot_ok(slot)||!regular_private_key(key)||hosts.empty()){
+    std::string user=setting(c,role,id,"SFTP_USER");
+    std::string expected=vmb::user("client",slot);
+    if(onion.empty()||!vmb::slot_ok(slot)||user!=expected||!regular_private_key(key)||hosts.empty()){
         std::cerr<<"SYNC_ERROR incomplete pairing-bound SFTP identity for "<<role<<'/'<<id<<'\n';
         return 5;
     }
@@ -64,7 +66,7 @@ static int transfer(const Cfg& c,const std::string& role,int id,const std::strin
         " -oBatchMode=yes -oConnectTimeout=10 -oConnectionAttempts=1"+
         " -oProxyCommand="+shq("nc -x "+c.socks_host+":"+std::to_string(c.socks_port)+" -X 5 %h %p")+
         " -oStrictHostKeyChecking=yes -oUserKnownHostsFile="+shq(hosts)+
-        " -i "+shq(key)+' '+vmb::user(slot)+'@'+shq(onion);
+        " -i "+shq(key)+' '+user+'@'+shq(onion);
     int status=std::system(command.c_str());
     fs::remove(batch_file);
     int rc=status>=0&&WIFEXITED(status)?WEXITSTATUS(status):126;
@@ -154,7 +156,9 @@ static int selftest(){
     if(validated_record(c,path,"answer",std::string(32,'f'),7))failures++;
     std::ofstream(path,std::ios::trunc)<<std::string(513,'x');
     if(validated_record(c,path,"answer",xid,7))failures++;
-    if(vmb::user(7)!="vmb007"||vmb::root(c,7)==vmb::root(c,8)||
+    if(vmb::user("client",7)!="vmc007"||vmb::user("server",7)!="vms007"||
+       vmb::root(c,"client",7)==vmb::root(c,"server",7)||
+       vmb::root(c,"client",7)==vmb::root(c,"client",8)||
        !vmb::xid(xid)||vmb::xid("../bad"))failures++;
     fs::remove_all(root);
     std::cout<<"SYNC_TEST cases=7 fails="<<failures<<"\n";

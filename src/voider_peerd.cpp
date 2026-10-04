@@ -497,7 +497,9 @@ class LanDiscovery {
         auto* a=reinterpret_cast<const sockaddr_in6*>(&address);
         inet_ntop(AF_INET6,&a->sin6_addr,text,sizeof text);
         std::string host=text;
-        if(a->sin6_scope_id)host+='%'+C.wan_if;
+        // wgX is configured inside netnsX, but its UDP socket belongs to
+        // the uplink namespace. Pass the received numeric scope unchanged.
+        if(a->sin6_scope_id)host+='%'+std::to_string(a->sin6_scope_id);
         return '['+host+"]:"+std::to_string(port);
     }
 
@@ -569,6 +571,7 @@ static void reset(Peer& peer,const std::string& reason){
     cancel_job(peer);
     cleanup_hole(peer);
     stop_tor(peer);
+    peer.health_failures=0;
     peer.remote={};peer.candidate=Method::None;peer.selected=Method::None;
     peer.next_method=0;peer.remote_attempted=false;peer.nonce.clear();peer.lan_endpoint.clear();peer.error.clear();
     peer.secret=read1(secret_path(peer));peer.peer_key=key_for(peer);
@@ -832,6 +835,24 @@ static void reconcile(std::map<std::string,Peer>& peers){
     }
 }
 
+static void requested_resets(std::map<std::string,Peer>& peers){
+    const fs::path directory="/run/voider/peer-reset";
+    std::error_code error;
+    for(const auto& entry:fs::directory_iterator(directory,error)){
+        if(error||!entry.is_regular_file(error)||entry.path().extension()!=".req")continue;
+        std::string role,extra;int id=0;
+        std::ifstream input(entry.path());input>>role>>id;
+        bool valid=input&&! (input>>extra)&&(role=="client"||role=="server")&&id>=2&&id<=254;
+        auto found=valid?peers.find(peer_id(role,id)):peers.end();
+        bool ok=found!=peers.end()&&fs::exists(peer_conf(found->second));
+        if(ok)reset(found->second,"operator request");
+        fs::path done=entry.path().string()+".done",temporary=done.string()+".tmp";
+        {std::ofstream out(temporary);out<<(ok?"OK":"MISSING")<<'\n';}
+        fs::rename(temporary,done);
+        fs::remove(entry.path(),error);
+    }
+}
+
 static void write_status(const std::map<std::string,Peer>& peers){
     int clients=0,servers=0,d4=0,d6=0,l4=0,l6=0,h4=0,h6=0,tor=0;
     for(const auto& item:peers){
@@ -909,12 +930,12 @@ static int selftest(){
     if(available(sticky.selected)||!available(Method::Tor))return 21;
     if(vta::canonical("tor,hp4")!="hp4,tor"||vta::valid("")||vta::valid("tor,tor")||
        !vta::canonical("typo").empty())return 22;
-    if(endpoint_family("203.0.113.83:51822")!=AF_INET||
+    if(endpoint_family("23.254.230.83:51822")!=AF_INET||
        endpoint_family("[2a0d:7c40:3000:124::171]:51822")!=AF_INET6||
        endpoint_family("[fe80::ba27:ebff:feb1:3517%2]:51820")!=AF_INET6||
        endpoint_family("[fe80::1%]:51820")!=AF_UNSPEC||
        endpoint_family("(none)")!=AF_UNSPEC||
-       method_family(Method::Direct6)==endpoint_family("203.0.113.83:51822"))return 23;
+       method_family(Method::Direct6)==endpoint_family("23.254.230.83:51822"))return 23;
     std::cout<<"LAN_DISCOVERY_SELFTEST_OK order=lan,direct,holepunch,tor available=7\n";
     return 0;
 }
@@ -942,6 +963,7 @@ int main(int argc,char** argv){
                     else reset(peer,"available paths changed");
                 }
             }
+            requested_resets(peers);
             next_reconcile=now+std::chrono::seconds(1);
         }
         for(auto& item:peers)step(item.second,lan);

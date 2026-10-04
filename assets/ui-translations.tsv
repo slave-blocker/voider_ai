@@ -99,7 +99,11 @@ CONNECTED|Connected|Verbunden|Свързан
 CONNECTING|Connecting|Verbindet|Свързване
 OFFLINE|Offline|Offline|Без връзка
 LAN|LAN|LAN|LAN
+LAN4|LAN4|LAN4|LAN4
+LAN6|LAN6|LAN6|LAN6
 DIRECT|Direct|Direkt|Пряка
+DIRECT4|Direct4|Direkt4|Пряка4
+DIRECT6|Direct6|Direkt6|Пряка6
 PRIVATE|Private|Privat|Частна
 TOR|Tor|Tor|Tor
 NO CONNECTIONS|No connections|Keine Verbindungen|Няма връзки
@@ -249,3 +253,11 @@ RESTART REQUIRED|Restart required|Neustart erforderlich|Нужен е реста
 RESTART TO APPLY|Restart to apply|Zum Anwenden neu starten|Рестарт за прилагане
 INSERT USB STICK|Insert USB stick|USB-Stick einstecken|Поставете USB памет
 USB CONFIRMATION REQUIRED|Check USB again|USB erneut prüfen|Проверете USB отново
+RESTART DEVICE|Restart device|Gerät starten|Нов старт
+RESTART DEVICE?|Restart device?|Neu starten?|Рестартиране?
+RESTARTING|Restarting|Neustart|Рестартиране
+RETRY LINK|Retry link|Verbindung|Връзка
+RESTART FAILED|Restart failed|Neustart fehlgeschlagen|Неуспешен рестарт
+SAVING AND RESTARTING|Saving and restarting|Sichern und Neustart|Запис и рестарт
+CONNECTION RESTARTED|Connection restarted|Verbindung neu gestartet|Връзката е рестартирана
+CONNECTION RESET FAILED|Connection reset failed|Verbindungsneustart fehlgeschlagen|Неуспешен рестарт на връзката

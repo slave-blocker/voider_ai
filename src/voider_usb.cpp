@@ -454,7 +454,7 @@ static void register_server_key(const std::string&role,const std::string&id,cons
     int slot=toi(id,0);require(role=="client"&&vmb::slot_ok(slot),"USB INVALID SLOT",2);
     std::string pub=trim(read_file(bundle.dir+"/meta/sftp_key.pub"));
     require(valid_ed25519_pub(pub),"USB_INVALID public key",34);
-    fs::path path=vmb::keys(C,slot),temporary=path.string()+".new";
+    fs::path path=vmb::keys(C,"client",slot),temporary=path.string()+".new";
     write_file(temporary,"restrict,no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty "+pub+
         " voider-"+role+"-"+id+"-"+bundle.fp.substr(0,12)+"\n",0644);
     require(chown(temporary.c_str(),0,0)==0,"USB KEY OWNER FAILED");
@@ -468,6 +468,8 @@ static void install_imported_server_conf(const Bundle&bundle,const std::string&i
     copy_file(bundle.dir+"/meta/host.pub",material+"/host.pub");
     std::string server_pub=trim(read_file(bundle.dir+"/meta/server_wg0.pub"));
     std::string onion=cap2_val(cap2,"SFTP_ONION");if(onion.empty())onion=cap2_val(cap2,"ONION");
+    std::string sftp_user=cap2_val(cap2,"MAILBOX_USER");
+    require(sftp_user==vmb::user("client",toi(bundle.id,0)),"USB_INVALID mailbox account",46);
     std::string tun_onion=cap2_val(cap2,"TUN_ONION");if(tun_onion.empty())tun_onion=onion;
     std::string local=text_val(body,"LOCAL_ADDR");
     write_file(pconf("server",id),"ROLE=server\nID="+id+"\nIMPORTED_FROM_CLIENT_SLOT="+bundle.id+
@@ -476,7 +478,7 @@ static void install_imported_server_conf(const Bundle&bundle,const std::string&i
         text_val(body,"PRESHARED_KEY_VALUE")+"\nSERVER_PUBLIC_KEY="+server_pub+"\nWG_PEER_PUBLIC_KEY="+server_pub+
         "\nIMPORTED_CLIENT_PUBLIC_KEY="+text_val(body,"PUBLIC_KEY")+"\nPUBLIC_KEY="+text_val(body,"PUBLIC_KEY")+
         "\nPORT="+std::to_string(51820+toi(id,0))+"\nTORPORT="+std::to_string(C.tundup_torport_base+toi(bundle.id,0))+
-        "\nSFTP_ONION="+(valid_onion(onion)?onion:"")+"\nONION="+(valid_onion(onion)?onion:"")+
+        "\nSFTP_ONION="+(valid_onion(onion)?onion:"")+"\nSFTP_USER="+sftp_user+"\nONION="+(valid_onion(onion)?onion:"")+
         "\nTUN_ONION="+(valid_onion(tun_onion)?tun_onion:"")+"\nKNOWN_HOSTS="+material+"/host.pub\n");
 }
 

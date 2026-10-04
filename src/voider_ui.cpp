@@ -303,9 +303,9 @@ static void header(Canvas&c,const std::string&title,const State&,bool=true){c.re
 
 enum class Action{
     None,UsbDone,Home,Contacts,ContactOpen,Previous,Next,PairStart,AddStart,PairScan,PairRun,AddScan,AddRun,
-    Check,CheckRun,Network,NetworkConfirm,NetworkRun,System,SystemMore,Support,PowerConfirm,PowerRun,
+    Check,CheckRun,Network,NetworkConfirm,NetworkRun,System,SystemMore,Support,PowerConfirm,PowerRun,RebootConfirm,RebootRun,
     BackupStart,BackupScan,BackupRun,RestoreStart,RestoreScan,RestoreRun,RestoreReboot,ResetWarn,ResetConfirm,ResetRun,
-    Manage,RemoveConfirm,RemoveRun,Operation,
+    Manage,RemoveConfirm,RemoveRun,ConnectionResetConfirm,ConnectionResetRun,Operation,
     Integrity,IntegrityBoot,IntegritySystem,IntegrityCombined,IntegrityState,
     FullBoot,FullSystem,FullCombined,FullState,FullStateBack,UserMatch,UserMismatch,RecordCode,UpdatedReview,
     Admin,AdminEnableConfirm,AdminEnableRun,AdminDisableConfirm,AdminDisableRun,
@@ -327,7 +327,7 @@ static PageSpec spec(const std::string&page,const State&s){
     // existing PREV/NEXT controls remain available.
     if(page=="contacts")return {page,"CONNECTIONS",{b("HOME",Action::Home,Action::None,NAVY),b("SHARE",Action::PairStart,Action::None,GREEN),b("ADD",Action::AddStart),b("OPEN",Action::ContactOpen,Action::None,GREEN)}};
     if(page=="contact")return {page,"DIAL",{b("HOME",Action::Home,Action::None,NAVY),b("PREV",Action::Previous),b("NEXT",Action::Next),b("MORE",Action::Manage,Action::None,ORANGE)}};
-    if(page=="manage")return {page,"CONNECTION",{b("HOME",Action::Home,Action::None,NAVY),blank(),b("REMOVE",Action::RemoveConfirm,Action::None,RED),b("BACK",Action::ContactOpen)}};
+    if(page=="manage")return {page,"CONNECTION",{b("HOME",Action::Home,Action::None,NAVY),b("RETRY",Action::ConnectionResetConfirm,Action::None,ORANGE),b("REMOVE",Action::RemoveConfirm,Action::None,RED),b("BACK",Action::ContactOpen)}};
     if(page=="pair_insert")return {page,"USB KEY",{b("CANCEL",Action::Contacts,Action::None,NAVY),b("RETRY",Action::PairScan,Action::None,GREEN),blank(),blank()}};
     if(page=="pair_erase")return {page,"USB KEY",{b("CANCEL",Action::Contacts,Action::None,NAVY),hold("ERASE",Action::PairRun,RED),blank(),blank()}};
     if(page=="add_insert")return {page,"ADD LINK",{b("CANCEL",Action::Contacts,Action::None,NAVY),blank(),b("RETRY",Action::AddScan,Action::None,GREEN),blank()}};
@@ -361,7 +361,10 @@ static PageSpec spec(const std::string&page,const State&s){
     if(page=="admin_new_insert")return {page,"LOGIN KEY",{b("CANCEL",Action::Admin,Action::None,NAVY),blank(),b("CHECK",Action::AdminNewScan,Action::None,GREEN),blank()}};
     if(page=="admin_new_erase")return {page,"LOGIN KEY",{b("CANCEL",Action::Admin,Action::None,NAVY),blank(),blank(),hold("ERASE",Action::AdminNewRun,RED)}};
     if(page=="admin_revoke")return {page,"REMOVE SSH",{b("CANCEL",Action::Admin,Action::None,NAVY),blank(),blank(),hold("REMOVE",Action::AdminRevokeRun,RED)}};
-    if(page=="power_confirm")return {page,"POWER OFF",{hold("POWER",Action::PowerRun,RED),b("CANCEL",Action::Home,Action::None,NAVY),blank(),blank()}};
+    if(page=="power_confirm")return {page,"POWER OFF",{hold("POWER",Action::PowerRun,RED),b("REBOOT",Action::RebootConfirm,Action::None,ORANGE),blank(),b("CANCEL",Action::Home,Action::None,NAVY)}};
+    if(page=="reboot_confirm")return {page,"RESTART DEVICE",{b("CANCEL",Action::PowerConfirm,Action::None,NAVY),hold("REBOOT",Action::RebootRun,ORANGE),blank(),blank()}};
+    if(page=="rebooting")return {page,"RESTARTING",{blank(),blank(),blank(),blank()}};
+    if(page=="connection_reset_confirm")return {page,"RETRY LINK",{b("CANCEL",Action::Manage,Action::None,NAVY),hold("RETRY",Action::ConnectionResetRun,ORANGE),blank(),blank()}};
     if(page=="powering_off")return {page,"POWERING OFF",{blank(),blank(),blank(),blank()}};
     if(page=="backup_insert")return {page,"BACKUP TITLE",{b("CANCEL",Action::System,Action::None,NAVY),blank(),hold("BACKUP",Action::BackupScan,ORANGE),blank()}};
     if(page=="backup_erase")return {page,"BACKUP TITLE",{b("CANCEL",Action::System,Action::None,NAVY),blank(),hold("ERASE",Action::BackupRun,RED),blank()}};
@@ -405,8 +408,10 @@ static vc::Contact selected_contact(const State&s){return s.contacts.empty()?vc:
 static std::string contact_method(const State&s,const vc::Contact&x){
     auto it=s.peer_modes.find(x.role+"_"+std::to_string(x.slot));if(it==s.peer_modes.end())return "";
     const auto&m=it->second;
-    if(m=="lan4"||m=="lan6"||m=="lan_direct_ipv4"||m=="lan_direct_ipv6")return "LAN";
-    if(m=="direct4"||m=="direct6"||m=="direct_ipv4"||m=="direct_ipv6")return "DIRECT";
+    if(m=="lan4"||m=="lan_direct_ipv4")return "LAN4";
+    if(m=="lan6"||m=="lan_direct_ipv6")return "LAN6";
+    if(m=="direct4"||m=="direct_ipv4")return "DIRECT4";
+    if(m=="direct6"||m=="direct_ipv6")return "DIRECT6";
     if(m=="holepunch4"||m=="holepunch6"||m=="hp4"||m=="hp6"||m=="holepunch_ipv4"||m=="holepunch_ipv6")return "PRIVATE";
     return m=="tor"?"TOR":"";
 }
@@ -520,7 +525,9 @@ static void render(Canvas&c,const std::string&page,const State&s){
     }
     else if(page=="admin_revoke")message(c,"REMOVE LOGIN KEY?",RED);
     else if(page=="power_confirm")message(c,"VOIDER",NAVY);
-    else if(page=="powering_off")message(c,"PLEASE WAIT",NAVY);
+    else if(page=="connection_reset_confirm"){auto x=selected_contact(s);line(c,12,70,296,80,contact_name(x),40,ORANGE);}
+    else if(page=="reboot_confirm")message(c,"RESTART DEVICE?",ORANGE);
+    else if(page=="rebooting"||page=="powering_off")message(c,"PLEASE WAIT",NAVY);
     else if(page=="restore_confirm"){
         c.rect(0,44,320,152,RED);
         label(c,12,64,296,48,"RESTORE BACKUP?",28,WHITE);
@@ -716,16 +723,24 @@ static int execute(Action a,const State&s,const std::string&page){
     case Action::AddRun:return shell_action("/usr/local/sbin/voider-main import-device "+shq(selected_device()),"contacts");
     case Action::NetworkRun:return shell_action("/usr/local/sbin/voider-main network-recover","result");
     case Action::CheckRun:return shell_action("/usr/local/sbin/voider-integrity verify","result");
-    case Action::PowerRun:{
-        save_page("powering_off");
-        display_page_now("powering_off",s);
+    case Action::ConnectionResetConfirm:{auto x=selected_contact(s);
+        write1("/run/voider/ui.reset-target",x.role+" "+std::to_string(x.slot)+" "+x.fingerprint);
+        save_page("connection_reset_confirm");return 0;}
+    case Action::ConnectionResetRun:{auto x=selected_contact(s);
+        if(x.role.empty()||read1("/run/voider/ui.reset-target")!=x.role+" "+std::to_string(x.slot)+" "+x.fingerprint){result("CONNECTION RESET FAILED");return 11;}
+        fs::remove("/run/voider/ui.reset-target");return shell_action("/usr/local/sbin/voider-main reset-connection "+x.role+" "+std::to_string(x.slot),"contact");}
+    case Action::RebootConfirm:save_page("reboot_confirm");return 0;
+    case Action::RebootRun:case Action::PowerRun:{
+        bool reboot=a==Action::RebootRun;
+        save_page(reboot?"rebooting":"powering_off");
+        display_page_now(reboot?"rebooting":"powering_off",s);
         std::this_thread::sleep_for(std::chrono::milliseconds(800));
         int rc=0;
         if(!s.boot||s.integrity_state=="failure"||s.user_integrity=="mismatch"){
             blank_display();
-            rc=command_status("/sbin/poweroff");
-        }else rc=command_status("/usr/local/sbin/voider-main poweroff >/run/voider/last-ui-action 2>&1");
-        if(rc){fs::remove("/run/voider/display-blank");result("POWER OFF FAILED");display_page_now("result",snapshot());}
+            rc=command_status(reboot?"/sbin/reboot":"/sbin/poweroff");
+        }else rc=command_status(std::string("/usr/local/sbin/voider-main ")+(reboot?"reboot":"poweroff")+" >/run/voider/last-ui-action 2>&1");
+        if(rc){fs::remove("/run/voider/display-blank");result(reboot?"RESTART FAILED":"POWER OFF FAILED");display_page_now("result",snapshot());}
         return rc;}
     case Action::BackupRun:return shell_action("/usr/local/sbin/voider-main backup "+shq(selected_device())+" "+shq(selected_token()),"system");
     case Action::RestoreRun:return shell_action("/usr/local/sbin/voider-main restore "+shq(selected_device())+" "+shq(selected_token()),"restore_ready");
@@ -736,7 +751,7 @@ static int execute(Action a,const State&s,const std::string&page){
     return 0;
 }
 static std::string visible_page(const State&s,const std::string&requested){
-    if(requested=="power_confirm"||requested=="powering_off")return requested;
+    if(requested=="power_confirm"||requested=="powering_off"||requested=="reboot_confirm"||requested=="rebooting")return requested;
     if(s.integrity_state=="failure")return "integrity_verify";
     if(s.user_integrity=="mismatch")return "integrity_user_fail";
     if(!s.boot){
@@ -768,7 +783,7 @@ static FactoryIntent factory_intent(const std::string&state,int number,const std
     return FactoryIntent::None;
 }
 
-static std::vector<std::string> page_ids(){return {"home","language","contacts","contact","manage","pair_insert","pair_erase","add_insert","add_confirm","usb_remove","pair_wait","check","integrity_verify","integrity_boot","integrity_system","integrity_combined","integrity_state","integrity_user_ok","integrity_user_fail","full_boot","full_system","full_combined","full_state","state_updated","network","network_confirm","paths","paths_apply","system","system_more","admin","admin_enable","admin_disable","admin_new_confirm","admin_new_insert","admin_new_erase","admin_revoke","power_confirm","powering_off","backup_insert","backup_erase","restore_insert","restore_confirm","restore_ready","reset_warn","reset_confirm","remove_confirm","support","operation","result"};}
+static std::vector<std::string> page_ids(){return {"home","language","contacts","contact","manage","pair_insert","pair_erase","add_insert","add_confirm","usb_remove","pair_wait","check","integrity_verify","integrity_boot","integrity_system","integrity_combined","integrity_state","integrity_user_ok","integrity_user_fail","full_boot","full_system","full_combined","full_state","state_updated","network","network_confirm","paths","paths_apply","system","system_more","admin","admin_enable","admin_disable","admin_new_confirm","admin_new_insert","admin_new_erase","admin_revoke","power_confirm","powering_off","reboot_confirm","rebooting","connection_reset_confirm","backup_insert","backup_erase","restore_insert","restore_confirm","restore_ready","reset_warn","reset_confirm","remove_confirm","support","operation","result"};}
 static State demo_state(){
     State s;s.boot=s.os_ok=s.wan_carrier=s.wan=s.net=s.phone_carrier=s.phone=s.ipv6=s.admin_key=s.admin_ssh=true;s.peers=1;
     s.contacts={{"client",2,"CLIENT 1",std::string(64,'a'),"10.1.2.1"},{"server",254,"SERVER 253",std::string(64,'b'),"10.254.1.1"}};
@@ -800,6 +815,10 @@ static int selftest(){
         for(const auto&m:{"lan4","lan6","direct4","direct6","holepunch4","holepunch6","tor"}){
             State v=demo;v.peer_modes["client_2"]=m;Canvas c;render(c,"contact",v);check(c,std::string("method-")+m);
             cases++;if(!contact_connected(v,v.contacts[0]))fails++;
+            if(std::string(m)=="lan4"&&contact_method(v,v.contacts[0])!="LAN4")fails++;
+            if(std::string(m)=="lan6"&&contact_method(v,v.contacts[0])!="LAN6")fails++;
+            if(std::string(m)=="direct4"&&contact_method(v,v.contacts[0])!="DIRECT4")fails++;
+            if(std::string(m)=="direct6"&&contact_method(v,v.contacts[0])!="DIRECT6")fails++;
         }
         // Every operation message is checked at maximum progress, independently of live backends.
         for(auto&entry:ui_operation_keys){State op=demo;op.operation_state="working";op.operation_message=entry;op.operation_detail="100";Canvas c;render(c,"operation",op);check(c,"operation-"+entry);}

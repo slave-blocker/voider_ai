@@ -244,7 +244,7 @@ static int tundup_model(){
          read_file("src/voider_peerd.cpp").find("Reference ID")!=std::string::npos&&
          read_file("src/voider_peerd.cpp").find("inspect NTP packet delay")!=std::string::npos,
          "Remote CAP2 waits only for this appliance's own selected, synchronized NTP source");
-    want(usb.find("vmb::keys(C,slot)")!=std::string::npos&&usb.find("restrict,no-port-forwarding")!=std::string::npos&&
+    want(usb.find("vmb::keys(C,\"client\",slot)")!=std::string::npos&&usb.find("restrict,no-port-forwarding")!=std::string::npos&&
          usb.find("bundle.fp.substr(0,12)+\"\\n\",0644)")!=std::string::npos,
          "USB export atomically binds exactly one peer key to its slot account");
     want(install.find("rc-update del tor default")!=std::string::npos&&

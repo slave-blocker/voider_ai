@@ -123,6 +123,7 @@ static Record local_record(const std::string& type,const std::string& role,int i
         {"CERT_SLOT",std::to_string(cert_slot)},
         {"HP4_PORT",std::to_string(hp_port(role,id))},
         {"HP6_PORT",std::to_string(hp_port(role,id))},
+        {"MAILBOX_USER",vmb::user("client",cert_slot)},
         {"PUB4",ipv4(p4)?p4:""},
         {"PUB6",p6},
         {"SCHED","dup"},
@@ -208,8 +209,8 @@ static fs::path local_sync_file(const std::string& role,int id,const std::string
     return fs::path(C.sync)/role/std::to_string(id)/(xid+'.'+kind+".remote");
 }
 
-static fs::path mailbox(const std::string& kind,int cert_slot,const std::string& xid){
-    return vmb::record(C,cert_slot,kind=="answer"?"out":"in",xid,kind);
+static fs::path mailbox(const std::string& role,const std::string& kind,int cert_slot,const std::string& xid){
+    return vmb::record(C,role,cert_slot,kind=="answer"?"out":"in",xid,kind);
 }
 
 static bool already_consumed(const Record& offer,const Record& previous){
@@ -255,16 +256,16 @@ static Record read_mailbox(const fs::path& path,const std::string& kind,int slot
     return record;
 }
 
-static void remove_transaction(int slot,const std::string& xid){
+static void remove_transaction(const std::string& role,int slot,const std::string& xid){
     for(const auto& kind:{std::string("offer"),std::string("ready"),std::string("answer")}){
         std::error_code error;
-        fs::remove(mailbox(kind,slot,xid),error);
+        fs::remove(mailbox(role,kind,slot,xid),error);
     }
 }
 
-static std::vector<std::string> pending_offers(int slot){
+static std::vector<std::string> pending_offers(const std::string& role,int slot){
     std::vector<std::pair<fs::file_time_type,std::string>> found;
-    fs::path root=vmb::root(C,slot),incoming=root/"in",outgoing=root/"out";
+    fs::path root=vmb::root(C,role,slot),incoming=root/"in",outgoing=root/"out";
     std::error_code error;
     if(!fs::is_directory(incoming,error)||!fs::is_directory(outgoing,error))return {};
     int temporary_count=0;
@@ -289,10 +290,10 @@ static std::vector<std::string> pending_offers(int slot){
            !read_mailbox(path,kind,slot,xid).ok()){
             error.clear();
             fs::remove_all(path,error);
-            if(vmb::xid(xid))remove_transaction(slot,xid);
+            if(vmb::xid(xid))remove_transaction(role,slot,xid);
             continue;
         }
-        if(kind=="ready"&&!read_mailbox(mailbox("offer",slot,xid),"offer",slot,xid).ok()){
+        if(kind=="ready"&&!read_mailbox(mailbox(role,"offer",slot,xid),"offer",slot,xid).ok()){
             error.clear();fs::remove(path,error);continue;
         }
         if(kind=="offer")found.push_back({fs::last_write_time(path,error),xid});
@@ -309,7 +310,7 @@ static std::vector<std::string> pending_offers(int slot){
     }
     std::sort(found.begin(),found.end(),[](const auto& a,const auto& b){return a.first>b.first;});
     while(found.size()>(size_t)C.mailbox_max_pending){
-        remove_transaction(slot,found.back().second);found.pop_back();
+        remove_transaction(role,slot,found.back().second);found.pop_back();
     }
     std::vector<std::string> out;
     for(const auto& item:found)out.push_back(item.second);
@@ -377,27 +378,27 @@ static int respond(const std::string& role,int id){
     fs::path accepted="/run/voider/cap2/"+role+'-'+std::to_string(id)+".remote";
     Record previous=vtp::parse_record(read1(accepted));
     std::string secret=pair_secret(role,id);
-    for(const auto& xid:pending_offers(cert_slot)){
-        Record offer=read_mailbox(mailbox("offer",cert_slot,xid),"offer",cert_slot,xid);
+    for(const auto& xid:pending_offers(role,cert_slot)){
+        Record offer=read_mailbox(mailbox(role,"offer",cert_slot,xid),"offer",cert_slot,xid);
         if(!offer.ok())continue;
         if(!authenticate(offer,secret)||already_consumed(offer,previous)){
-            remove_transaction(cert_slot,xid);
+            remove_transaction(role,cert_slot,xid);
             continue;
         }
-        Record answer=read_mailbox(mailbox("answer",cert_slot,xid),"answer",cert_slot,xid);
+        Record answer=read_mailbox(mailbox(role,"answer",cert_slot,xid),"answer",cert_slot,xid);
         if(!vtp::correlated(offer,answer)||!authenticate(answer,secret)){
             answer=make_answer(role,id,offer);
-            if(!write_mailbox(mailbox("answer",cert_slot,xid),vtp::serialize(answer))){
+            if(!write_mailbox(mailbox(role,"answer",cert_slot,xid),vtp::serialize(answer))){
                 std::cerr<<"CAP2_ERROR answer mailbox write failed\n";
                 return 2;
             }
         }
-        Record ready=read_mailbox(mailbox("ready",cert_slot,xid),"ready",cert_slot,xid);
+        Record ready=read_mailbox(mailbox(role,"ready",cert_slot,xid),"ready",cert_slot,xid);
         if(!vtp::acknowledged(offer,answer,ready)||!authenticate(ready,secret))continue;
         Record peer=offer;
         peer.fields["PLAN"]=answer.get("PLAN");
         std::ofstream(accepted)<<vtp::serialize(peer)<<'\n';
-        remove_transaction(cert_slot,xid);
+        remove_transaction(role,cert_slot,xid);
         std::cout<<vtp::serialize(peer)<<'\n';
         return 0;
     }
@@ -476,28 +477,28 @@ static int selftest(){
     int saved_max=C.mailbox_max_pending,saved_bytes=C.mailbox_record_bytes;
     fs::path boxes=fs::path("/tmp")/("voider-cap2-mailbox-"+std::to_string(getpid()));
     fs::remove_all(boxes);C.sftp_base=boxes.string();C.mailbox_max_pending=2;C.mailbox_record_bytes=1024;
-    for(int slot:{7,8}){fs::create_directories(vmb::root(C,slot)/"in");fs::create_directories(vmb::root(C,slot)/"out");}
+    for(int slot:{7,8}){fs::create_directories(vmb::root(C,"client",slot)/"in");fs::create_directories(vmb::root(C,"client",slot)/"out");}
     auto put_offer=[&](int slot,const std::string& xid){
         Record value=offer;value.fields["CERT_SLOT"]=std::to_string(slot);value.fields["XID"]=xid;
-        std::ofstream(mailbox("offer",slot,xid))<<vtp::serialize(value)<<'\n';
+        std::ofstream(mailbox("client","offer",slot,xid))<<vtp::serialize(value)<<'\n';
     };
     std::string xid7="11112222333344445555666677778888",xid8="88887777666655554444333322221111";
     put_offer(7,xid7);put_offer(8,xid8);
-    fs::path fresh_upload=vmb::root(C,7)/"in/.11111111111111111111111111111111.offer.0123456789abcdef.tmp";
+    fs::path fresh_upload=vmb::root(C,"client",7)/"in/.11111111111111111111111111111111.offer.0123456789abcdef.tmp";
     std::ofstream(fresh_upload).close();
-    auto only7=pending_offers(7);
-    if(only7.size()!=1||only7[0]!=xid7||!fs::exists(mailbox("offer",8,xid8))||
+    auto only7=pending_offers("client",7);
+    if(only7.size()!=1||only7[0]!=xid7||!fs::exists(mailbox("client","offer",8,xid8))||
        !fs::exists(fresh_upload))return 17;
     fs::remove(fresh_upload);
-    fs::path traversal=vmb::root(C,7)/"in/bad.offer";
-    fs::create_symlink(mailbox("offer",8,xid8),traversal);
-    pending_offers(7);
+    fs::path traversal=vmb::root(C,"client",7)/"in/bad.offer";
+    fs::create_symlink(mailbox("client","offer",8,xid8),traversal);
+    pending_offers("client",7);
     if(fs::exists(traversal))return 18;
     put_offer(7,"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
     put_offer(7,"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
-    if(pending_offers(7).size()!=2)return 19;
-    fs::path oversized=vmb::root(C,7)/"in/cccccccccccccccccccccccccccccccc.offer";
-    std::ofstream(oversized)<<std::string(1025,'x');pending_offers(7);
+    if(pending_offers("client",7).size()!=2)return 19;
+    fs::path oversized=vmb::root(C,"client",7)/"in/cccccccccccccccccccccccccccccccc.offer";
+    std::ofstream(oversized)<<std::string(1025,'x');pending_offers("client",7);
     if(fs::exists(oversized))return 20;
     C.sftp_base=saved_base;C.mailbox_max_pending=saved_max;C.mailbox_record_bytes=saved_bytes;
     fs::remove_all(boxes);
@@ -516,7 +517,7 @@ int main(int argc,char** argv){
     int id=toi(argv[3],0);
     if((role!="client"&&role!="server")||id<2||id>254)return 2;
     if(action=="exchange")return exchange(role,id);
-    if(action=="respond")return respond(role,id);
+    if(action=="respond")return role=="client"?respond(role,id):2;
     if(action=="print"){
         Record offer=make_offer(role,id);
         std::cout<<vtp::serialize(offer)<<'\n';
