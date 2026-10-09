@@ -1,6 +1,8 @@
 # Voider
 
-![Voider overview](docs/diagrams/voider-overview.png)
+![Voider: role-separated CAP2 mailboxes, phone call paths, integrity checks and USB pairing](docs/diagrams/voider-overview.png)
+
+[Diagram source (SVG)](docs/diagrams/voider-overview.svg)
 
 Manual: [German / English / Bulgarian](docs/manual/voider-manual-de-en-bg.pdf)
 
