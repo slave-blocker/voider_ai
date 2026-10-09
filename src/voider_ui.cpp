@@ -104,6 +104,17 @@ struct State{
 static State snapshot(){
     State s;
     auto peer=fields(C.status),wan=fields(C.wan_status),phone=fields(C.phone_status);
+    // A frozen daemon must not leave CONNECTED on the physical display.
+    auto stamp=peer.find("updated_monotonic_ms");
+    if(stamp!=peer.end()){
+        char* end=nullptr;long long updated=std::strtoll(stamp->second.c_str(),&end,10);
+        auto now=std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        if(!end||*end||updated<=0||updated>now||now-updated>5000)peer.clear();
+    }else{
+        std::error_code error;auto changed=fs::last_write_time(C.status,error);
+        if(error||fs::file_time_type::clock::now()-changed>std::chrono::seconds(5))peer.clear();
+    }
     auto os=fields("/run/voider/integrity.status"),op=fields("/run/voider/operation.status");
     auto user=fields("/run/voider/user-integrity.status"),updated=fields("/run/voider/state-updated.status");
     s.boot=fs::exists("/run/voider/appliance-ready")&&fs::exists("/run/voider/checks-passed");

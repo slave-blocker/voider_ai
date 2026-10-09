@@ -21,8 +21,8 @@ $(B)/voiderctl: src/voiderctl.cpp include/voider_config.hpp include/voider_util.
 $(B)/voider-superd: src/voider_superd.cpp include/voider_config.hpp | $(B)
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-$(B)/voider-peerd: src/voider_peerd.cpp include/voider_config.hpp include/voider_wan_ipv6.hpp include/voider_transport_protocol.hpp include/voider_transport_allowlist.hpp include/voider_util.hpp | $(B)
-	$(CXX) $(CXXFLAGS) $< -o $@ -lcrypto
+$(B)/voider-peerd: src/voider_peerd.cpp include/voider_mailbox.hpp include/voider_config.hpp include/voider_wan_ipv6.hpp include/voider_transport_protocol.hpp include/voider_transport_allowlist.hpp include/voider_util.hpp | $(B)
+	$(CXX) $(CXXFLAGS) $< -o $@ -lcrypto -pthread
 
 $(B)/voider-netns: src/voider_netns.cpp include/voider_config.hpp include/voider_util.hpp | $(B)
 	$(CXX) $(CXXFLAGS) $< -o $@
