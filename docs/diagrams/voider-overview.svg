@@ -85,7 +85,7 @@
 <line x1="1487" y1="567" x2="1356" y2="567" stroke="#a0ffb6" stroke-width="3" marker-end="url(#green)"/>
 <text x="1421" y="546" font-family="DejaVu Sans Mono, monospace" font-size="20" fill="#ffffff" text-anchor="middle" font-weight="bold">10.X.1.1</text>
 <rect x="70" y="655" width="1280" height="155" rx="3" fill="#101d19" stroke="#527b6c" stroke-width="2"/>
-<use href="#original-tunnel" x="90" y="700" width="110" height="106" overflow="hidden" filter="url(#green-art)"/>
+<use href="#original-tunnel" x="90" y="700" width="110" height="106" overflow="hidden"/>
 <text x="90" y="687" font-family="DejaVu Sans Mono, monospace" font-size="24" fill="#a0ffb6" text-anchor="start" font-weight="bold">wg0 · SHARED CLIENT LISTENER</text>
 
 <text x="650" y="728" font-family="DejaVu Sans Mono, monospace" font-size="20" fill="#c8d9d3" text-anchor="start">10.1.s.1 → paired client index s</text>
@@ -171,12 +171,12 @@
 <text x="1619" y="1793" font-family="DejaVu Sans Mono, monospace" font-size="16" fill="#c8d9d3" text-anchor="middle">Admit the new peer</text>
 <text x="65" y="1825" font-family="DejaVu Sans Mono, monospace" font-size="17" fill="#c8d9d3" text-anchor="start">Checksum verifies the copy; trust comes from the private USB handoff.</text>
 <text x="1200" y="1825" font-family="DejaVu Sans Mono, monospace" font-size="17" fill="#f8df66" text-anchor="start">X and s are independent · keep s from the bundle</text>
-<use href="#original-cloud" x="1190" y="865" width="120" height="90" overflow="hidden" filter="url(#cyan-art)"/>
+<rect x="1190" y="873" width="120" height="74" fill="#ffffff"/>
+<use href="#original-cloud" x="1190" y="865" width="120" height="90" overflow="hidden"/>
 <text x="1330" y="877" font-family="DejaVu Sans Mono, monospace" font-size="24" fill="#a0ffb6" font-weight="bold">LAN / INTERNET</text>
 <text x="1330" y="914" font-family="DejaVu Sans Mono, monospace" font-size="20" fill="#c8d9d3">eth0 · physical uplink</text>
 <text x="1330" y="950" font-family="DejaVu Sans Mono, monospace" font-size="18" fill="#c8d9d3">Keep a healthy selected path.</text>
 <text x="1190" y="986" font-family="DejaVu Sans Mono, monospace" font-size="21" fill="#c8d9d3">LAN WG → direct WG → punch → Tor</text>
 <text x="1190" y="1017" font-family="DejaVu Sans Mono, monospace" font-size="18" fill="#c8d9d3">Failure / removal / disable → select again.</text>
 <text x="1190" y="1050" font-family="DejaVu Sans Mono, monospace" font-size="17" fill="#c8d9d3">New availability never restarts a healthy path.</text>
-<text x="230" y="743" font-family="DejaVu Sans Mono, monospace" font-size="23" fill="#ffffff" font-weight="bold">172.31.0.1 : 51820</text>
 </svg>
