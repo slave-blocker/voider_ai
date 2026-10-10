@@ -1,0 +1,9 @@
+#!/bin/sh
+# OpenRC owns this pending provider; a late clock must not fail boot or require
+# a manual Tor start. Once exec'd, later NTP outages never restart healthy Tor.
+trap 'exit 0' TERM INT
+while ! timeout -k 2 5 chronyc -n waitsync 1 1 0 1 >/dev/null 2>&1; do
+    sleep 2
+done
+touch /run/voider/clock-initialized || exit 1
+exec /usr/bin/tor "$@"
