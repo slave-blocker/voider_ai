@@ -1,0 +1,728 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[a4paper,margin=22mm,headheight=15pt,footskip=12mm]{geometry}
+\usepackage{lmodern,microtype}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tabularx,longtable,booktabs,array}
+\usepackage{amssymb}
+\usepackage{fancyhdr,lastpage}
+\usepackage[unicode,hidelinks]{hyperref}
+
+\definecolor{voidernavy}{HTML}{102F3B}
+\definecolor{voiderblue}{HTML}{1976B9}
+\definecolor{voidergreen}{HTML}{35A853}
+\definecolor{voiderorange}{HTML}{F0782B}
+\definecolor{papergray}{HTML}{F1F3F4}
+\color{voidernavy}
+\hypersetup{
+  pdftitle={Voider Creator Commercial Licensing Pack},
+  pdfauthor={Voider},
+  pdfsubject={Commercial licence, royalty agreement, and partner joinder},
+  pdfkeywords={Voider, commercial licence, royalties, reseller, cloud partner}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlength{\emergencystretch}{2em}
+\setlist[itemize]{leftmargin=6mm,itemsep=2pt,topsep=3pt}
+\setlist[enumerate]{leftmargin=7mm,itemsep=3pt,topsep=3pt}
+\renewcommand{\arraystretch}{1.18}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textbf{VOIDER} \enspace Commercial licensing pack}
+\fancyhead[R]{\small Execution template}
+\fancyfoot[L]{\footnotesize Version 1.0 / 20 September 2026}
+\fancyfoot[R]{\footnotesize Page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\newcommand{\blank}[1]{\rule{#1}{0.45pt}}
+\newcommand{\field}[1]{\textbf{#1}\par\vspace{2mm}\blank{\linewidth}\par}
+\newcommand{\checkbox}{\(\square\)}
+\newcommand{\checked}{\(\boxtimes\)}
+\newcommand{\money}{EUR\,}
+\newcommand{\strong}[1]{\textbf{\color{voiderblue}#1}}
+\newcommand{\warning}[1]{%
+  \par\medskip\noindent
+  \colorbox{papergray}{\parbox{0.94\linewidth}{\textbf{Important.} #1}}
+  \par\medskip
+}
+\newcommand{\dealbox}[2]{%
+  \noindent\fcolorbox{voiderblue}{papergray}{%
+    \parbox{0.93\linewidth}{\textbf{#1}\par\smallskip #2}}
+  \par\medskip
+}
+\newcommand{\sigblock}[1]{%
+  \vspace{4mm}
+  {\large\bfseries #1}\par\medskip
+  Legal name: \blank{0.72\linewidth}\par\vspace{5mm}
+  Signature: \blank{0.73\linewidth}\par\vspace{5mm}
+  Name of signatory: \blank{0.65\linewidth}\par\vspace{5mm}
+  Title / authority: \blank{0.67\linewidth}\par\vspace{5mm}
+  Place and date: \blank{0.69\linewidth}\par
+}
+\newcommand{\articleheading}[2]{%
+  \par\medskip{\large\bfseries\color{voiderblue}#1\quad #2}\par\smallskip
+}
+
+\begin{document}
+
+% -----------------------------------------------------------------------------
+% Cover and practical summary
+% -----------------------------------------------------------------------------
+\thispagestyle{empty}
+{\color{voiderblue}\rule{\linewidth}{8mm}}\par
+\vspace{17mm}
+{\fontsize{34}{38}\selectfont\bfseries VOIDER}\par\vspace{5mm}
+{\fontsize{22}{27}\selectfont\bfseries Creator Commercial\\Licensing Pack}\par
+\vspace{8mm}
+{\large Commercial licence \textbullet\ Royalty agreement\\Partner and cloud-company joinder \textbullet\ Signature pages}\par
+\vfill
+\dealbox{Recommended starting deal}{
+  Creator receives the greater of \strong{\money25 per appliance} or
+  \strong{10\% of Net Sales}, plus the greater of
+  \strong{\money2.50 per active device per month} or
+  \strong{10\% of Voider-attributable service revenue}.
+}
+\warning{This is a practical contract template, not a substitute for advice from a German-qualified lawyer. Complete every highlighted blank, confirm the creator's ownership and the open-source schedule, and obtain legal review before signature or first commercial sale.}
+{\small Prepared 20 September 2026 \hfill Version 1.0}
+\newpage
+
+\section*{One-page TL;DR}
+\addcontentsline{toc}{section}{One-page TL;DR}
+
+\textbf{The outcome.} Ordinary people may receive Voider source under the separate public licence selected for each component. Companies that manufacture, market, host, bundle or sell the official Voider commercial product must sign and pay the creator.
+
+\begin{tabularx}{\linewidth}{>{\bfseries}p{37mm}X}
+\toprule
+Creator & Keeps ownership of the creator-controlled Voider materials and the Voider brand. Receives royalties and audit rights.\\
+Master distributor & The boss's company. Builds or sources the product, manages sales, compliance, support and reseller relationships, and pays royalties.\\
+Partner & Each reseller or cloud-phone company. Signs the Partner Joinder. Reports sales and cannot obtain commercial rights merely by downloading public source.\\
+\bottomrule
+\end{tabularx}
+
+\textbf{Default money terms}
+\begin{itemize}
+  \item Hardware: greater of \money25 for every invoiced appliance or 10\% of Net Sales.
+  \item Cloud/service: greater of \money2.50 for every active device each month or 10\% of attributable service revenue.
+  \item Reports and payments: quarterly, due 30 days after quarter-end.
+  \item Exclusivity: none unless expressly selected. If selected, minimum creator royalties are \money5,000 in the first contract year and \money10,000 in each later year.
+  \item Suggested commercial planning only: reseller gross margin around 25\%; distributor gross margin target 25--35\% after hardware cost and creator royalty. Every reseller remains free to set its own resale prices.
+\end{itemize}
+
+\textbf{Sign in this order}
+\begin{enumerate}
+  \item Complete Schedules 1--3, especially names, addresses, territory, ownership confirmation and the third-party software schedule.
+  \item Creator and master distributor sign the main agreement.
+  \item Creator, distributor and every selling/cloud company sign a separate copy of the Partner Joinder.
+  \item Give each party a complete signed copy. Keep royalty statements, invoices and signed joinders together.
+\end{enumerate}
+
+\warning{Do not describe the commercially restricted public licence as ``open source'' or ``FOSS.'' Use ``source-available for personal and noncommercial use.'' GPL-covered third-party components retain their own licence and are not owned by the creator.}
+
+\newpage
+\tableofcontents
+\newpage
+
+% -----------------------------------------------------------------------------
+% Main agreement
+% -----------------------------------------------------------------------------
+\part*{Part I --- Commercial Licence and Royalty Agreement}
+\addcontentsline{toc}{part}{Part I --- Commercial Licence and Royalty Agreement}
+
+\textbf{Effective Date:} \blank{55mm}
+
+This Commercial Licence and Royalty Agreement (the ``\textbf{Agreement}'') is entered into between:
+
+\textbf{(1) Creator / Licensor}
+
+Full legal name: \blank{115mm}\par
+Address: \blank{137mm}\par
+Email: \blank{65mm}\quad Tax ID, if applicable: \blank{47mm}\par
+
+(``\textbf{Licensor}''); and
+
+\textbf{(2) Master Distributor / Licensee}
+
+Registered company name: \blank{101mm}\par
+Legal form and registration number: \blank{87mm}\par
+Registered office: \blank{119mm}\par
+Represented by: \blank{61mm}\quad Title: \blank{49mm}\par
+Email: \blank{65mm}\quad VAT ID: \blank{54mm}\par
+
+(``\textbf{Distributor}''). Licensor and Distributor are each a ``\textbf{Party}'' and together the ``\textbf{Parties}.''
+
+\articleheading{1.}{Purpose and commercial structure}
+
+1.1 Licensor has created or controls original software, documentation, designs, know-how and branding used in the Voider communications appliance. Distributor wishes to commercialise official Voider products directly and through authorised resellers and cloud-service partners.
+
+1.2 This Agreement separates (a) Licensor-controlled materials, (b) third-party and open-source components, and (c) the Voider brand. It grants only the commercial rights expressly stated here. It does not replace or restrict any licence granted directly by a third-party copyright holder.
+
+1.3 The Parties intend a transparent royalty relationship. Nothing in this Agreement fixes a reseller's final resale price or restricts lawful competition.
+
+\articleheading{2.}{Definitions}
+
+\textbf{Active Device} means a Voider appliance that, during a calendar month, is registered, provisioned, connected to, or able to use a paid Partner or Distributor communications service, whether or not a call is completed.
+
+\textbf{Affiliate} means an entity controlling, controlled by, or under common control with a Party.
+
+\textbf{Commercial Materials} means only those Voider source files, object code, documentation, designs and other materials for which Licensor owns or controls sufficient commercial licensing rights, as identified in Schedule 2. Commercial Materials exclude Third-Party Materials.
+
+\textbf{Commercial Product} means an appliance, software package, hosted offering or service marketed as Voider or materially incorporating Commercial Materials for commercial advantage.
+
+\textbf{Net Sales} means all consideration invoiced for Commercial Products, including non-cash consideration valued at fair market value. Only VAT or equivalent sales tax, documented refunds actually paid, and separately itemised outbound freight may be deducted. Salaries, commissions, marketing, overhead, payment fees, hosting, bad debt and Affiliate charges may not be deducted. Transfers to Affiliates or non-arm's-length partners are valued at the first arm's-length resale price.
+
+\textbf{Partner} means a reseller, integrator, manufacturer, cloud-phone provider or other company authorised through a signed Partner Joinder in the form in Part II.
+
+\textbf{Territory} and \textbf{Field} have the meanings completed in Schedule 1.
+
+\textbf{Third-Party Materials} means software, firmware, documentation, fonts, artwork or other material owned by a person other than Licensor, including GPL and other open-source components.
+
+\textbf{Voider Marks} means the word VOIDER and any logos, product names, trade dress or domains identified by Licensor as official Voider branding.
+
+\textbf{Voider-Attributable Service Revenue} means consideration invoiced for connectivity, telephony, hosting, management, support or subscriptions sold specifically for or enabled by Active Devices. For a bundle without a separate Voider price, Distributor shall use a reasonable documented allocation reflecting standalone value, subject to the per-device minimum royalty and Licensor's audit rights.
+
+\articleheading{3.}{Commercial licence grant}
+
+3.1 Subject to payment and compliance with this Agreement, Licensor grants Distributor during the Term a limited, revocable, non-transferable commercial licence in the Territory and Field to reproduce, modify, have manufactured, bundle, market, demonstrate, distribute and sell Commercial Products.
+
+3.2 The licence is non-exclusive unless Schedule 1 expressly selects exclusivity and states its Territory, Field, channels and minimum royalties. No implied exclusivity arises from negotiations, investment or appointment as ``master distributor.''
+
+3.3 Distributor may sublicense commercial resale or cloud-service rights only to a Partner that has signed a complete three-party Partner Joinder. Manufacturing contractors may receive only the access needed to manufacture for Distributor, under written confidentiality and intellectual-property terms, and gain no independent sales right.
+
+3.4 Licensor reserves every right not expressly granted, including ownership, public licensing, development, noncommercial distribution, licensing outside any exclusive Field, and enforcement rights.
+
+3.5 Public availability of source code does not grant rights to use the Voider Marks, claim official status, avoid royalties for rights granted under this Agreement, or use Commercial Materials beyond the applicable public licence.
+
+\articleheading{4.}{Third-party and open-source materials}
+
+4.1 Third-Party Materials remain governed exclusively by their applicable licences. Nothing here sells, sublicenses or restricts rights that Licensor does not own.
+
+4.2 Before the first Commercial Product is distributed, the Parties shall complete Schedule 2 and verify the file-level licensing and distribution method for all material components. Distributor is responsible for reproducing notices, providing corresponding source or written offers where required, and meeting installation-information and attribution duties applicable to its distribution.
+
+4.3 A component linked to or derived from GPL-covered code shall be distributed only in a structure and under terms approved in Schedule 2 after competent review. The current expected treatment is to keep any GPL-linked packet-processing helper separately identified and GPL-compatible, while licensing genuinely separate Licensor-controlled components under their own terms. This expectation is not a legal conclusion and must be confirmed before sale.
+
+4.4 If a third-party licence conflicts with this Agreement for a particular component, that third-party licence controls that component. The Parties shall promptly adopt a compliant technical or licensing arrangement without reducing accrued royalties on other Commercial Materials or Voider Marks.
+
+\articleheading{5.}{Royalties}
+
+5.1 For every Commercial Product invoiced, transferred for value, leased or otherwise commercially supplied, Distributor shall pay Licensor the greater of:
+\begin{enumerate}[label=(\alph*)]
+  \item \strong{\money25 per appliance}; or
+  \item \strong{10\% of Net Sales} for that appliance or Commercial Product.
+\end{enumerate}
+
+5.2 For each calendar month containing an Active Device, Distributor shall additionally pay the greater of:
+\begin{enumerate}[label=(\alph*)]
+  \item \strong{\money2.50 per Active Device}; or
+  \item \strong{10\% of Voider-Attributable Service Revenue} for that month.
+\end{enumerate}
+
+5.3 Royalties are calculated separately for hardware and recurring services. They are cumulative, not alternatives. A return credited to the customer may be deducted once from the next statement if the related royalty was previously paid.
+
+5.4 Internal demonstrations, warranty replacements and evaluation units supplied without charge generate no per-appliance royalty, up to the annual limits stated in Schedule 1. Units exceeding that allowance incur the \money25 minimum.
+
+5.5 Royalties are exclusive of VAT. Distributor shall pay all undisputed amounts without set-off, counterclaim or deduction except legally required withholding tax. Distributor shall supply official withholding documentation and reasonably cooperate in relief under an applicable tax treaty.
+
+5.6 Any recommended retail price or margin in this pack is a non-binding planning assumption. Distributor and every Partner independently determine their resale prices.
+
+\articleheading{6.}{Statements, payment and audit}
+
+6.1 Within 30 days after 31 March, 30 June, 30 September and 31 December, Distributor shall give Licensor a statement using Schedule 3 and pay all royalties for that quarter in euros to Licensor's nominated account.
+
+6.2 Statements must include units by model, invoice country, gross invoiced value, permitted deductions, Net Sales, Active Devices by month, attributable service revenue, royalty calculations, returns, evaluation units and Partner sales. A nil statement is required when no sales occurred.
+
+6.3 Distributor and Partners shall retain complete supporting records for seven years. Once per calendar year, and additionally after a reasonable indication of under-reporting, Licensor may appoint an independent accountant bound by confidentiality to inspect relevant records on ten business days' notice.
+
+6.4 Distributor shall promptly pay any shortfall. If the shortfall exceeds 5\% for the audited period, Distributor also pays the reasonable audit cost. Late amounts bear statutory default interest under applicable German law.
+
+6.5 Distributor remains responsible for royalties generated through Partners. If Distributor fails to pay an undisputed amount after notice and a ten-business-day cure period, Licensor may direct the relevant Partner to pay future royalties directly to Licensor. Amounts received directly are credited to avoid double recovery.
+
+\articleheading{7.}{Minimum royalties and exclusivity}
+
+7.1 Unless the exclusive option in Schedule 1 is selected, no minimum guarantee applies and the appointment is non-exclusive.
+
+7.2 If exclusivity is selected, Distributor guarantees aggregate creator royalties of \strong{\money5,000 during Contract Year 1} and \strong{\money10,000 during each later Contract Year}. Earned royalties are credited against the guarantee. Any shortfall is due 30 days after the Contract Year ends.
+
+7.3 Failure to pay the minimum on time automatically converts the appointment to non-exclusive, without eliminating the payment obligation. Exclusivity also ends if Distributor ceases active sales for 90 consecutive days, becomes insolvent, or materially breaches reporting, brand or security obligations.
+
+\articleheading{8.}{Voider brand}
+
+8.1 Licensor grants Distributor a limited, non-exclusive, non-transferable right during the Term to use the Voider Marks solely for approved Commercial Products. Partners receive brand rights only through a signed Joinder.
+
+8.2 Distributor shall follow Licensor's reasonable written quality and security standards, submit materially new packaging and claims for approval, clearly identify the responsible seller, and never imply certification or guarantees not given in writing.
+
+8.3 Distributor and Partners shall not register or challenge Voider Marks, confusingly similar names, domains or social accounts. Any registration made for operations is held for Licensor and transferred on request at cost.
+
+8.4 All goodwill arising from use of the Voider Marks accrues to Licensor. Brand rights end immediately on termination, subject only to an expressly permitted sell-off period.
+
+\articleheading{9.}{Product, regulatory and customer responsibility}
+
+9.1 Distributor is the commercial supplier of products it sells and is responsible for manufacturing quality, electrical and radio compliance, product labelling, packaging, import/export, taxes, consumer rights, returns, warranty service, recalls, accessibility and all legally required instructions.
+
+9.2 Each cloud or telephony Partner is responsible for its communications service, numbering, emergency-calling disclosures, lawful-interception duties, data protection, billing, availability, customer contracts and regulatory permissions.
+
+9.3 No Party shall advertise guaranteed anonymity, guaranteed security, guaranteed availability, legal immunity, or suitability for emergency calling unless the claim is accurate, documented and approved by every Party responsible for it.
+
+9.4 Distributor shall maintain commercially appropriate product, cyber and general liability insurance and provide evidence on reasonable request.
+
+\articleheading{10.}{Security, updates and incidents}
+
+10.1 Distributor shall not weaken documented Voider security controls, embed development credentials, ship known test identities, or conceal material modifications. It shall maintain accurate build and component records for every release.
+
+10.2 Each Party shall notify the others without undue delay of a credible vulnerability, compromise, safety issue, licence violation or regulatory complaint affecting Commercial Products. Public disclosure shall be coordinated where lawful, without delaying legally required notifications.
+
+10.3 Support levels, update periods and service-level commitments exist only if separately written in Schedule 1 or another signed agreement. This Agreement alone creates no continuous-development or uptime obligation for Licensor.
+
+\articleheading{11.}{Improvements and feedback}
+
+11.1 Distributor shall identify material modifications it or its contractors make to Commercial Materials. Before distribution, Distributor shall obtain from its personnel and contractors rights sufficient to comply with Third-Party Materials licences and to grant the rights in this Article.
+
+11.2 To the extent legally possible, Distributor grants Licensor a perpetual, worldwide, transferable and sublicensable right to use, reproduce, modify, distribute and license such modifications in any form. The Parties may instead record ownership and compensation for a substantial commissioned development in a separate signed statement.
+
+11.3 Suggestions and operational feedback may be used by Licensor without restriction or payment, provided confidential information and personal data are not disclosed.
+
+\articleheading{12.}{Confidentiality and data}
+
+12.1 Each Party shall protect non-public technical, commercial and customer information using at least reasonable care and use it only for this relationship. This duty does not cover information demonstrably public without breach, already lawfully known, independently developed, or lawfully received without restriction.
+
+12.2 Required legal disclosure is permitted after advance notice where lawful. Trade secrets remain protected for so long as they qualify as trade secrets; other confidential information remains protected for five years after termination.
+
+12.3 Each Party is independently responsible for applicable privacy and data-protection law. Roles, instructions, security measures and international transfers requiring a data-processing agreement shall be documented separately before personal data is exchanged.
+
+\articleheading{13.}{Representations and warranties}
+
+13.1 Licensor represents, as of signature, that the ownership confirmation in Schedule 2 is accurate and that Licensor has authority to grant the rights expressly granted for Commercial Materials and Voider Marks.
+
+13.2 Distributor represents that its signatory is authorised, it will obtain all permissions needed for commercial distribution, and it will not knowingly combine materials in a manner that violates an applicable licence.
+
+13.3 Except for express terms in this Agreement and rights that cannot legally be excluded, Commercial Materials are provided as available, without an implied promise of uninterrupted operation, merchantability or fitness for a particular purpose.
+
+\articleheading{14.}{Liability and indemnity}
+
+14.1 Nothing excludes or limits liability for intent, gross negligence, death or personal injury, fraudulent concealment, an expressly assumed guarantee, or mandatory product-liability obligations.
+
+14.2 For ordinary negligence involving a material contractual obligation, liability is limited to foreseeable loss typical for this Agreement and, to the extent legally permitted, capped in aggregate at the greater of \money25,000 or royalties paid or payable during the preceding 12 months. Liability for ordinary negligence involving a non-material obligation is excluded to the extent legally permitted.
+
+14.3 Distributor shall defend and indemnify Licensor against third-party claims arising from Distributor's or a Partner's manufacturing defect, unauthorised claim, telephony/cloud service, consumer contract, regulatory breach, modification, combination or use outside this Agreement, except to the extent caused by Licensor's breach or fault.
+
+14.4 A Party seeking indemnity shall give prompt notice, reasonable cooperation and control of the defence, while retaining the right to participate. No settlement may admit fault or impose a non-monetary duty on the protected Party without consent.
+
+\articleheading{15.}{Term and termination}
+
+15.1 The Agreement begins on the Effective Date for an initial three-year term and renews for successive one-year terms unless either Party gives at least 90 days' written notice before the current term ends.
+
+15.2 A Party may terminate for material breach not cured within 30 days after detailed written notice. Licensor may suspend new sales immediately for non-payment, unlicensed sublicensing, deliberate under-reporting, serious brand misuse, security backdoors, embedded credentials or unlawful distribution.
+
+15.3 Either Party may terminate immediately if the other ceases business, enters liquidation or insolvency proceedings are opened or rejected for lack of assets, subject to mandatory insolvency law.
+
+15.4 On termination, commercial rights and brand use end. If termination was not caused by Distributor's payment, intellectual-property, security or brand breach, Licensor may permit a written 60-day sell-off of completed inventory, with normal reports and royalties. There is no implied sell-off right.
+
+15.5 Accrued payment, reporting, audit, confidentiality, intellectual-property, liability and dispute provisions survive termination.
+
+\articleheading{16.}{General terms}
+
+16.1 The Parties are independent contractors. Nothing creates employment, partnership, fiduciary duty or authority to bind another Party.
+
+16.2 Distributor may not assign this Agreement, whether by transaction, merger or change of control, without Licensor's prior written consent. Licensor may assign it with the Voider business or relevant intellectual-property rights upon written notice.
+
+16.3 Notices shall be sent by tracked post and email to the addresses in Schedule 1. A notice is effective on documented delivery; an email alone is insufficient for termination unless acknowledged.
+
+16.4 This Agreement, its completed Schedules and signed Joinders are the entire agreement on their subject and replace prior statements. Amendments must be signed by authorised representatives. Individual purchase orders do not modify it.
+
+16.5 If a provision is invalid or unenforceable, the remainder continues. The Parties shall replace the affected provision with a valid one closest to the lawful commercial purpose; no automatic reduction or blue-pencil clause applies beyond what law permits.
+
+16.6 Failure to enforce once is not a waiver. Headings aid reading but do not alter meaning. English controls unless the Parties sign an expressly controlling translation.
+
+16.7 German law applies, excluding conflict-of-law rules and the UN Convention on Contracts for the International Sale of Goods. To the extent legally permitted, exclusive venue is the court having jurisdiction at Licensor's domicile stated in Schedule 1.
+
+16.8 Before litigation, senior representatives shall meet in good faith within ten business days after written request. Urgent interim or intellectual-property relief may be sought immediately.
+
+\newpage
+\section*{Schedule 1 --- Deal particulars}
+\addcontentsline{toc}{section}{Schedule 1 --- Deal particulars}
+
+\begin{longtable}{>{\bfseries}p{51mm}p{105mm}}
+Territory & \blank{100mm}\\[5mm]
+Field / authorised products & \blank{100mm}\\[5mm]
+Approved sales channels & \blank{100mm}\\[5mm]
+Appointment & \checked\ Non-exclusive (default)\quad \checkbox\ Exclusive only as described below\\[3mm]
+Exclusive territory/field/channels & \blank{100mm}\\[5mm]
+Contract Year 1 & From \blank{32mm} to \blank{32mm}\\[3mm]
+Royalty payment account & Account holder: \blank{62mm}\\
+ & IBAN: \blank{75mm}\\
+ & BIC: \blank{40mm}\quad Bank: \blank{39mm}\\[3mm]
+Licensor notice details & Email: \blank{70mm}\\
+ & Postal address: \blank{72mm}\\[3mm]
+Distributor notice details & Email: \blank{70mm}\\
+ & Postal address: \blank{72mm}\\[3mm]
+Annual no-charge allowance & 10 demonstration units and documented warranty replacements (default), or: \blank{25mm}\\[3mm]
+Support/update commitment & None under this Agreement unless written here: \blank{72mm}\\[5mm]
+Additional approved terms & \blank{100mm}\\[8mm]
+\end{longtable}
+
+If exclusivity is selected, the default guaranteed minimum royalties are \money5,000 in Contract Year 1 and \money10,000 in every later Contract Year unless the following higher amounts are agreed:
+
+\begin{tabularx}{\linewidth}{X X X}
+Year 1: \money\blank{25mm} & Year 2: \money\blank{25mm} & Later years: \money\blank{20mm}
+\end{tabularx}
+
+\newpage
+\section*{Schedule 2 --- Rights and software-release gate}
+\addcontentsline{toc}{section}{Schedule 2 --- Rights and software-release gate}
+
+The Parties shall complete and initial this Schedule before the first commercial shipment. A checked box is a factual confirmation, not a substitute for evidence.
+
+\subsection*{A. Creator-controlled Commercial Materials}
+
+Repository/release identifier: \blank{106mm}\par
+Commit or release hash: \blank{113mm}\par
+Included paths/components: \blank{104mm}\par\vspace{5mm}
+
+\checkbox\ Licensor developed the listed materials independently and outside any conflicting employment duty.\par
+\checkbox\ Licensor's employer has signed a release or confirmation covering the listed materials.\par
+\checkbox\ Every material contributor has signed an assignment or relicensing permission.\par
+\checkbox\ Other documented basis of authority: \blank{89mm}\par
+
+Evidence location/reference: \blank{108mm}\par
+
+\warning{Do not check a statement unless it is true. German employee-software rules may give an employer the economic rights when software was created in execution of duties or instructions. Obtain a written employer confirmation where there is any doubt.}
+
+\subsection*{B. Public licensing policy}
+
+\checkbox\ Eligible Licensor-controlled source will be made source-available for personal and noncommercial use under: \blank{52mm}\par
+\checkbox\ Eligible Licensor-controlled source will use a true FOSS licence.\par
+Licence: \blank{126mm}\par
+\checkbox\ No public release is authorised yet.\par
+
+Commercial restrictions shall never be described as OSI-approved open source or FOSS unless the selected licence actually qualifies.
+
+\subsection*{C. Third-party component treatment}
+
+\begin{tabularx}{\linewidth}{p{34mm}p{30mm}X p{25mm}}
+\toprule
+Component & Licence & Distribution/source action & Reviewer initials\\
+\midrule
+libnetfilter\_queue & GPL-2.0-or-later; verify shipped version & Identify linked helper; provide applicable source/notices; confirm separation from restricted components & \\
+\addlinespace[5mm]
+Linux kernel / Alpine packages & Per-package licences & Preserve notices and fulfil corresponding-source obligations for shipped image & \\
+\addlinespace[5mm]
+OpenSSL & Verify shipped version/licence & Preserve required notices & \\
+\addlinespace[5mm]
+Tor / OpenSSH / other packages & Per-package licences & Complete release SBOM and notices bundle & \\
+\addlinespace[5mm]
+Other: & & & \\
+\addlinespace[5mm]
+\bottomrule
+\end{tabularx}
+
+SBOM/notices/source-offer location: \blank{89mm}\par
+Reviewed by: \blank{50mm}\quad Date: \blank{38mm}\par
+
+\newpage
+\section*{Schedule 3 --- Quarterly royalty statement}
+\addcontentsline{toc}{section}{Schedule 3 --- Quarterly royalty statement}
+
+Distributor: \blank{70mm}\quad Quarter ending: \blank{42mm}
+
+\subsection*{Hardware and Commercial Products}
+\begin{tabularx}{\linewidth}{X r r r r r}
+\toprule
+Model/channel & Units & Gross & Deductions & Net Sales & Royalty\\
+\midrule
+ & & & & & \\
+\addlinespace[6mm]
+ & & & & & \\
+\addlinespace[6mm]
+ & & & & & \\
+\addlinespace[6mm]
+\midrule
+\textbf{Totals} & & & & & \\
+\bottomrule
+\end{tabularx}
+
+For each line, royalty is the greater of \money25 per unit or 10\% of Net Sales.
+
+\subsection*{Cloud and recurring services}
+\begin{tabularx}{\linewidth}{X r r r r}
+\toprule
+Month/service & Active Devices & Attributable revenue & Revenue royalty & Device-floor royalty\\
+\midrule
+ & & & & \\
+\addlinespace[6mm]
+ & & & & \\
+\addlinespace[6mm]
+ & & & & \\
+\addlinespace[6mm]
+\midrule
+\textbf{Totals} & & & & \\
+\bottomrule
+\end{tabularx}
+
+For each month, royalty is the greater of \money2.50 per Active Device or 10\% of Voider-Attributable Service Revenue.
+
+Returns credited: \money\blank{35mm}\quad Prior adjustments: \money\blank{35mm}\par
+Minimum-guarantee top-up, if any: \money\blank{35mm}\par
+\textbf{Total royalty due:} \money\blank{50mm}\par
+
+I certify that this statement is complete and accurate to the best of my knowledge and is supported by the Distributor's records.
+
+Name: \blank{64mm}\quad Title: \blank{49mm}\par\vspace{5mm}
+Signature: \blank{59mm}\quad Date: \blank{50mm}\par
+
+\newpage
+\section*{Execution page --- Main Agreement}
+\addcontentsline{toc}{section}{Execution page --- Main Agreement}
+
+By signing, each signatory confirms authority to bind the named Party and that Schedules 1 and 2 have been completed accurately. The Parties intend to be legally bound from the Effective Date.
+
+\sigblock{Creator / Licensor}
+
+\vfill
+Witness name (optional): \blank{50mm}\quad Witness signature: \blank{36mm}\par
+
+\newpage
+\sigblock{Master Distributor / Licensee}
+
+Company registration number: \blank{88mm}\par\vspace{5mm}
+
+\vfill
+Witness name (optional): \blank{50mm}\quad Witness signature: \blank{36mm}\par
+
+% -----------------------------------------------------------------------------
+% Partner joinder
+% -----------------------------------------------------------------------------
+\newpage
+\part*{Part II --- Authorised Partner Joinder}
+\addcontentsline{toc}{part}{Part II --- Authorised Partner Joinder}
+
+\textbf{Joinder Effective Date:} \blank{50mm}
+
+This Partner Joinder incorporates the Commercial Licence and Royalty Agreement dated \blank{40mm} between the Licensor and Distributor (the ``Main Agreement''). It is signed by all three parties below.
+
+\textbf{Licensor:} \blank{125mm}\par
+\textbf{Distributor:} \blank{117mm}\par
+
+\textbf{Partner company}
+
+Registered name: \blank{116mm}\par
+Legal form and registration number: \blank{87mm}\par
+Registered office: \blank{119mm}\par
+Represented by: \blank{61mm}\quad Title: \blank{49mm}\par
+Email: \blank{65mm}\quad VAT ID: \blank{54mm}\par
+
+\articleheading{1.}{Appointment}
+
+Distributor, with Licensor's consent, appoints Partner on a non-exclusive, non-transferable basis for the following selected activities:
+
+\checkbox\ Resale of complete official Voider appliances\par
+\checkbox\ Business integration and installation\par
+\checkbox\ Cloud-phone or communications service for Active Devices\par
+\checkbox\ Manufacturing solely for Distributor\par
+\checkbox\ Other: \blank{119mm}\par
+
+Territory: \blank{70mm}\quad Channels: \blank{57mm}\par
+
+Partner may market and supply Commercial Products only through these activities, Territory and channels. Partner may not appoint sub-resellers, sublicense source, manufacture for another party, or represent itself as owner of Voider.
+
+\articleheading{2.}{Main Agreement obligations}
+
+Partner acknowledges receipt of the Main Agreement and agrees to Articles 2, 4, 6, 8--10, 12--16 as if Partner were Distributor where applicable. The Main Agreement controls if this Joinder conflicts with it.
+
+Partner shall preserve third-party notices and provide all sales, Active Device, returns, pricing and service-revenue information needed for accurate royalty statements. Partner shall keep supporting records for seven years and permit the audit described in the Main Agreement.
+
+\articleheading{3.}{Money flow}
+
+Partner commercial terms with Distributor:
+
+Wholesale price/discount method: \blank{89mm}\par
+Partner payment terms: \blank{102mm}\par
+Service revenue allocation method: \blank{84mm}\par
+
+Partner normally pays Distributor, and Distributor pays Licensor. If Distributor fails to cure an undisputed royalty default after written notice, Licensor may direct Partner to pay the applicable creator royalty directly. Direct payments discharge the same amount owed through Distributor; Licensor may not recover twice.
+
+All recommended prices or margin figures are non-binding. Partner independently sets its resale price.
+
+\articleheading{4.}{Brand, customers and services}
+
+Partner may use Voider Marks only for authorised, genuine Commercial Products and only while this Joinder remains effective. Partner shall follow written brand and security standards, identify itself as the responsible seller or service provider, and make no unsupported anonymity, emergency-calling, security or regulatory claim.
+
+Partner is responsible for its customer contracts, advertising, taxes, consumer obligations, support promises, data processing and regulated services. A cloud-phone Partner is solely responsible for its network/service availability, numbering and communications-law obligations.
+
+\articleheading{5.}{Duration and end}
+
+This Joinder continues while the Main Agreement remains effective unless ended earlier by any Party on 60 days' written notice. Licensor or Distributor may suspend or terminate it immediately for non-payment, false reporting, serious security risk, unlawful distribution or brand misuse. No sell-off right exists unless Licensor gives written permission.
+
+\articleheading{6.}{Direct enforceability}
+
+Licensor may directly enforce Partner's payment-direction, reporting, audit, intellectual-property, security, confidentiality and brand obligations. Distributor remains responsible for royalties generated by Partner except to the extent Licensor has received the same royalty directly.
+
+German law and the dispute provisions of the Main Agreement apply. This Joinder may be amended only in a writing signed by all three parties.
+
+\newpage
+\section*{Execution page --- Partner Joinder}
+\addcontentsline{toc}{section}{Execution page --- Partner Joinder}
+
+Each signatory confirms receipt of the complete Main Agreement, authority to bind the named party, and intention to be legally bound.
+
+\sigblock{Creator / Licensor}
+
+\newpage
+\sigblock{Master Distributor}
+
+\vfill
+Main Agreement date: \blank{52mm}\par
+
+\newpage
+\sigblock{Authorised Partner / Cloud Company}
+
+Company registration number: \blank{88mm}\par\vspace{5mm}
+
+\vfill
+Witness name (optional): \blank{50mm}\quad Witness signature: \blank{36mm}\par
+
+\warning{Make one complete signed Joinder for each reseller, manufacturer, integrator or cloud-phone company. Do not place several unrelated Partners on one signature page.}
+
+% -----------------------------------------------------------------------------
+% Explanation
+% -----------------------------------------------------------------------------
+\newpage
+\part*{Part III --- What this means for the creator}
+\addcontentsline{toc}{part}{Part III --- What this means for the creator}
+
+\section*{The short version}
+\addcontentsline{toc}{section}{The short version}
+
+You keep the creator-controlled Voider intellectual property and brand. Your boss's company gets permission to commercialise it and organise sales. Every outside selling or cloud company signs a Joinder. Money is reported every quarter and you can inspect the underlying records through an independent accountant.
+
+You are not paying the authors of Linux or \texttt{libnetfilter\_queue} a royalty. Their licences normally require notices, source availability and other compliance instead. This pack deliberately separates those components from the rights for which you charge.
+
+\dealbox{Your default royalty}{
+  For hardware you receive whichever is higher: \money25 per appliance or 10\% of Net Sales. For recurring service you receive whichever is higher: \money2.50 per active device each month or 10\% of attributable service revenue.
+}
+
+\subsection*{Why ``greater of'' matters}
+
+A percentage alone can become tiny when products are discounted, transferred to an Affiliate or hidden inside a bundle. A fixed floor protects the creator. A fixed fee alone misses the upside of a premium product. The greater-of formula provides both a floor and participation in success.
+
+\subsection*{Example appliance economics}
+
+The following is an illustration, not a fixed resale price:
+
+\begin{tabularx}{\linewidth}{X r}
+\toprule
+Illustrative consumer price including 19\% VAT & \money349.00\\
+Price excluding VAT & \money293.28\\
+Illustrative reseller margin, 25\% of ex-VAT price & \money73.32\\
+Distributor invoice revenue & \money219.96\\
+Illustrative hardware/build cost & \money120.00\\
+Creator royalty: greater of \money25 or 10\% (\money22.00) & \money25.00\\
+Illustrative distributor gross contribution & \money74.96\\
+\bottomrule
+\end{tabularx}
+
+The distributor contribution in this example is about 34\% of its invoice revenue before salaries, warranty, marketing, tax and overhead. Real pricing must be recalculated using actual bill-of-materials and support cost. Resellers and distributors must independently determine resale prices.
+
+\subsection*{Example cloud economics}
+
+If 500 Active Devices each generate \money30 of attributable monthly service revenue, the service revenue is \money15,000. Ten percent is \money1,500; the device floor is \money1,250. You receive \money1,500 for that month. If attributable revenue drops, the \money2.50-per-device floor remains.
+
+\newpage
+\section*{What you still own and what you do not}
+\addcontentsline{toc}{section}{What you still own and what you do not}
+
+\textbf{You can control and charge for:}
+\begin{itemize}
+  \item original Voider code and documentation that you legally own;
+  \item permission to make commercial use where the public licence is noncommercial;
+  \item the Voider name, logo and official-product presentation, once properly cleared and protected;
+  \item official integration, releases, signed images, support and commercial know-how;
+  \item contractual distribution and cloud-service rights.
+\end{itemize}
+
+\textbf{You do not own:}
+\begin{itemize}
+  \item Linux, Alpine, Tor, OpenSSH, OpenSSL or netfilter project code;
+  \item contributions for which another person retained rights;
+  \item code whose economic rights belong to an employer;
+  \item generic ideas, protocols or functionality where copyright does not apply;
+  \item a third party's trademarks, telephone service or customer relationships.
+\end{itemize}
+
+\subsection*{The one ownership question that cannot be skipped}
+
+If Voider was created as part of employment duties or under an employer's instructions, German employee-software law may place exercise of the economic rights with the employer unless the arrangement says otherwise. The clean solution is a short written confirmation stating who owns which materials and that you may license them and receive the stated royalties. Do not sign the ownership representation in Schedule 2 until it is accurate.
+
+\subsection*{FOSS versus the business you requested}
+
+A genuine FOSS licence permits commercial use. It cannot force every seller to pay you merely because it sells copies. Your requested model is therefore described accurately as \textbf{source-available for personal and noncommercial use, with paid commercial licensing}. Some third-party components remain genuine FOSS under their own licences.
+
+The public-source licence is deliberately not embedded in this contract. It should be selected file by file after the ownership and dependency review. That avoids accidentally placing code under incompatible terms.
+
+\subsection*{Why trademark matters}
+
+Copyright controls your original expression; trademark controls the commercial badge customers trust. A properly cleared Voider mark helps prevent unrelated sellers from presenting a fork as the official product. The agreement gives Partners narrow brand permission and automatically ends it when their appointment ends.
+
+\newpage
+\section*{Signing and operating checklist}
+\addcontentsline{toc}{section}{Signing and operating checklist}
+
+\textbf{Before signature}
+\begin{enumerate}
+  \item Insert every legal name, address, company number, signatory title, Territory and Field.
+  \item Obtain written confirmation of creator/employer ownership and contributor rights.
+  \item Complete an SBOM and file-level licence review for the exact release being sold.
+  \item Decide whether the deal is non-exclusive. Do not grant exclusivity without minimum royalties and a clear field and territory.
+  \item Have a German-qualified software/IP lawyer review the completed agreement, tax handling, liability and any Bulgarian or other cross-border sales issues.
+  \item Have each signatory provide proof that they may bind the company.
+\end{enumerate}
+
+\textbf{At signature}
+\begin{enumerate}
+  \item Initial every completed Schedule and correction.
+  \item Sign two complete originals of the Main Agreement.
+  \item Sign one separate three-party Joinder for every Partner.
+  \item Scan the complete signed documents, not merely the signature pages.
+\end{enumerate}
+
+\textbf{Every quarter}
+\begin{enumerate}
+  \item Receive the Schedule 3 report, even when it says zero.
+  \item Compare unit sales, Partner reports, Active Devices and service revenue.
+  \item Check the greater-of calculation and issue an invoice if required for VAT/accounting.
+  \item Confirm payment within 30 days and preserve the statement and bank record.
+\end{enumerate}
+
+\textbf{Every release}
+\begin{enumerate}
+  \item Record the exact Git commit and reproducible image checksum.
+  \item Update the SBOM, notices and corresponding-source package.
+  \item Verify that no development identities, private keys or credentials are included.
+  \item Record which Commercial Materials and third-party licences apply.
+\end{enumerate}
+
+\warning{A signed contract cannot create ownership that the signer does not have. The ownership confirmation and software-release gate are the two items to resolve before accepting commercial orders.}
+
+\newpage
+\section*{Reference notes}
+\addcontentsline{toc}{section}{Reference notes}
+
+These links explain the licensing boundaries reflected in this pack. They are explanatory and are not incorporated as contract terms.
+
+\begin{itemize}
+  \item Open Source Initiative, Open Source Definition: \url{https://opensource.org/osd}
+  \item GNU GPL FAQ, commercial sale and fees: \url{https://www.gnu.org/licenses/gpl-faq.en.html}
+  \item German Copyright Act, including employee computer programs (section 69b): \url{https://www.gesetze-im-internet.de/englisch_urhg/}
+  \item PolyForm Noncommercial 1.0.0: \url{https://polyformproject.org/licenses/noncommercial/1.0.0/}
+  \item Netfilter project's libnetfilter\_queue source and licensing notices: \url{https://git.netfilter.org/libnetfilter_queue/}
+\end{itemize}
+
+\vfill
+\dealbox{Final practical rule}{
+  No company sells, hosts or brands official Voider commercially until the Main Agreement and its own Partner Joinder are signed, the release gate is completed, and reporting is ready. Public source does not replace those commercial and trademark permissions.
+}
+
+\end{document}

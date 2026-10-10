@@ -11,6 +11,7 @@
 #include <string>
 #include <thread>
 #include "voider_util.hpp"
+#include "voider_runtime.hpp"
 static Cfg C;
 static bool carrier(){
     return vu::read1("/sys/class/net/"+C.phone_if+"/carrier")=="1";
@@ -37,23 +38,25 @@ static int dhcp(){
 // DHCP lease is useful evidence, but reachability of 172.16.19.85 is decisive.
 static void write_status(){
     bool l=lease_seen(),r=reachable();
-    vu::write1(C.phone_status,
+    vr::publish(C.phone_status,vr::stamp()+
     "CARRIER "+std::string(carrier()?"up":"down")+"\nLEASE "+(l?"yes":"no")+
     "\nREACHABLE "+(r?"yes":"no")+"\nMODE "+((r&&l)?"dhcp":(r?"static-assumed":"unknown"))+
     "\nEXPECTED_IP "+C.phone_ip+"\nACCEPTED_IP "+C.phone_ip+"\nGATEWAY "+C.phone_gw+
     "\nCIDR "+std::to_string(C.dhcp_cidr)+"\nSTRICT_IP yes");
 }
 static int recover(){
+    vr::Lock lock("/run/voider/phone-recovery.lock");
+    if(!lock.held())return 0;
     prepare();
     if(C.dhcp_enabled&&!dhcp_alive())dhcp();
     write_status();
     return 0;
 }
 static int monitor(){
+    vr::Lock owner("/run/voider/phone-monitor.lock");if(!owner.held())return 1;
     prepare();
     while(true){
-        if(C.dhcp_enabled&&!dhcp_alive())dhcp();
-        write_status();
+        recover();
         std::this_thread::sleep_for(std::chrono::seconds(C.phone_probe_sec));
     }
     return 0;
@@ -66,8 +69,10 @@ static int status(){
 int main(int ac,char**av){
     C=cfg();
     std::string c=ac>1?av[1]:"status";
-    if(c=="prepare")return prepare();
-    if(c=="dhcp")return dhcp();
+    if(c=="--healthcheck")return vr::fresh(C.phone_status,15000)?0:1;
+    if(c=="prepare"||c=="dhcp"){
+        vr::Lock lock("/run/voider/phone-recovery.lock");return lock.held()?(c=="prepare"?prepare():dhcp()):12;
+    }
     if(c=="recover")return recover();
     if(c=="monitor")return monitor();
     if(c=="status")return status();

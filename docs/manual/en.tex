@@ -1,0 +1,184 @@
+\page{start}{01}{Your Voider}
+Voider connects supported Ethernet phones through paired appliances. You speak on the phone. Voider's screen and four buttons control setup.
+
+\heading{What you need}
+At each end: a Voider with its supported screen and buttons, a prepared microSD card, a supported phone in factory settings, suitable power supplies and Ethernet cables.
+
+At different places, each Voider needs wired Internet through a router. Paired Voiders also work on the same local network without Internet.
+
+For pairing: one erasable USB stick. Keep each Voider's check code separately. This is not a package contents list.
+
+\heading{Find the next step}
+\entry{wire}{Connect the cables}
+\entry{install}{First installation}
+\entry{share}{Pair two Voiders}
+\entry{call}{Make a call}
+\entry{help}{If something does not work}
+\entry{backup}{Backup and restore}
+\note{Review edition}{For candidate 68881a782994, 20 September 2026. Read the open issues on page \pageref{en:security} before use.}
+
+\page{wire}{02}{Connect the cables}
+\wiring{Router / local network}{Voider network connection (eth0)}{Voider phone connection (eth1)}{Phone: network socket}{Functional diagram. It does not show socket positions.}
+\begin{enumerate}
+\item Connect cables with power disconnected.
+\item Connect the phone's network socket to Voider's phone connection, not to the router.
+\item Connect Voider's network connection to a router LAN socket.
+\item Connect the intended power supplies to Voider and phone. Repeat at the other end.
+\end{enumerate}
+You should see setup or \UI{DEVICE CHECK}. After startup checks, \UI{NET} shows \UI{PHONE}: \UI{CONNECTED} when the phone is reachable. A call still needs testing.
+\note{Confirm hardware first}{Enclosure labels, socket positions, power ratings and approved phones are not documented. Have them confirmed before connecting. Do not assume Ethernet supplies power.}
+
+\page{controls}{03}{Buttons and language}
+The four physical buttons follow the four labels at the bottom of the screen, from left to right. Labels change with the screen. An empty field has no action.
+
+\textbf{Press} means press and release. \textbf{Hold} means hold for about one second, then release. Two white bars above a label mark a held action. Read each new screen before pressing again.
+\shot{language}{Real display rendering with example data.}
+\begin{enumerate}
+\item From Home, press \UI{NET}, then \UI{SYSTEM}, then \UI{LANGUAGE}.
+\item Press \UI{NEXT} until English appears. Press \UI{TRY}. The labels change now, for this running session.
+\item Hold \UI{SAVE} to keep the language after switching off. Record and confirm the new check code (page \pageref{en:check}).
+\end{enumerate}
+During first setup, press \textbf{Language}, then \textbf{Next}, \textbf{Try} and \textbf{Back}. There is no Save yet. Save after the startup checks. The starting language is English.
+
+\page{install}{04}{First installation}
+Do this only if the screen shows \UI{INSTALL VOIDER}. An already installed Voider starts with \UI{DEVICE CHECK}; continue on the next page.
+\shot{factory-READY}{The installation screen. Hold the second button to start.}
+\begin{enumerate}
+\item Select your language if needed (page \pageref{en:controls}). Hold \UI{INSTALL}.
+\item Wait while the phase and percentage change. Keep power connected. The installer is already on the card; it does not need an Internet download.
+\item At \UI{INSTALL COMPLETE}, write down the displayed check code. Label your note for this particular Voider. It is your first reference.
+\item Press \UI{REBOOT} once. The display goes black during the restart. Wait for \UI{DEVICE CHECK}.
+\end{enumerate}
+Installation creates a unique identity. Repeat on the other Voider; keep its code separately. The restart needs your button press.
+
+If \UI{INSTALL FAILED} appears, note the message. Hold \UI{RETRY} after the cause is resolved, or hold \UI{POWER} to switch off.
+
+\page{check}{05}{Check at every start}
+\begin{enumerate}
+\item Wait for \UI{DEVICE CHECK} to show \UI{PASSED}. This checks the installed system. Press \UI{NEXT}.
+\item At \UI{YOUR CHECK}, compare the code with your separate record for \emph{this} Voider. \UI{FULL} shows the full fingerprint; \UI{BACK} returns.
+\item If it matches, press \UI{MATCH}. You should see \UI{PASSED}. Press \UI{HOME}. Normal connections can now start.
+\end{enumerate}
+\shot{integrity_state}{Example only. Never use the code in this picture as your reference.}
+\textbf{Different or missing record?} Do not guess. If the code differs unexpectedly, hold \UI{DIFFER}, then hold \UI{POWER}. Have the cause checked. A failed device check also blocks normal operation.
+
+\textbf{After your own saved change:} \UI{STATE UPDATED} shows a new code. Write it down, check your copy, then press \UI{I RECORDED IT}. The previous screen returns directly. Use \UI{MATCH}/\UI{DIFFER} only when comparing with your saved record at startup. Pairing, saved settings and deletion can change it. Keep the old note with the reason for the change. A normal clean restart does not change it.
+
+\page{share}{06}{Pair: first Voider}
+Pairing gives two Voiders the information they need to connect. Choose one as A and the other as B. These are names for this guide, not screen labels. One transfer allows calls in both directions.
+\transfer{A: \UI{SHARE}}{Carry the stick}{B: \UI{ADD}}
+\begin{enumerate}
+\item Insert one USB storage stick and remove other storage sticks. On A, press \UI{LINKS}, then \UI{SHARE}. Voider selects the stick immediately. If it is missing, insert it and press \UI{RETRY}.
+\item At \UI{ERASE USB}, check the shown USB model. Hold \UI{ERASE} only if all files on that stick may be lost. \UI{CANCEL} leaves this screen without erasing.
+\item Wait for \UI{STATE UPDATED}. Record and confirm A's new code as on page \pageref{en:check}.
+\item At \UI{SAFE TO REMOVE}, remove the stick and press \UI{DONE}. Carry the stick directly to B.
+\end{enumerate}
+\note{Keep this stick private}{It contains secret connection information and is not encrypted by Voider. Do not lend it to anyone else. Use a new Share operation for each different relationship.}
+
+\page{add}{07}{Pair: second Voider}
+\begin{enumerate}
+\item Insert the stick from A. On B, press \UI{LINKS}, then \UI{ADD}. Voider selects the stick immediately. If it is missing, insert it and press \UI{RETRY}. A confirmation screen shows \UI{VALID VOIDER KEY}. This screen does not show a pairing fingerprint. The bundle has been read and validated without changing the stick.
+\item Hold \UI{ADD} again to import. This reads the stick; it does not erase it. Wait for \UI{STATE UPDATED}.
+\item Record and confirm B's new check code. At \UI{SAFE TO REMOVE}, remove the stick and press \UI{DONE}. Store it safely.
+\item Keep both Voiders on. Open the connection and wait for \UI{CONNECTED}. Then try a call.
+\end{enumerate}
+\note{Two different checks}{A's and B's startup check codes belong to different devices. They need not match each other. Compare each only with its own record.}
+\heading{Pairing fingerprint: current limit}
+The software records a separate fingerprint for the USB bundle. This candidate has no display page for comparing that fingerprint between A and B. \UI{VALID VOIDER KEY} is not a human identity check. If you require that comparison, stop here and have the product gap resolved. Do not substitute the startup codes.
+
+If an error appears, follow page \pageref{en:help}. Do not repeat Share just because the connection is still waiting.
+
+\page{call}{08}{Make and receive calls}
+\begin{enumerate}
+\item Press \UI{LINKS}, then \UI{OPEN}. Choose with \UI{PREV} or \UI{NEXT}.
+\item Wait for \UI{CONNECTED}. Read the address on \UI{DIAL}.
+\item In the phone's \textbf{Direct IP Call} function, enter that address and start the call.
+\item The other phone should ring. Lift the handset to answer. Check sound in both directions. Hang up to end.
+\end{enumerate}
+\shot{contact}{Example: dial 10.1.2.1 for this connection. Use your own displayed address.}
+Voider's buttons do not dial. Either person can call. A changing incoming 172.16.x.x caller address is not a dial target; use the Voider connection screen.
+\note{Phone steps incomplete}{The approved phone model, its Direct IP Call menu and exact dialing keys still need confirmation before customer release.}
+
+\page{manage}{09}{Manage relationships}
+\textbf{Add another person:} repeat pages \pageref{en:share}–\pageref{en:add} with a new \UI{SHARE} on the chosen A. The existing list still offers \UI{SHARE} and \UI{ADD}. You do not need to pair twice for two-way calls.
+
+\UI{CLIENT} and \UI{SERVER} describe local roles, not people. A Share creates a Client entry on A; Add creates a Server entry on B. Keep your own note of who uses each entry. The display does not offer renaming.
+
+\textbf{Delete one relationship:}
+\begin{enumerate}
+\item \UI{LINKS} \arr \UI{OPEN}; select the entry with \UI{PREV}/\UI{NEXT}.
+\item \UI{MORE} \arr \UI{REMOVE}. Check the entry name, then hold \UI{REMOVE}.
+\item Record and confirm the new code. The entry disappears locally. The other Voider's list is not automatically cleaned up. This device rejects that removed USB bundle on import.
+\end{enumerate}
+
+\textbf{Retry one relationship:} Open the entry, choose \UI{MORE} \arr \UI{RETRY}, then hold \UI{RETRY}. Pairing is kept; other connections keep running.
+
+\textbf{Factory reset:} \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{RESET}, then \UI{NEXT} and held \UI{RESET}. This removes all relationships and the SSH access key, switches SSH off and creates new device identities. Old peers need new pairing. Some settings, including language, remain. Record the new code. Do not use reset to fix a slow connection.
+
+\page{status}{10}{Read the connection status}
+\textbf{\UI{NET}} opens Internet and phone status. \UI{PHONE}: \UI{CONNECTED} means Voider can reach the phone.
+\textbf{Home totals:} 1/2 means one of two saved relationships is connected. Clients and Servers are counted separately. It is not a count of calls.
+
+\textbf{\UI{CONNECTED}:} a path to the other Voider is active. \textbf{\UI{CONNECTING}:} it is trying. \textbf{\UI{OFFLINE}:} no active path is shown. This alone does not prove that the other Voider is switched off.
+
+Voider normally tries \UI{LAN}, then \UI{DIRECT}, then \UI{PRIVATE} (WireGuard through routers), then \UI{TOR}. The displayed method belongs to that relationship. LAN also uses WireGuard. Connections show \UI{LAN4}, \UI{LAN6}, \UI{DIRECT4} or \UI{DIRECT6} for the selected IP version.
+
+\textbf{Give it time.} Checks, clock setup and Tor startup can take minutes. A Tor recovery attempt has a 90-second window; the full connection process can take longer. There is no guaranteed completion time. Leave both devices on while the network returns. Re-pairing does not speed this up.
+
+On the same local network, a connected LAN relationship can work even if the Internet line is unavailable. Phone reachability is a separate check.
+
+\textbf{\UI{PATHS}:} normally leave all seven paths on. For an intentional change: \UI{UP}/\UI{DOWN} selects, \UI{REMOVE}/\UI{ADD} switches availability. \UI{BACK} then held \UI{APPLY} saves; confirm the new code. \UI{CANCEL} returns to editing. At least one path must remain on. Restricting paths can prevent calls.
+
+\page{help}{11}{If something does not work}
+\begin{enumerate}
+\item Check both Voider screens. Complete both startup checks. Confirm that the other person has also done this.
+\item Press \UI{NET}. For a missing phone, check its power and cable to the phone connection. For a missing network, check the uplink cable and router.
+\item Keep both devices on and allow several minutes. If still offline, press \UI{RETRY} in \UI{NETWORK}; hold \UI{RETRY} on the next screen. This restarts network checks and may interrupt a call.
+\item If it still fails, write down the screen message and the selected connection. Keep pairing and check-code records. Do not erase or reset as a routine repair.
+\end{enumerate}
+\textbf{USB:} The screen distinguishes not detected, disconnected, replaced, read, write and verification errors. Use one stick. Mounted or unsafe media are refused. After an error, reopen the action and select the stick again.
+
+\textbf{No sound or no ringing:} recheck the selected address and both phones. A green connection or phone ping is not a test of speech. No phone web login or phone web configuration is part of setup.
+
+\textbf{Switch off normally:} Home \arr \UI{POWER}, then hold \UI{POWER}. You see \UI{POWERING OFF}; data is saved and the panel goes black as shutdown starts. Leave time for shutdown before removing power. A black panel alone is not proof of a completed shutdown.
+
+\textbf{Restart normally:} Home \arr \UI{POWER}, then \UI{REBOOT} to its right. Hold \UI{REBOOT} on the confirmation screen. Saved relationships remain; complete the normal checks after boot.
+
+\page{backup}{12}{Save a backup}
+A backup contains this device's saved identity, relationships, keys and settings. It does not back up the phone or the whole system card. The files are not encrypted. Keep the stick as carefully as a key to your device.
+\begin{enumerate}
+\item From Home: \UI{NET} \arr \UI{SYSTEM} \arr \UI{BACKUP}.
+\item Insert one spare USB stick. Hold \UI{BACKUP}.
+\item Read \UI{ERASE USB}. All files on that stick will be erased. Hold \UI{ERASE} only if that is intended.
+\item Wait for \UI{SAFE TO REMOVE}, then remove the stick. Label it with the device, date and its current check code. Keep separate backups for A and B.
+\end{enumerate}
+\heading{Restore}
+Insert the backup stick. Open \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{RESTOR}, then press \UI{CHECK}. Voider reads and validates the backup without changing the stick. It must match the installed system.
+
+Hold \UI{RESTOR} only to replace all saved settings, identities and connections with this backup. Later changes are lost. Record the new check code and press \UI{I RECORDED IT}. Remove the stick, then hold \UI{REBOOT} to apply. Old running settings cannot overwrite the restored backup. After restart, compare the recorded code using \UI{MATCH} or \UI{DIFFER}.
+
+\page{ssh}{13}{Optional: remote access}
+SSH lets a trusted administrator manage Voider from a computer. It is not needed for calls. Open \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{SSH}. The screen shows \UI{MANAGEMENT ON} or \UI{MANAGEMENT OFF}.
+
+\textbf{Switch on or off:} press \UI{ON} or \UI{OFF}, then hold the same label on the confirmation screen. Record and confirm the new code. Off blocks new management logins but keeps the key. Existing sessions may remain. The internal call transport is separate.
+
+\textbf{Create or replace a key:}
+\begin{enumerate}
+\item Select \UI{LOGIN KEY}. Read the create or replace question. Replacement makes the old login key stop working. Hold \UI{CONFIRM}.
+\item Insert one erasable stick and press \UI{CHECK}. Hold \UI{ERASE} to erase all its partitions and files. Voider writes and verifies the new key before replacing access.
+\item Record and confirm the new code. SSH is now on. At \UI{SAFE TO REMOVE}, remove the stick and press \UI{DONE}. Protect the stick. It holds \texttt{voider-admin} (private login key) and \texttt{voider-admin.pub} (public key). The private key has no passphrase.
+\end{enumerate}
+\textbf{Remove permanently:} select \UI{REMOVE}, then hold \UI{REMOVE}. This revokes the login key and leaves SSH off. Record the new code. A USB failure keeps the previous key and access setting. Voider keeps only the public half; it cannot recover a lost private key.
+
+\page{security}{14}{What the checks mean}
+\textbf{Device check} checks the installed system against its recorded values. \textbf{Your check} lets you compare saved state with your own separate record. Neither proves the identity of the person holding the other phone.
+
+\textbf{Pairing} establishes shared secrets. The current display cannot show the pairing fingerprint for human comparison (page \pageref{en:add}). Protect pairing sticks and backups.
+
+\textbf{Network protection:} WireGuard protects the LAN, direct and router-traversal paths. On the Tor path, Tor supplies encryption. The tundup component supplies authenticated plaintext: it checks authenticity and rejects replays, but does not encrypt the call data itself. Do not assume the local phone cable is encrypted.
+
+The custom protocol has not been independently audited. Voider does not guarantee anonymity or prevent traffic analysis. Stolen pairing secrets can also put past sessions at risk.
+
+\textbf{SSH boundary:} root access needs a key and a private network on the Ethernet uplink. No passwords, phone-side, public-WAN or Tor login, or forwarding. A prepared key enables installation SSH; no key means off. Installed devices require both startup checks. The administrator must verify the host key. The display has no host-key page or factory SSH switch.
+
+\mini{\textbf{Before customer release:} confirm ports, power, phone keys and factory SSH controls; resolve pairing verification. Native language and beginner review remain needed. Fresh installations and release tests remain open. The Tor observation was 601 seconds, not one hour. This manual does not declare the image ready for sale.}

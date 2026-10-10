@@ -3,7 +3,7 @@ name="voider-tor-netns-socks"
 description="Prepare voider Tor netns SOCKS dummy IP before Tor starts"
 
 depend(){
- need voider-appliance net
+ need voider-appliance voider-firewall
  before tor
  before voider
 }

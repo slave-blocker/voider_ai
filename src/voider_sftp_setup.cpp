@@ -348,6 +348,7 @@ static void setup_tor(){
     block += "# BEGIN voider managed torrc\n";
     block += "# voider node hidden service: SFTP control + tundup fallback\n";
     block += "# Managed by voider-sftp-setup; old voider Tor blocks are replaced on every apply.\n";
+    block += "DataDirectory "+C.tor_dot_dir+"\n";
     block += "SocksPort "+C.socks_host+":"+std::to_string(C.socks_port)+" IsolateSOCKSAuth\n";
     block += "SocksPort "+C.tor_netns_socks_ip+":"+std::to_string(C.tor_netns_socks_port)+" IsolateSOCKSAuth\n";
     block += "SocksPolicy accept 127.0.0.1\n";

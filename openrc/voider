@@ -1,60 +1,24 @@
 #!/sbin/openrc-run
-
 name="voider"
-description="voider supervisor"
+description="Voider connection coordinator"
+command="/usr/local/sbin/voider-peerd"
+supervisor="supervise-daemon"
 pidfile="/run/voider.pid"
-
+respawn_delay=2
+respawn_max=5
+respawn_period=60
+retry="TERM/20/KILL/5"
+output_log="/run/voider/peerd-service.log"
+error_log="$output_log"
+healthcheck_delay=15
+healthcheck_timer=10
 depend() {
-    need voider-appliance voider-wan voider-phone
+    need voider-appliance voider-firewall voider-wan voider-phone voider-nfqd
+    after chronyd tor sshd
 }
-
 start_pre() {
-    mkdir -p /run/voider
-    rm -f /run/voider.pid
-    /usr/local/sbin/voider-appliance-boot gate || return 1
-    /usr/local/sbin/voiderctl rules reload >/run/voider/last-firewall-start 2>&1 || return 1
-    rc-service chronyd start || return 1
-    rc-service voider-tor-netns-socks start || return 1
-    rc-service tor start || return 1
-    /usr/local/sbin/voider-sftp-setup slots || return 1
-    rc-service sshd start || return 1
+    /usr/local/sbin/voider-appliance-boot gate
 }
-
-start() {
-    ebegin "Starting voider"
-    mkdir -p /run/voider
-    nohup /usr/local/sbin/voider-superd >/run/voider/superd.log 2>&1 &
-    echo $! > /run/voider.pid
-    sleep 2
-    if kill -0 "$(cat /run/voider.pid)" 2>/dev/null; then
-        eend 0
-    else
-        eend 1
-    fi
-}
-
-stop() {
-    ebegin "Stopping voider"
-    if [ -s /run/voider.pid ]; then
-        kill "$(cat /run/voider.pid)" 2>/dev/null || true
-        sleep 1
-        kill -9 "$(cat /run/voider.pid)" 2>/dev/null || true
-    fi
-    pkill -x voider-superd 2>/dev/null || true
-    pkill -x voider-peerd 2>/dev/null || true
-    pkill -x voider-nfqd 2>/dev/null || true
-    rm -f /run/voider.pid
-    eend 0
-}
-
-status() {
-    if [ -s /run/voider.pid ] && kill -0 "$(cat /run/voider.pid)" 2>/dev/null; then
-        ebegin "status"
-        echo "voider running pid $(cat /run/voider.pid)"
-        eend 0
-    else
-        ebegin "status"
-        echo "voider not running"
-        eend 3
-    fi
+healthcheck() {
+    /usr/local/sbin/voider-peerd --healthcheck
 }

@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/prctl.h>
 #include <sys/socket.h>
 #include <time.h>
 #include <unistd.h>
@@ -487,6 +488,10 @@ static int port_number(const char *s){
     return *s&&!*end&&n>0&&n<=65535?(int)n:0;
 }
 int main(int argc,char **argv){
+    if(getenv("VOIDER_OWNED_CHILD")){
+        pid_t parent=getppid();
+        if(parent<=1||prctl(PR_SET_PDEATHSIG,SIGTERM)||getppid()!=parent)return 1;
+    }
     if(argc<2)return 2;
     server=!strcmp(argv[1],"server");
     if((!server&&strcmp(argv[1],"client"))||(argc!=(server?5:8)&&argc!=(server?6:9))){

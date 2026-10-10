@@ -1,0 +1,20 @@
+#!/sbin/openrc-run
+description="Voider restricted SFTP and optional LAN management"
+command="/usr/sbin/sshd"
+[ ! -x /usr/sbin/sshd.pam ] || command="/usr/sbin/sshd.pam"
+command_args="-D -e"
+supervisor="supervise-daemon"
+pidfile="/run/voider-sshd.pid"
+respawn_delay=3
+respawn_max=5
+respawn_period=60
+retry="TERM/10/KILL/2"
+output_log="/run/voider/sshd.log"
+error_log="$output_log"
+depend() {
+    need voider-appliance voider-firewall
+}
+start_pre() {
+    /usr/local/sbin/voider-appliance-boot gate || return 1
+    "$command" -t
+}

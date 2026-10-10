@@ -13,6 +13,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "voider_config.hpp"
+#include "voider_runtime.hpp"
 #include "voider_util.hpp"
 
 #include "voider_wan_ipv6.hpp"
@@ -226,6 +227,7 @@ std::string peer_port,const std::string&peerkey,long requested_ptime=0){
     return 0;
 }
 int main(int ac,char**av){
+    if(!vr::guard_parent())return 1;
     C=cfg();
     if(ac<2){
         std::cerr<<"usage: voider-holepunch run ROLE ID 4|6 PEER_IP PEER_PORT WGPEER [PUNCH_AT] | cleanup ROLE ID\n";

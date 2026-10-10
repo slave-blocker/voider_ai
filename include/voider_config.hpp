@@ -134,7 +134,7 @@ struct Cfg {
     sip=5060,
     qc=10,
     qp=12,
-    bypass=1,
+    bypass=0,
     maxc=253,
     maxs=253,
     maxp=506;

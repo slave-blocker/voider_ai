@@ -29,6 +29,7 @@
 
 #include "voider_config.hpp"
 #include "voider_util.hpp"
+#include "voider_runtime.hpp"
 
 #include "voider_wan_ipv6.hpp"
 #include "voider_transport_allowlist.hpp"
@@ -84,6 +85,8 @@ struct Peer {
     Clock::time_point next_action=Clock::now();
     Job job;
     pid_t tor_pid=0;
+    pid_t translator_pid=0;
+    Clock::time_point translator_retry=Clock::now();
     bool tun_configured=false;
     int health_failures=0;
     Clock::time_point next_recovery=Clock::now();
@@ -95,7 +98,7 @@ struct Peer {
         std::condition_variable wake;
         std::string secret,nonce,endpoint,request;
         unsigned port=0;
-        bool discovering=false;
+        bool discovering=false,stop_request=false;
         Method method=Method::None;
         std::string state="connecting";
         Clock::time_point updated=Clock::now();
@@ -212,7 +215,11 @@ static pid_t spawn(const std::vector<std::string>& args,const std::string& outpu
     posix_spawnattr_init(&attr);
     if(group){posix_spawnattr_setflags(&attr,POSIX_SPAWN_SETPGROUP);posix_spawnattr_setpgroup(&attr,0);}
     pid_t child=0;
-    int result=posix_spawnp(&child,raw[0],&files,&attr,raw.data(),environ);
+    std::vector<char*> environment;
+    for(char** value=environ;*value;value++)if(std::string(*value).rfind("VOIDER_OWNED_CHILD=",0)!=0)environment.push_back(*value);
+    char owned[]="VOIDER_OWNED_CHILD=1";
+    environment.push_back(owned);environment.push_back(nullptr);
+    int result=posix_spawnp(&child,raw[0],&files,&attr,raw.data(),environment.data());
     posix_spawnattr_destroy(&attr);posix_spawn_file_actions_destroy(&files);
     return result?0:child;
 }
@@ -241,11 +248,7 @@ static int poll_job(Peer& peer){
 
 static void cancel_job(Peer& peer){
     if(!peer.job.pid)return;
-    kill(-peer.job.pid,SIGTERM);
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    kill(-peer.job.pid,SIGKILL);
-    waitpid(peer.job.pid,nullptr,0);
-    peer.job.pid=0;
+    vr::stop_child(peer.job.pid,true);
     if(peer.job.cap2){--cap2_jobs;peer.job.cap2=false;}
 }
 
@@ -352,8 +355,7 @@ static void stop_tor(Peer& peer){
         if(command.find("tundup-v7-secure")!=std::string::npos&&command.find(name)!=std::string::npos)peer.tor_pid=saved;
     }
     if(peer.tor_pid){
-        kill(peer.tor_pid,SIGTERM);std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        kill(peer.tor_pid,SIGKILL);waitpid(peer.tor_pid,nullptr,0);peer.tor_pid=0;
+        vr::stop_child(peer.tor_pid);
     }
     fs::remove(tor_pid_file(peer));
     std::string target=peer.role=="client"?"172.29."+std::to_string(peer.cert_slot)+".1/32":"172.29.1.1/32";
@@ -576,6 +578,28 @@ static void initialize(Peer& peer){
     reset(peer,"slot-start");
 }
 
+static bool translator_ready(Peer& peer){
+    if(peer.role=="client")return vr::fresh("/run/voider/nfqd.status",5000);
+    std::string status="/run/voider/nfqd-server-"+std::to_string(peer.id)+".status";
+    if(peer.translator_pid>0){
+        int result=waitpid(peer.translator_pid,nullptr,WNOHANG);
+        if(result==peer.translator_pid||(result<0&&errno==ECHILD)){
+            peer.translator_pid=0;fs::remove(status);peer.translator_retry=Clock::now()+std::chrono::seconds(2);
+        }else if(!vr::fresh(status,10000)&&Clock::now()>=peer.translator_retry){
+            vr::stop_child(peer.translator_pid);fs::remove(status);
+            peer.translator_retry=Clock::now()+std::chrono::seconds(2);
+        }
+    }
+    if(!peer.translator_pid&&Clock::now()>=peer.translator_retry){
+        fs::remove(status);
+        peer.translator_pid=spawn({"ip","netns","exec","netns"+std::to_string(peer.id),
+            "/usr/local/sbin/voider-nfqd","--netns-server",std::to_string(peer.id),std::to_string(peer.cert_slot)},
+            "/run/voider/nfqd-server-"+std::to_string(peer.id)+".log",false);
+        peer.translator_retry=Clock::now()+std::chrono::seconds(10);
+    }
+    return vr::fresh("/run/voider/nfqd.status",5000)&&vr::fresh(status,5000);
+}
+
 static void begin_proof(Peer& peer,Method method,const std::string& endpoint){
     peer.candidate=method;peer.proven_method=method;
     set_endpoint(peer,endpoint);
@@ -693,6 +717,9 @@ static void step(Peer& peer,LanDiscovery& lan){
         if(recover_wireguard(peer))return;
     }
     if(peer.phase==Phase::Lan){
+        if(now>=peer.next_action){
+            lan.query(peer);peer.next_action=now+std::chrono::milliseconds(800);
+        }
         if(!peer.lan_endpoint.empty()){
             Method method=peer.lan_endpoint.front()=='['?Method::Lan6:Method::Lan4;
             if(available(method))begin_proof(peer,method,peer.lan_endpoint);
@@ -708,8 +735,6 @@ static void step(Peer& peer,LanDiscovery& lan){
             peer.error.clear();
             peer.phase=Phase::Remote;peer.deadline=now+std::chrono::seconds(190);peer.next_action=now;
             log(peer,"LAN unavailable; starting CAP2");
-        }else if(now>=peer.next_action){
-            lan.query(peer);peer.next_action=now+std::chrono::milliseconds(800);
         }
         return;
     }
@@ -790,23 +815,26 @@ static void acknowledge(const fs::path& request,bool ok){
 }
 
 static void worker(Peer& peer,LanDiscovery& lan){
+    std::string stopped_request;
     try {
         initialize(peer);
         auto check=Clock::now();unsigned mask=paths.load();
         // Spread periodic probes instead of waking every connection together.
         std::this_thread::sleep_for(std::chrono::milliseconds((peer.id*37+(peer.role=="server"?137:0))%1000));
         while(running&& !peer.stop){
-            std::string request;
+            std::string request;bool stop_request=false;
             {std::lock_guard<std::mutex> guard(peer.shared.mutex);
-             request.swap(peer.shared.request);
+             request.swap(peer.shared.request);stop_request=peer.shared.stop_request;peer.shared.stop_request=false;
              if(!peer.shared.endpoint.empty()){peer.lan_endpoint=std::move(peer.shared.endpoint);peer.shared.endpoint.clear();}}
             if(!request.empty()){
+                if(stop_request){stopped_request=request;break;}
                 peer.proven_method=Method::None;reset(peer,"operator request");acknowledge(request,true);
             }
             auto now=Clock::now();
             if(now>=check){
                 int cert=imported_index(peer);
                 if(cert!=peer.cert_slot||key_for(peer)!=peer.peer_key||read1(secret_path(peer))!=peer.secret){
+                    if(cert!=peer.cert_slot)vr::stop_child(peer.translator_pid);
                     disable_wireguard(peer);peer.cert_slot=cert;peer.proven_method=Method::None;
                     reset(peer,"pair material changed");
                 }
@@ -818,16 +846,24 @@ static void worker(Peer& peer,LanDiscovery& lan){
                 }
                 check=now+std::chrono::seconds(1);
             }
+            bool sip_ready=translator_ready(peer);
             step(peer,lan);
             std::unique_lock<std::mutex> guard(peer.shared.mutex);
             peer.shared.discovering=peer.phase==Phase::Lan;
-            peer.shared.method=peer.phase==Phase::Up?peer.selected:Method::None;
-            peer.shared.state=peer.phase==Phase::Up?"connected":(peer.was_up||peer.phase==Phase::Backoff?"offline":"connecting");
+            peer.shared.method=peer.phase==Phase::Up&&sip_ready?peer.selected:Method::None;
+            peer.shared.state=peer.phase==Phase::Up&&sip_ready?"connected":(peer.was_up||peer.phase==Phase::Backoff?"offline":"connecting");
             peer.shared.updated=Clock::now();
             peer.shared.wake.wait_for(guard,std::chrono::milliseconds(100),[&]{return peer.stop||!running||!peer.shared.request.empty();});
         }
     }catch(const std::exception& e){log(peer,std::string("worker error: ")+e.what());}
     cancel_job(peer);cleanup_hole(peer);stop_tor(peer);disable_wireguard(peer);
+    vr::stop_child(peer.translator_pid);
+    if(peer.role=="server")fs::remove("/run/voider/nfqd-server-"+std::to_string(peer.id)+".status");
+    if(!stopped_request.empty()||!fs::exists(peer_conf(peer))){
+        std::lock_guard<std::mutex> guard(setup_mutex);
+        run("/usr/local/sbin/voider-netns "+peer.role+"-down "+std::to_string(peer.id)+" >/dev/null 2>&1");
+    }
+    if(!stopped_request.empty())acknowledge(stopped_request,true);
     peer.done=true;
 }
 
@@ -858,14 +894,19 @@ static void requested_resets(Peers& peers){
     std::error_code error;
     for(const auto& entry:fs::directory_iterator("/run/voider/peer-reset",error)){
         if(error||!entry.is_regular_file(error)||entry.path().extension()!=".req")continue;
-        std::string role,extra;int id=0;std::ifstream input(entry.path());input>>role>>id;
-        bool valid=input&&!(input>>extra)&&(role=="client"||role=="server")&&id>=2&&id<=254;
+        std::string role,action,extra;int id=0;std::ifstream input(entry.path());input>>role>>id;
+        bool valid=bool(input)&&(role=="client"||role=="server")&&id>=2&&id<=254;
+        if(input>>action)valid=valid&&action=="stop"&&!(input>>extra);
         auto found=valid?peers.find(peer_id(role,id)):peers.end();
         bool ok=found!=peers.end()&&!found->second->stop&&fs::exists(peer_conf(*found->second));
         if(ok){
             auto& shared=found->second->shared;std::lock_guard<std::mutex> guard(shared.mutex);
             if(!shared.request.empty())continue;
-            shared.request=entry.path();shared.method=Method::None;shared.state="connecting";shared.wake.notify_one();
+            shared.request=entry.path();shared.stop_request=action=="stop";
+            shared.method=Method::None;shared.state="connecting";shared.wake.notify_one();
+        }else if(valid&&action=="stop"){
+            std::lock_guard<std::mutex> guard(setup_mutex);
+            acknowledge(entry.path(),run("/usr/local/sbin/voider-netns "+role+"-down "+std::to_string(id)+" >/dev/null 2>&1")==0);
         }else acknowledge(entry.path(),false);
         fs::remove(entry.path(),error);
     }
@@ -955,6 +996,8 @@ static int selftest(){
 int main(int argc,char** argv){
     C=cfg();paths=path_mask(vta::canonical(C.transports_available));
     if(argc==2&&std::string(argv[1])=="--selftest")return selftest();
+    if(argc==2&&std::string(argv[1])=="--healthcheck")return vr::fresh(C.status,10000)?0:1;
+    vr::Lock owner("/run/voider/peerd.lock");if(!owner.held())return 1;
     signal(SIGTERM,[](int){running=false;});signal(SIGINT,[](int){running=false;});
     LanDiscovery lan;Peers peers;
     auto next=Clock::now();
@@ -963,6 +1006,7 @@ int main(int argc,char** argv){
         if(Clock::now()>=next){
             paths=path_mask(vta::canonical(cfg().transports_available));
             ntp_ready=local_ntp_ready(cap("timeout 2 chronyc tracking 2>/dev/null"));
+            if(ntp_ready&&!fs::exists("/run/voider/clock-initialized"))vr::publish("/run/voider/clock-initialized","synchronized\n");
             reconcile(peers,lan);requested_resets(peers);write_status(peers);
             next=Clock::now()+std::chrono::seconds(1);
         }

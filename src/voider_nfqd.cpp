@@ -33,6 +33,7 @@
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 #include <sys/socket.h>
+#include <poll.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -43,10 +44,12 @@
 #include <vector>
 
 #include "voider_config.hpp"
+#include "voider_runtime.hpp"
 
 static Cfg C;
 static int NS_X = 0;
 static int NS_S = 0;
+static volatile sig_atomic_t running=1;
 
 struct RewriteResult {
     bool changed = false;
@@ -470,6 +473,9 @@ static int cb(nfq_q_handle* qh, nfgenmsg*, nfq_data* nfa, void* d) {
 
 int main(int ac, char** av) {
     C = cfg();
+    if(ac==2&&!strcmp(av[1],"--healthcheck"))return vr::fresh("/run/voider/nfqd.status",5000)?0:1;
+    if(!vr::guard_parent())return 1;
+    signal(SIGTERM,[](int){running=0;});signal(SIGINT,[](int){running=0;});
 
     if (ac > 1 && !strcmp(av[1], "--self-test")) {
         puts("OK");
@@ -486,6 +492,8 @@ int main(int ac, char** av) {
         netns_server = true;
     }
 
+    vr::Lock owner(netns_server?"/run/voider/nfqd-server-"+std::to_string(NS_X)+".lock":"/run/voider/nfqd.lock");
+    if(!owner.held())return 1;
     auto* h = nfq_open();
     if (!h) {
         return 1;
@@ -524,11 +532,27 @@ int main(int ac, char** av) {
 
     int fd = nfq_fd(h);
     std::vector<char> buf(65536);
-
-    while (true) {
-        int r = recv(fd, buf.data(), buf.size(), 0);
-        if (r >= 0) {
-            nfq_handle_packet(h, buf.data(), r);
+    std::string status=netns_server?"/run/voider/nfqd-server-"+std::to_string(NS_X)+".status":"/run/voider/nfqd.status";
+    long long next_status=0;
+    while (running) {
+        if(vr::monotonic_ms()>=next_status){
+            if(!vr::publish(status,vr::stamp()))break;
+            next_status=vr::monotonic_ms()+1000;
+        }
+        pollfd input{fd,POLLIN,0};
+        int ready=poll(&input,1,1000);
+        if(ready<0){if(errno==EINTR)continue;break;}
+        if(input.revents&(POLLERR|POLLHUP|POLLNVAL))break;
+        if(ready>0){
+            int r=recv(fd,buf.data(),buf.size(),0);
+            if(r<0){if(errno==EINTR||errno==ENOBUFS)continue;break;}
+            if(nfq_handle_packet(h,buf.data(),r)<0)break;
         }
     }
+    std::filesystem::remove(status);
+    if(q1)nfq_destroy_queue(q1);
+    if(q3)nfq_destroy_queue(q3);
+    if(qn)nfq_destroy_queue(qn);
+    nfq_close(h);
+    return running?1:0;
 }

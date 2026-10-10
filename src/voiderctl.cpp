@@ -15,10 +15,6 @@ static bool close_policies(){
     return in4==0&&fwd4==0&&in6==0&&fwd6==0;
 }
 
-static std::string qb(){
-    return C.bypass?" --queue-bypass":"";
-}
-
 // ── Rule helpers ────────────────────────────────────────────────
 // add()     = append (-A). Rules end up in code order (top→bottom).
 // add_top() = insert (-I). Only for anti-lockout rules.
@@ -82,16 +78,19 @@ static void del_notrack(const std::string&match){
 
 // ── SIP NFQUEUE helpers (raw PREROUTING, NOTRACK + NFQUEUE) ──
 
-static void add_sip_nfq(const std::string&match,int queue){
-    std::string nfq=match+" -j NFQUEUE --queue-num "+std::to_string(queue)+qb();
+static bool add_sip_nfq(const std::string&match,int queue){
+    std::string nfq=match+" -j NFQUEUE --queue-num "+std::to_string(queue);
     del_notrack(match);
+    del("raw",nfq+" --queue-bypass");
     del("raw",nfq);
-    add_raw(nfq);
+    if(!add_raw(nfq))return false;
     add_notrack(match);
+    return true;
 }
 
 static void del_sip_nfq(const std::string&match,int queue){
-    del("raw",match+" -j NFQUEUE --queue-num "+std::to_string(queue)+qb());
+    del("raw",match+" -j NFQUEUE --queue-num "+std::to_string(queue)+" --queue-bypass");
+    del("raw",match+" -j NFQUEUE --queue-num "+std::to_string(queue));
     del_notrack(match);
 }
 
@@ -305,14 +304,13 @@ static bool apply(){
     if(!close_policies())return false;
     if(!add_raw(phone_source_guard()))return false;
     if(!add_raw(phone_dhcp_exception()))return false;
-    apply_filter();
-
-    add_sip_nfq("PREROUTING -i "+C.phone_if+" -s "+C.phone_ip+" -p udp --dport "+std::to_string(C.sip),C.qp);
-    add_sip_nfq("PREROUTING -i "+C.phone_if+" -s "+C.phone_ip+" -p udp --sport "+std::to_string(C.sip),C.qp);
+    if(!add_sip_nfq("PREROUTING -i "+C.phone_if+" -s "+C.phone_ip+" -p udp --dport "+std::to_string(C.sip),C.qp))return false;
+    if(!add_sip_nfq("PREROUTING -i "+C.phone_if+" -s "+C.phone_ip+" -p udp --sport "+std::to_string(C.sip),C.qp))return false;
     for(auto&i:csv(C.client_ifs)){
-        add_sip_nfq("PREROUTING -i "+i+" -p udp --dport "+std::to_string(C.sip),C.qc);
-        add_sip_nfq("PREROUTING -i "+i+" -p udp --sport "+std::to_string(C.sip),C.qc);
+        if(!add_sip_nfq("PREROUTING -i "+i+" -p udp --dport "+std::to_string(C.sip),C.qc))return false;
+        if(!add_sip_nfq("PREROUTING -i "+i+" -p udp --sport "+std::to_string(C.sip),C.qc))return false;
     }
+    apply_filter();
  // No raw NFQUEUE on br+: imported-server SIP is already rewritten inside netnsX.
  // Keep br+ only in filter/FORWARD allow rules for routing between netnsX and phone.
     return true;
@@ -332,12 +330,28 @@ static bool clear(){
     return true;
 }
 
+// Update management admission only. No call-plane rules, queues, routes, or
+// transport listeners are flushed when the display toggles SSH.
+static bool admin_rules(){
+    std::string blocked="INPUT -i "+C.wan_if+" -p tcp --dport 22 -m conntrack --ctstate NEW -j DROP";
+    if(run("iptables -w -t filter -C "+blocked+" 2>/dev/null || iptables -w -t filter -I "+blocked))return false;
+    for(const auto* subnet:{"10.0.0.0/8","172.16.0.0/12","192.168.0.0/16"})
+        del("filter","INPUT -i "+C.wan_if+" -s "+subnet+" -p tcp --dport 22 -j ACCEPT");
+    if(C.admin_ssh_lan&&std::filesystem::is_regular_file(C.admin_auth_keys))
+        for(const auto* subnet:{"10.0.0.0/8","172.16.0.0/12","192.168.0.0/16"}){
+            std::string rule="INPUT -i "+C.wan_if+" -s "+subnet+" -p tcp --dport 22 -j ACCEPT";
+            if(run("iptables -w -t filter -I "+rule))return false;
+        }
+    return true;
+}
+
 int main(int ac,char**av){
     C=cfg();
     if(ac<2)return 2;
     std::string a=av[1];
     if(a=="rules"){
         std::string b=ac>2?av[2]:"apply";
+        if(b=="admin")return admin_rules()?0:1;
         if(b=="clear")return clear()?0:1;
         else if(b=="reload"){
             if(!clear())return 1;

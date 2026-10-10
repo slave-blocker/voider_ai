@@ -12,6 +12,7 @@
 
 #include "voider_config.hpp"
 #include "voider_util.hpp"
+#include "voider_runtime.hpp"
 
 #include "voider_mailbox.hpp"
 #include "voider_transport_protocol.hpp"
@@ -166,6 +167,7 @@ static int selftest(){
 }
 
 int main(int argc,char** argv){
+    if(!vr::guard_parent())return 1;
     if(argc==2&&std::string(argv[1])=="selftest")return selftest();
     if(argc<6)return 2;
     Cfg c=cfg();

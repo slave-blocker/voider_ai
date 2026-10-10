@@ -1,0 +1,14 @@
+#!/sbin/openrc-run
+description="Voider permanent ingress and call security boundary"
+depend() {
+    need voider-appliance
+    before networking voider-wan voider-phone chronyd tor sshd voider-nfqd voider
+}
+start() {
+    /usr/local/sbin/voider-appliance-boot gate || return 1
+    /usr/local/sbin/voiderctl sysctl || return 1
+    /usr/local/sbin/voiderctl rules reload
+}
+stop() {
+    /usr/local/sbin/voiderctl rules clear
+}

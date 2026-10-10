@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "voider_config.hpp"
+#include "voider_runtime.hpp"
 #include "voider_util.hpp"
 
 #include "voider_contacts.hpp"
@@ -104,6 +105,8 @@ struct State{
 static State snapshot(){
     State s;
     auto peer=fields(C.status),wan=fields(C.wan_status),phone=fields(C.phone_status);
+    if(!vr::fresh(C.wan_status,std::max(10000,(C.wan_monitor_sec+10)*1000)))wan.clear();
+    if(!vr::fresh(C.phone_status,std::max(10000,(C.phone_probe_sec+5)*1000)))phone.clear();
     // A frozen daemon must not leave CONNECTED on the physical display.
     auto stamp=peer.find("updated_monotonic_ms");
     if(stamp!=peer.end()){
@@ -996,6 +999,7 @@ static int factory_display(bool loop){
 }
 
 int main(int ac,char**av){
+    if(ac==2&&std::string(av[1])=="--healthcheck")return vr::fresh("/run/voider/display.status",15000)?0:1;
     C=cfg();load_language();std::string mode="ssh",page,render_path;bool loop=false,probe=false,console_probe=false,test=false,factory=false,blank=false;
     for(int i=1;i<ac;i++){
         std::string a=av[i];if(a=="--display")mode="display";else if(a=="--ssh")mode="ssh";else if(a=="--loop")loop=true;
@@ -1019,6 +1023,6 @@ int main(int ac,char**av){
     if(mode!="display"){render_ssh(page,s);return 0;}if(dev.empty()){std::cerr<<"DISPLAY_ERROR no supported physical panel\n";return 1;}
     ConsoleGuard console;console.acquire();
     Framebuffer fb;if(!fb.open_panel(dev)){std::cerr<<"DISPLAY_ERROR cannot open "<<dev<<"\n";return 1;}
-    do{load_language();State now=snapshot();std::string current=read1(C.ui_page_file);current=visible_page(now,current.empty()?page:current);Canvas canvas;if(fs::exists("/run/voider/display-blank")){canvas.clear(OFF);fb.show(canvas);fb.blank();}else{render(canvas,current,now);fb.unblank();fb.show(canvas);}if(loop)std::this_thread::sleep_for(std::chrono::seconds(std::max(1,C.ui_refresh)));}while(loop);
+    do{load_language();State now=snapshot();std::string current=read1(C.ui_page_file);current=visible_page(now,current.empty()?page:current);Canvas canvas;if(fs::exists("/run/voider/display-blank")){canvas.clear(OFF);fb.show(canvas);fb.blank();}else{render(canvas,current,now);fb.unblank();fb.show(canvas);}if(!vr::publish("/run/voider/display.status",vr::stamp()))return 1;if(loop)std::this_thread::sleep_for(std::chrono::seconds(std::max(1,C.ui_refresh)));}while(loop);
     return 0;
 }

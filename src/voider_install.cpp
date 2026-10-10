@@ -357,6 +357,8 @@ static int copy_payload(bool fresh){
         cp("config/voider.conf","/etc/voider/voider.conf");
     }
     cp("scripts/pitft-bridge","/usr/local/sbin/pitft-bridge");
+    cp("scripts/voider-tor","/usr/local/sbin/voider-tor");
+    chmod("/usr/local/sbin/voider-tor",0755);
     cp("openrc/01-quiet-pitft-console.start","/etc/local.d/01-quiet-pitft-console.start");
 
     auto binaries=manifest("config/release-binaries");
@@ -370,7 +372,12 @@ static int copy_payload(bool fresh){
         }
         cp(src,fs::path("/usr/local/sbin")/x);
     }
-    for(const auto& s:services)cp(fs::path("openrc")/s,fs::path("/etc/init.d")/s);
+    // Keep native providers during factory identity creation. Their installed
+    // versions require the integrity seal that this installation will create.
+    for(const auto& s:services){
+        if(s=="tor"||s=="sshd"||s=="chronyd")continue;
+        cp(fs::path("openrc")/s,fs::path("/etc/init.d")/s);
+    }
 
     vu::run("chmod 600 /etc/voider/private/* 2>/dev/null || true");
     return run_or_fail(
@@ -382,13 +389,15 @@ static int copy_payload(bool fresh){
 static int enable_services(){
     vu::run("rc-update del networking boot 2>/dev/null || true");
     vu::run("rc-update del networking default 2>/dev/null || true");
-    vu::run("rc-update del tor default 2>/dev/null || true");
-    vu::run("rc-update del sshd default 2>/dev/null || true");
-    vu::run("rc-update del chronyd default 2>/dev/null || true");
     int rc=run_or_fail(
         "rc-update add voider-appliance boot && "
         "rc-update add voider-wan default && "
         "rc-update add voider-phone default && "
+        "rc-update add voider-firewall default && "
+        "rc-update add voider-nfqd default && "
+        "rc-update add chronyd default && "
+        "rc-update add tor default && "
+        "rc-update add sshd default && "
         "rc-update add local default && "
         "rc-update add voider default",
         "OpenRC service enablement");
@@ -455,12 +464,16 @@ static int finalize_identity_and_state(bool fresh){
     vu::run("rc-service chronyd stop 2>/dev/null || true");
     vu::run("rc-service crond stop 2>/dev/null || true");
     vu::run("rc-service syslog stop 2>/dev/null || true");
+    for(const auto& name:{"tor","sshd","chronyd"}){
+        cp(fs::path("openrc")/name,fs::path("/etc/init.d")/name);
+        if(::chmod((std::string("/etc/init.d/")+name).c_str(),0755))return 50;
+    }
     // Seal the installed-boot dependencies after the existing factory identity
     // generation has finished; it cannot use a not-yet-created integrity seal.
     for(const auto& name:{"networking","sshd","tor","chronyd"}){
         std::string path=std::string("/etc/conf.d/")+name;
         std::ifstream in(path);std::string body((std::istreambuf_iterator<char>(in)),{});
-        body+="\n# Voider activation: DEVICE CHECK + YOUR CHECK\nrc_need=\"voider-appliance\"\n";
+        body+="\n# Voider activation: DEVICE CHECK + YOUR CHECK\nrc_need=\"voider-appliance voider-firewall\"\n";
         write_file(path,body);
     }
     vu::run("sync");

@@ -2,15 +2,10 @@
 /release/
 /image-work/
 /output/
-/artifacts/
-/data/
 *.log
-*.img
-*.img.gz
-*.sha256
-*.meta
 headless.apkovl.tar.gz
 .agents/
 .codex/
 .voider-dev/
-__pycache__/
+
+/artifacts/

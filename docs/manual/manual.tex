@@ -1,0 +1,87 @@
+\documentclass[12pt,a5paper]{article}
+\usepackage[10pt]{type1ec}
+\makeatletter
+\providecommand{\EC@ssfamily}[5]{\DeclareFontShape{#1}{#2}{#3}{#4}{<->#51000}{}}
+\makeatother
+\usepackage[T2A,T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[bulgarian,ngerman,english]{babel}
+\usepackage[a5paper,inner=14mm,outer=14mm,top=13mm,bottom=17mm,footskip=9mm]{geometry}
+\usepackage{graphicx,xcolor,tikz,enumitem,ragged2e,fancyhdr}
+\usetikzlibrary{arrows.meta,positioning}
+\usepackage[unicode,hidelinks]{hyperref}
+\input{ui-labels.tex}
+\pdfmapfile{+cm-super-minimal-t1.map}
+\pdfmapfile{+cm-super-minimal-t2a.map}
+\pdfmapfile{+cm-super-minimal-ts1.map}
+\input{glyphtounicode}\pdfgentounicode=1
+\renewcommand{\familydefault}{\sfdefault}
+\definecolor{navy}{HTML}{0D2B37}
+\definecolor{blue}{HTML}{1C74B3}
+\definecolor{green}{HTML}{2DA65D}
+\definecolor{orange}{HTML}{EF742A}
+\definecolor{cream}{HTML}{F7F4E8}
+\color{navy}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlength{\emergencystretch}{2em}
+\linespread{1.06}
+\setlist[enumerate]{leftmargin=6mm,itemsep=5pt,topsep=4pt,parsep=0pt,label=\textbf{\arabic*.}}
+\setlist[itemize]{leftmargin=5mm,itemsep=3pt,topsep=3pt,parsep=0pt}
+\pagestyle{fancy}\fancyhf{}\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[L]{\fontsize{9}{11}\selectfont VOIDER\enspace /\enspace \LangName}
+\fancyfoot[R]{\fontsize{10}{11}\selectfont\thepage}
+\newcommand{\UI}[1]{\mbox{\textbf{\csname ui@\Lang @#1\endcsname}}}
+\newcommand{\pathway}[1]{{\color{blue}#1}\par}
+\newcommand{\arr}{\,\textrightarrow\,}
+\newcommand{\note}[2]{\par\smallskip{\color{orange}\rule{\linewidth}{2pt}}\par\textbf{#1}\enspace #2\par}
+\newcommand{\mini}[1]{{\fontsize{10}{12}\selectfont #1\par}}
+\newcommand{\shot}[2]{\par\smallskip{\centering\includegraphics[width=65mm]{assets/\Lang/#1.png}\par\vspace{2pt}\mini{#2}}\smallskip}
+\newcommand{\heading}[1]{\par\medskip{\large\bfseries #1}\par\smallskip}
+\newcommand{\page}[3]{\clearpage\phantomsection\label{\Lang:#1}%
+  \ifstrequal{#1}{start}{\pdfbookmark[0]{\LangName}{part-\Lang}}{}%
+  \pdfbookmark[1]{#3}{\Lang-#1}%
+  {\color{blue}\rule{\linewidth}{3pt}}\par\vspace{2pt}%
+  {\fontsize{10}{12}\selectfont\bfseries VOIDER\hfill #2}\par\vspace{4pt}%
+  {\fontsize{23}{25}\selectfont\bfseries #3\par}\vspace{4pt}}
+\newcommand{\entry}[2]{\hyperref[\Lang:#1]{#2}\hfill\pageref{\Lang:#1}\par}
+\newcommand{\wiring}[5]{%
+\begin{center}\begin{tikzpicture}[node distance=5mm,box/.style={draw=blue,line width=1pt,fill=cream,text width=101mm,minimum height=9mm,align=center,font=\small},>={Latex[length=2mm]}]
+\node[box] (router) {#1};
+\node[box,below=10mm of router,fill=navy,text=white] (v) {VOIDER};
+\node[box,below=10mm of v] (phone) {#4};
+\draw[<->,thick] (router)--node[right,font=\footnotesize,fill=white] {#2} (v);
+\draw[<->,thick] (v)--node[right,font=\footnotesize,fill=white] {#3} (phone);
+\end{tikzpicture}\par\mini{#5}\end{center}}
+\newcommand{\transfer}[3]{\begin{center}\begin{tikzpicture}[>={Latex[length=2mm]}]
+\node[fill=blue,text=white,minimum width=27mm,minimum height=12mm] (a) {Voider A};
+\node[draw=navy,minimum width=20mm,minimum height=12mm,right=15mm of a] (u) {USB};
+\node[fill=green,text=navy,minimum width=27mm,minimum height=12mm,right=15mm of u] (b) {Voider B};
+\draw[->,thick] (a)--(u);\draw[->,thick] (u)--(b);
+\end{tikzpicture}\par\mini{#1\enspace\arr\enspace #2\enspace\arr\enspace #3}\end{center}}
+\newcommand{\languagepart}[3]{\clearpage\def\Lang{#1}\def\LangName{#2}\selectlanguage{#3}\input{#1.tex}}
+\providecommand{\ManualLanguage}{all}
+\def\all{all}\def\de{de}\def\en{en}\def\bg{bg}
+\hypersetup{pdftitle={Voider — Deutsch / English / Български},pdfauthor={Voider},pdfsubject={Customer instructions, USB workflow review, 2026-09-21}}
+\begin{document}\RaggedRight
+\ifx\ManualLanguage\all
+\def\LangName{DE / EN / BG}
+{\color{blue}\rule{\linewidth}{7mm}}\par\vspace{13mm}
+{\fontsize{40}{44}\selectfont\bfseries VOIDER}\par\vspace{7mm}
+{\fontsize{21}{26}\selectfont Anleitung\par User manual\par\foreignlanguage{bulgarian}{Ръководство}}\par\vspace{13mm}
+\hyperref[de:start]{\textbf{Deutsch}}\hfill\pageref{de:start}\par\medskip
+\hyperref[en:start]{\textbf{English}}\hfill\pageref{en:start}\par\medskip
+\hyperref[bg:start]{\foreignlanguage{bulgarian}{\textbf{Български}}}\hfill\pageref{bg:start}
+\vfill
+\mini{21.09.2026\enspace /\enspace USB}
+\mini{Prüffassung · Review edition · \foreignlanguage{bulgarian}{Издание за преглед}}
+\mini{Offene Punkte am Ende jeder Sprache.\par Open issues at the end of each language.\par\foreignlanguage{bulgarian}{Отворените въпроси са в края на всеки език.}}
+\languagepart{de}{Deutsch}{ngerman}
+\languagepart{en}{English}{english}
+\languagepart{bg}{Български}{bulgarian}
+\else
+\ifx\ManualLanguage\de\languagepart{de}{Deutsch}{ngerman}\fi
+\ifx\ManualLanguage\en\languagepart{en}{English}{english}\fi
+\ifx\ManualLanguage\bg\languagepart{bg}{Български}{bulgarian}\fi
+\fi
+\end{document}

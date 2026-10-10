@@ -21,6 +21,7 @@
 
 #include "voider_config.hpp"
 #include "voider_util.hpp"
+#include "voider_runtime.hpp"
 
 #include "voider_mailbox.hpp"
 #include "voider_transport_allowlist.hpp"
@@ -508,6 +509,7 @@ static int selftest(){
 
 int main(int argc,char** argv){
     C=cfg();
+    if(!vr::guard_parent())return 1;
     if(argc==2&&std::string(argv[1])=="selftest")return selftest();
     if(argc<4){
         std::cerr<<"usage: voider-cap2 exchange|respond|print ROLE ID | selftest\n";

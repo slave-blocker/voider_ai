@@ -35,6 +35,7 @@ cp -p config/voider.conf "$ROOT/config/voider.conf"
 cp -p config/release-binaries "$ROOT/config/release-binaries"
 cp -p config/release-services "$ROOT/config/release-services"
 cp -p scripts/pitft-bridge "$ROOT/scripts/pitft-bridge"
+cp -p scripts/voider-tor "$ROOT/scripts/voider-tor"
 cp -p scripts/voider-factory-bootstrap "$ROOT/scripts/voider-factory-bootstrap"
 cp -p scripts/voider-factory-dhcp "$ROOT/scripts/voider-factory-dhcp"
 for x in $(cat config/release-services) voider-factory-bootstrap 01-quiet-pitft-console.start; do

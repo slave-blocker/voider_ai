@@ -117,7 +117,7 @@ static int appliance_model(){
     want(display_svc.find("--display-probe")!=std::string::npos&&
          display_svc.find("/dev/tty")==std::string::npos,
          "display service refuses hardware without the supported panel and does not squeeze terminal output");
-    want(wan.find("accept_ra\",\"2")!=std::string::npos&&wan_svc.find("need voider-appliance")!=std::string::npos&&wan_svc.find("rc-service networking start")!=std::string::npos,
+    want(wan.find("accept_ra\",\"2")!=std::string::npos&&wan_svc.find("need voider-appliance voider-firewall networking")!=std::string::npos,
          "WAN starts networking only after the integrity gate, then applies router-mode IPv6 RA handling");
     want(integrity.find("ensure_tor_runtime")!=std::string::npos && boot.find("normalize_live_tor")!=std::string::npos && svc.find("before tor")!=std::string::npos,
          "appliance boot puts volatile Tor runtime state in RAM before tor");
@@ -210,7 +210,7 @@ static int tundup_model(){
         want(std::system("./build/tundup-security-test")==0,
              "tundup v8 authenticates plaintext frames before replay admission");
     want(sftp.find("Match Group \" + C.mailbox_group")!=std::string::npos&&
-         sftp.find("ChrootDirectory \" + C.sftp_base + \"/%u")!=std::string::npos&&
+         sftp.find("ChrootDirectory %h")!=std::string::npos&&
          sftp.find("ForceCommand internal-sftp -d / -u 477 -p")!=std::string::npos&&
          sftp.find("AuthorizedKeysFile \" + C.mailbox_key_dir")!=std::string::npos&&
          sftp.find("chmod 711 \"+C.mailbox_key_dir")!=std::string::npos&&
@@ -240,6 +240,17 @@ static int tundup_model(){
          "DHCP resolver state is RAM-backed under sealed SYSTEM");
     want(install.find("makestep 10 5")!=std::string::npos,
          "Chrony can correct an RTC-less boot after delayed DHCP/DNS, then returns to slew-only operation");
+    want(read_file("openrc/chronyd").find("chown chrony:chrony /run/chrony")!=std::string::npos&&
+         read_file("openrc/chronyd").find("chmod 0750 /run/chrony")!=std::string::npos,
+         "Chrony receives its writable command-socket directory on every RAM-backed boot");
+    auto chrony_service=read_file("openrc/chronyd");
+    want(chrony_service.find("command=\"/usr/sbin/chronyd\"")!=std::string::npos&&
+         chrony_service.find("supervise-daemon")==std::string::npos&&
+         read_file("scripts/voider-tor").find("while ! timeout -k 2 5 chronyc -n waitsync 1 1 0 1")!=std::string::npos&&
+         read_file("openrc/tor").find("voider-tor-netns-socks chronyd")!=std::string::npos,
+         "Tor requires native Chrony startup and keeps retrying bounded clock-readiness checks");
+    want(sftp.find("DataDirectory \"+C.tor_dot_dir")!=std::string::npos,
+         "Tor uses its prepared writable data directory instead of the service user's inherited home");
     want(read_file("src/voider_peerd.cpp").find("waiting for local NTP synchronization")!=std::string::npos&&
          read_file("src/voider_peerd.cpp").find("Reference ID")!=std::string::npos&&
          read_file("src/voider_peerd.cpp").find("inspect NTP packet delay")!=std::string::npos,
@@ -247,14 +258,11 @@ static int tundup_model(){
     want(usb.find("vmb::keys(C,\"client\",slot)")!=std::string::npos&&usb.find("restrict,no-port-forwarding")!=std::string::npos&&
          usb.find("bundle.fp.substr(0,12)+\"\\n\",0644)")!=std::string::npos,
          "USB export atomically binds exactly one peer key to its slot account");
-    want(install.find("rc-update del tor default")!=std::string::npos&&
-         install.find("rc-update del chronyd default")!=std::string::npos&&
-         install.find("rc-update del sshd default")!=std::string::npos&&
-         openrc_voider.find("need voider-appliance voider-wan voider-phone")!=std::string::npos&&
-         openrc_voider.find("rc-service chronyd start")!=std::string::npos&&
-         openrc_voider.find("rc-service tor start")!=std::string::npos&&
-         openrc_voider.find("rc-service sshd start")!=std::string::npos,
-         "Voider starts Chrony, Tor, and sshd only after appliance, WAN, and phone readiness");
+    want(openrc_voider.find("need voider-appliance voider-firewall voider-wan voider-phone voider-nfqd")!=std::string::npos&&
+         read_file("openrc/chronyd").find("need voider-appliance voider-firewall voider-wan")!=std::string::npos&&
+         read_file("openrc/tor").find("need voider-appliance voider-firewall voider-wan")!=std::string::npos&&
+         read_file("openrc/sshd").find("need voider-appliance voider-firewall")!=std::string::npos,
+         "OpenRC owns providers behind the integrity gate and persistent firewall");
     want(usb.find("meta/server_wg0.pub")!=std::string::npos&&usb.find("WG_PEER_PUBLIC_KEY")!=std::string::npos,
          "USB imported-server config carries authoritative remote server wg0 public key");
     want(read_file("src/voider_ipv6_ready.cpp").find("while(std::getline(addresses,ip))")!=std::string::npos&&

@@ -1,0 +1,183 @@
+\page{start}{01}{Ihr Voider}
+Voider verbindet unterstützte Ethernet-Telefone über gekoppelte Geräte. Sie sprechen am Telefon. Die Einrichtung steuern Sie am Voider-Display mit vier Tasten.
+\heading{Das brauchen Sie}
+Auf jeder Seite: einen Voider mit unterstütztem Display und Tasten, eine vorbereitete microSD-Karte, ein unterstütztes Telefon in Werkseinstellung, passende Netzteile und Ethernet-Kabel.
+
+An getrennten Orten braucht jeder Voider Internet über ein Kabel zum Router. Gekoppelte Geräte funktionieren auch im selben lokalen Netz ohne Internet.
+
+Zum Koppeln: einen USB-Stick, der gelöscht werden darf. Bewahren Sie jeden Prüfcode separat auf. Dies ist keine Liste des Lieferumfangs.
+\heading{Der nächste Schritt}
+\entry{wire}{Kabel anschließen}
+\entry{install}{Erste Installation}
+\entry{share}{Zwei Voider koppeln}
+\entry{call}{Telefonieren}
+\entry{help}{Wenn etwas nicht funktioniert}
+\entry{backup}{Sichern und Laden}
+\note{Prüffassung}{Für Kandidat 68881a782994, 20. September 2026. Beachten Sie die offenen Punkte auf Seite \pageref{de:security}.}
+
+\page{wire}{02}{Kabel anschließen}
+\wiring{Router / lokales Netz}{Netzwerkanschluss (eth0)}{Telefonanschluss (eth1)}{Telefon: Netzwerkbuchse}{Funktionsplan. Die Lage der Buchsen ist nicht dargestellt.}
+\begin{enumerate}
+\item Schließen Sie die Kabel ohne Stromversorgung an.
+\item Verbinden Sie die Netzwerkbuchse des Telefons mit Voiders Telefonanschluss, nicht mit dem Router.
+\item Verbinden Sie Voiders Netzwerkanschluss mit einer LAN-Buchse des Routers.
+\item Schließen Sie die vorgesehenen Netzteile an Voider und Telefon an. Wiederholen Sie dies auf der anderen Seite.
+\end{enumerate}
+Sie sehen die Einrichtung oder \UI{DEVICE CHECK}. Nach den Startprüfungen zeigt \UI{NET} bei \UI{PHONE}: \UI{CONNECTED}, sobald das Telefon erreichbar ist. Ein Anruf muss noch geprüft werden.
+\note{Hardware zuerst klären}{Gehäusebeschriftung, Buchsenlage, Stromversorgung und freigegebene Telefone sind nicht dokumentiert. Vor dem Anschluss klären lassen. Ethernet liefert nicht automatisch Strom.}
+
+\page{controls}{03}{Tasten und Sprache}
+Vier Tasten, vier Felder unten im Display: Sie gehören von links nach rechts zusammen. Die Beschriftung wechselt. Leere Felder haben keine Funktion.
+
+\textbf{Drücken:} kurz drücken und loslassen. \textbf{Halten:} etwa eine Sekunde drücken, dann loslassen. Zwei weiße Balken über dem Text kennzeichnen Halten. Lesen Sie jede neue Ansicht vor dem nächsten Tastendruck.
+\shot{language}{Ansicht aus der echten Display-Software mit Beispieldaten.}
+\begin{enumerate}
+\item Auf der Startseite: \UI{NET}, dann \UI{SYSTEM}, dann \UI{LANGUAGE} drücken.
+\item Mit \UI{NEXT} Deutsch wählen. \UI{TRY} drücken. Die Sprache gilt jetzt bis zum Ausschalten.
+\item Zum Behalten \UI{SAVE} halten. Den neuen Prüfcode notieren und bestätigen (Seite \pageref{de:check}).
+\end{enumerate}
+Die Einrichtung startet auf Englisch: \textbf{Language}, \textbf{Next}, \textbf{Try}, dann \UI{BACK}. Erst nach den Startprüfungen speichern.
+
+\page{install}{04}{Erste Installation}
+Nur bei \UI{INSTALL VOIDER} ausführen. Bei \UI{DEVICE CHECK} auf der nächsten Seite weiterlesen.
+\shot{factory-READY}{Zum Starten die zweite Taste halten.}
+\begin{enumerate}
+\item Bei Bedarf Sprache wählen (Seite \pageref{de:controls}). \UI{INSTALL} halten.
+\item Warten, während Arbeitsschritt und Prozentzahl wechseln. Strom angeschlossen lassen. Alles liegt bereits auf der Karte; ein Download ist nicht nötig.
+\item Bei \UI{INSTALL COMPLETE} den Prüfcode mit Gerätenamen notieren. Dies ist Ihre erste Vergleichskopie.
+\item Einmal \UI{REBOOT} drücken. Das Display wird beim Neustart schwarz. Auf \UI{DEVICE CHECK} warten.
+\end{enumerate}
+Die Installation erzeugt eine eigene Identität. Am zweiten Voider wiederholen; Code separat notieren. Kein automatischer Neustart.
+
+Bei \UI{INSTALL FAILED} Meldung notieren. Nach Fehlerbehebung \UI{RETRY} halten oder mit gehaltenem \UI{POWER} ausschalten.
+
+\page{check}{05}{Bei jedem Start prüfen}
+\begin{enumerate}
+\item Warten, bis \UI{DEVICE CHECK} den Text \UI{PASSED} zeigt. Das installierte System wurde geprüft. \UI{NEXT} drücken.
+\item Unter \UI{YOUR CHECK} den Code mit Ihrer Notiz für \emph{diesen} Voider vergleichen. \UI{FULL} zeigt den ganzen Fingerabdruck; \UI{BACK} führt zurück.
+\item Wenn er stimmt: \UI{MATCH} drücken. Es erscheint \UI{PASSED}. \UI{HOME} drücken. Verbindungen können jetzt starten.
+\end{enumerate}
+\shot{integrity_state}{Nur ein Beispiel. Diesen Code niemals als eigene Vergleichskopie verwenden.}
+\textbf{Code anders oder Notiz fehlt?} Nicht raten. Bei unerwarteter Abweichung \UI{DIFFER} halten, dann \UI{POWER} halten. Ursache klären lassen. Eine fehlgeschlagene Geräteprüfung sperrt ebenfalls den Betrieb.
+
+\textbf{Nach einer eigenen Änderung:} Bei \UI{STATE UPDATED} den neuen Code notieren. Die Abschrift prüfen und \UI{I RECORDED IT} drücken. Beim Start dienen \UI{MATCH} und \UI{DIFFER} dem Vergleich. Änderungen können einen neuen Code erzeugen; ein Neustart allein nicht. Alte Notiz samt Grund behalten.
+
+\page{share}{06}{Koppeln: erster Voider}
+Beim Koppeln erhalten zwei Voider die Daten für ihre Verbindung. Nennen wir sie A und B. Diese Namen stehen nicht im Display. Ein Transfer reicht für Anrufe in beide Richtungen.
+\transfer{A: \UI{SHARE}}{Stick weitergeben}{B: \UI{ADD}}
+\begin{enumerate}
+\item Einen USB-Speicherstick einstecken und andere Speichersticks entfernen. Auf A: \UI{LINKS}, dann \UI{SHARE} drücken. Voider wählt den Stick sofort aus. Fehlt er, einstecken und \UI{RETRY} drücken.
+\item Bei \UI{ERASE USB} das angezeigte USB-Modell prüfen. \UI{ERASE} nur halten, wenn alle Dateien darauf verloren gehen dürfen. \UI{CANCEL} bricht ohne Löschen ab.
+\item Auf \UI{STATE UPDATED} warten. Neuen Code von A wie auf Seite \pageref{de:check} notieren und bestätigen.
+\item Bei \UI{SAFE TO REMOVE} den Stick entfernen und \UI{DONE} drücken. Den Stick direkt zu B bringen.
+\end{enumerate}
+\note{Stick privat halten}{Er enthält geheime Verbindungsdaten. Voider verschlüsselt ihn nicht. Geben Sie ihn nicht an andere weiter. Für jede weitere Beziehung einen neuen Vorgang mit \UI{SHARE} starten.}
+
+\page{add}{07}{Koppeln: zweiter Voider}
+\begin{enumerate}
+\item Den Stick von A einstecken. Auf B: \UI{LINKS}, dann \UI{ADD} drücken. Voider wählt den Stick sofort aus. Fehlt er, einstecken und \UI{RETRY} drücken. Es erscheint \UI{VALID VOIDER KEY}. Hier steht kein Kopplungsfingerabdruck. Die Datei wurde ohne Änderung am Stick gelesen und geprüft.
+\item Zum Import erneut \UI{ADD} halten. Der Stick wird gelesen, nicht gelöscht. Auf \UI{STATE UPDATED} warten.
+\item Code von B notieren und bestätigen.\par Bei \UI{SAFE TO REMOVE} den Stick entfernen, \UI{DONE} drücken und den Stick sicher aufbewahren.
+\item Beide Voider eingeschaltet lassen. Verbindung öffnen und auf \UI{CONNECTED} warten. Dann einen Anruf testen.
+\end{enumerate}
+\note{Zwei verschiedene Prüfungen}{Die Startprüfcodes von A und B gehören zu verschiedenen Geräten. Sie müssen nicht gleich sein. Jeden nur mit seiner eigenen Notiz vergleichen.}
+\heading{Kopplungsfingerabdruck fehlt}
+Die Software speichert einen eigenen Fingerabdruck der USB-Datei. Dieser Kandidat hat keine Display-Seite zum Vergleichen zwischen A und B. \UI{VALID VOIDER KEY} bestätigt nicht die Identität einer Person. Wenn Sie diesen Vergleich benötigen, hier stoppen und die Produktlücke klären lassen. Die Startprüfcodes ersetzen ihn nicht.
+
+Bei Fehlern: Seite \pageref{de:help}. Nicht erneut teilen, nur weil die Verbindung noch wartet.
+
+\page{call}{08}{Anrufen und annehmen}
+\begin{enumerate}
+\item \UI{LINKS}, dann \UI{OPEN} drücken. Mit \UI{PREV} oder \UI{NEXT} auswählen.
+\item Auf \UI{CONNECTED} warten. Adresse unter \UI{DIAL} ablesen.
+\item Am Telefon die Funktion \textbf{Direct IP Call} verwenden. Diese Adresse eingeben und den Anruf starten.
+\item Das andere Telefon sollte klingeln. Zum Annehmen den Hörer abheben. Ton in beiden Richtungen prüfen. Zum Beenden auflegen.
+\end{enumerate}
+\shot{contact}{Beispiel: hier 10.1.2.1 wählen. Ihre eigene angezeigte Adresse verwenden.}
+Voiders Tasten wählen nicht am Telefon. Beide Seiten können anrufen. Eine wechselnde Anruferadresse mit 172.16.x.x ist kein Wahlziel. Zum Rückruf die Voider-Ansicht verwenden.
+\note{Noch offen}{Telefonmodell, Menü und Tasten für Direct IP Call vor Auslieferung bestätigen lassen.}
+
+\page{manage}{09}{Beziehungen verwalten}
+\textbf{Weitere Person:} Seiten \pageref{de:share}–\pageref{de:add} mit neuem \UI{SHARE} auf A wiederholen. Auch die gefüllte Liste bietet \UI{SHARE} und \UI{ADD}. Für Anrufe in beide Richtungen nicht doppelt koppeln.
+
+\UI{CLIENT} und \UI{SERVER} sind lokale Rollen, keine Personennamen. Teilen erzeugt auf A einen Client-Eintrag, Hinzufügen auf B einen Server-Eintrag. Notieren Sie, wer zu welchem Eintrag gehört. Umbenennen ist im Display nicht möglich.
+
+\textbf{Eine Beziehung löschen:}
+\begin{enumerate}
+\item \UI{LINKS} \arr \UI{OPEN}; Eintrag mit \UI{PREV}/\UI{NEXT} wählen.
+\item \UI{MORE} \arr \UI{REMOVE}. Namen prüfen, dann \UI{REMOVE} halten.
+\item Neuen Code notieren und bestätigen. Der Eintrag verschwindet nur hier. Die andere Liste bleibt bestehen. Dieses Gerät lehnt die entfernte USB-Datei beim Import ab.
+\end{enumerate}
+
+\textbf{Eine Beziehung neu verbinden:} Eintrag öffnen, \UI{MORE} \arr \UI{RETRY} wählen, dann \UI{RETRY} halten. Die Kopplung bleibt erhalten; andere Verbindungen laufen weiter.
+
+\textbf{Reset:} \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{RESET}, dann \UI{NEXT} und \UI{RESET} halten. Löscht alle Beziehungen und den SSH-Zugangsschlüssel, schaltet SSH aus und erzeugt neue Geräteidentitäten. Gegenstellen brauchen neue Kopplungen. Manche Einstellungen, darunter Sprache, bleiben. Neuen Code notieren. Kein Mittel gegen langsame Verbindungen.
+
+\page{status}{10}{Verbindungsstatus lesen}
+\UI{NET} zeigt Internet und Telefon. \UI{PHONE}: \UI{CONNECTED} heißt: Voider erreicht das Telefon.
+
+\textbf{Zahlen auf der Startseite:} 1/2 bedeutet: Eine von zwei gespeicherten Beziehungen ist verbunden. Clients und Server werden getrennt gezählt. Es sind keine Anrufzahlen.
+
+\textbf{\UI{CONNECTED}:} Ein Weg zum anderen Voider ist aktiv. \textbf{\UI{CONNECTING}:} Ein Verbindungsversuch läuft. \textbf{\UI{OFFLINE}:} Kein aktiver Weg wird angezeigt. Das beweist nicht, dass der andere Voider ausgeschaltet ist.
+
+Voider versucht normalerweise \UI{LAN}, dann \UI{DIRECT}, dann \UI{PRIVATE} (WireGuard durch Router), dann \UI{TOR}. Der angezeigte Weg gilt für diese Beziehung. Auch LAN verwendet WireGuard. Verbindungen zeigen \UI{LAN4}, \UI{LAN6}, \UI{DIRECT4} oder \UI{DIRECT6} für die gewählte IP-Version.
+
+\textbf{Zeit lassen.} Prüfungen, Uhrzeiteinstellung und Tor-Start können Minuten dauern. Ein Tor-Wiederverbindungsversuch hat ein Zeitfenster von 90 Sekunden. Der gesamte Aufbau kann länger dauern. Eine feste Wartezeit ist nicht garantiert. Beide Geräte eingeschaltet lassen, während das Netz zurückkehrt. Neues Koppeln beschleunigt dies nicht.
+
+Im selben lokalen Netz kann eine aktive LAN-Verbindung auch ohne Internet funktionieren. Die Erreichbarkeit des Telefons wird separat geprüft.
+
+\textbf{\UI{PATHS}:} Normalerweise alle sieben eingeschaltet lassen. Bewusst ändern: \UI{UP}/\UI{DOWN} wählt, \UI{REMOVE}/\UI{ADD} schaltet um. \UI{BACK}, dann \UI{APPLY} halten speichert; neuen Code bestätigen. \UI{CANCEL} führt zur Bearbeitung zurück. Mindestens ein Weg muss an bleiben. Einschränkungen können Anrufe verhindern.
+
+\page{help}{11}{Wenn etwas nicht klappt}
+\begin{enumerate}
+\item Beide Displays prüfen. Auf beiden Geräten müssen die Startprüfungen abgeschlossen sein.
+\item \UI{NET} drücken. Bei fehlendem Telefon Strom und Kabel zum Telefonanschluss prüfen. Bei fehlendem Netz Uplink-Kabel und Router prüfen.
+\item Beide Geräte einige Minuten eingeschaltet lassen. Noch offline? Unter \UI{NETWORK} \UI{RETRY} drücken, auf der nächsten Seite halten. Das startet die Netzprüfung erneut und kann Anrufe unterbrechen.
+\item Bei weiterem Fehler Meldung und gewählte Beziehung notieren. Kopplung und Prüfcodes behalten. Nicht als normale Reparatur löschen oder zurücksetzen.
+\end{enumerate}
+\textbf{USB:} Die Anzeige unterscheidet fehlende, getrennte oder gewechselte Sticks sowie Lese-, Schreib- und Prüffehler. Nur einen Stick verwenden. Eingehängte oder unsichere Medien werden abgelehnt. Nach Fehlern die Aktion öffnen und den Stick erneut auswählen.
+
+\textbf{Kein Ton oder Klingeln:} Adresse und beide Telefone prüfen. Eine grüne Verbindung oder ein erreichbares Telefon beweist keinen Sprachton. Die Webverwaltung des Telefons wird nicht gebraucht.
+
+\textbf{Normal ausschalten:} Startseite \arr \UI{POWER}, dann \UI{POWER} halten. Sie sehen \UI{POWERING OFF}. Daten werden gespeichert; zum Beginn des Herunterfahrens wird das Display schwarz. Vor dem Trennen des Stroms Zeit lassen. Ein schwarzes Display allein bestätigt keinen abgeschlossenen Vorgang.
+
+\textbf{Normal neu starten:} Startseite \arr \UI{POWER}, dann rechts daneben \UI{REBOOT}. Auf der Bestätigungsseite \UI{REBOOT} halten. Gespeicherte Beziehungen bleiben erhalten; nach dem Start die normalen Prüfungen abschließen.
+
+\page{backup}{12}{Sicherung erstellen}
+Eine Sicherung enthält Geräteidentität, Beziehungen, Schlüssel und Einstellungen. Sie sichert weder das Telefon noch die ganze Systemkarte. Die Dateien sind unverschlüsselt. Den Stick wie einen Geräteschlüssel schützen.
+\begin{enumerate}
+\item Startseite: \UI{NET} \arr \UI{SYSTEM} \arr \UI{BACKUP}.
+\item Einen freien USB-Stick einstecken. \UI{BACKUP} halten.
+\item \UI{ERASE USB} lesen. Alle Dateien darauf gehen verloren. Nur wenn beabsichtigt: \UI{ERASE} halten.
+\item Auf \UI{SAFE TO REMOVE} warten. Stick entfernen. Gerät, Datum und aktuellen Prüfcode notieren. Für A und B getrennte Sicherungen behalten.
+\end{enumerate}
+\heading{Sicherung laden}
+Sicherungsstick einstecken. \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{RESTOR} öffnen, dann \UI{CHECK} drücken. Voider liest und prüft die Sicherung ohne Änderung am Stick. Das installierte System muss übereinstimmen.
+
+\UI{RESTOR} nur halten, wenn alle gespeicherten Einstellungen, Identitäten und Verbindungen durch diese Sicherung ersetzt werden sollen. Neuere Änderungen gehen verloren. Neuen Prüfcode notieren und \UI{I RECORDED IT} drücken. Stick entfernen, dann \UI{REBOOT} halten. Alte Betriebsdaten können die Sicherung nicht überschreiben. Nach dem Neustart den Code mit \UI{MATCH} oder \UI{DIFFER} vergleichen.
+
+\page{ssh}{13}{Optional: Fernzugriff}
+Mit SSH verwaltet eine vertraute Fachperson Voider vom Computer. Für Anrufe unnötig. Öffnen: \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{SSH}. Anzeige: \UI{MANAGEMENT ON} oder \UI{MANAGEMENT OFF}.
+
+\textbf{An oder aus:} \UI{ON} oder \UI{OFF} drücken, dann dieselbe Taste zur Bestätigung halten. Neuen Code notieren und bestätigen. Aus sperrt neue Anmeldungen, behält aber den Schlüssel. Bestehende Sitzungen können bleiben. Der interne Anruftransport ist getrennt.
+
+\textbf{Schlüssel erstellen oder ersetzen:}
+\begin{enumerate}
+\item \UI{LOGIN KEY} wählen. Frage zum Erstellen oder Ersetzen lesen. Beim Ersetzen wird der alte Schlüssel ungültig. \UI{CONFIRM} halten.
+\item Einen löschbaren Stick einstecken und \UI{CHECK} drücken. \UI{ERASE} halten: Alle Partitionen und Dateien werden gelöscht. Erst nach Schreiben und Prüfen wird der Zugang ersetzt.
+\item Neuen Code notieren und bestätigen. SSH ist an. Bei \UI{SAFE TO REMOVE} den Stick entfernen und \UI{DONE} drücken. Er enthält \texttt{voider-admin} (privat, zur Anmeldung) und \texttt{voider-admin.pub} (öffentlich). Der private Schlüssel hat kein Passwort.
+\end{enumerate}
+\textbf{Dauerhaft entfernen:} \UI{REMOVE} wählen, dann \UI{REMOVE} halten. Der Schlüssel wird widerrufen, SSH bleibt aus. Neuen Code notieren. Bei USB-Fehlern bleiben bisheriger Schlüssel und Zugangseinstellung erhalten. Voider behält nur den öffentlichen Teil; verlorene private Schlüssel sind nicht wiederherstellbar.
+
+\page{security}{14}{Was die Prüfungen sagen}
+\textbf{Geräteprüfung:} Vergleich des installierten Systems mit gespeicherten Werten. \textbf{Deine Prüfung:} Vergleich des gespeicherten Zustands mit Ihrer eigenen Notiz. Beides beweist nicht die Identität der Person am anderen Telefon.
+
+\textbf{Kopplung:} erzeugt gemeinsame Geheimnisse. Der Kopplungsfingerabdruck ist hier nicht zum Vergleichen sichtbar (Seite \pageref{de:add}). Kopplungssticks und Sicherungen schützen.
+
+\textbf{Netzschutz:} WireGuard schützt LAN-, Direkt- und Router-Durchquerungswege. Auf dem Tor-Weg verschlüsselt Tor. tundup liefert authentifizierten Klartext: Es prüft Echtheit und verwirft Wiederholungen, verschlüsselt selbst aber keine Anrufdaten. Das lokale Telefonkabel ist nicht automatisch verschlüsselt.
+
+Das eigene Protokoll wurde nicht unabhängig geprüft. Voider garantiert keine Anonymität und verhindert keine Verkehrsanalyse. Gestohlene Kopplungsgeheimnisse können auch frühere Sitzungen gefährden.
+
+\textbf{SSH-Grenzen:} root-Zugang nur mit Schlüssel aus privaten Netzen am Ethernet-Uplink. Keine Passwörter, Telefon-, öffentliche WAN- oder Tor-Anmeldung; keine Weiterleitung. Ein vorbereiteter Schlüssel aktiviert Installations-SSH; ohne bleibt es aus. Danach gelten beide Startprüfungen. Hostschlüssel fachkundig prüfen lassen. Dafür und für Installations-SSH fehlt eine Display-Seite.
+
+\mini{\textbf{Vor Auslieferung:} Anschlüsse, Stromversorgung, Telefontasten und Installations-SSH klären; Kopplungsprüfung klären. Muttersprachliche und Anfängerprüfung stehen aus. Frische Installationen und Freigabetests sind offen. Die Tor-Beobachtung dauerte 601 Sekunden, keine Stunde. Dieses Handbuch erklärt das Abbild nicht für verkaufsfertig.}

@@ -3,13 +3,25 @@ name="voider-phone"
 description="voider phone-side gateway, DHCP, static-phone detection"
 command="/usr/local/sbin/voider-phone"
 command_args="monitor"
-command_background="yes"
+supervisor="supervise-daemon"
 pidfile="/run/voider-phone.pid"
+respawn_delay=2
+respawn_max=5
+respawn_period=60
+retry="TERM/10/KILL/2"
+output_log="/run/voider/phone.log"
+error_log="$output_log"
+healthcheck_delay=20
+healthcheck_timer=10
 depend(){
-    need voider-appliance
+    need voider-appliance voider-firewall
     before voider
 }
 
 start_pre(){
     /usr/local/sbin/voider-appliance-boot gate || return 1
+}
+
+healthcheck(){
+    /usr/local/sbin/voider-phone --healthcheck
 }

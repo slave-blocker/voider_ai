@@ -1,0 +1,21 @@
+#!/sbin/openrc-run
+description="Voider local clock synchronization"
+command="/usr/sbin/chronyd"
+command_args="-f /etc/chrony/chrony.conf"
+pidfile="/run/chrony/chronyd.pid"
+required_files="/etc/chrony/chrony.conf"
+retry="TERM/10/KILL/2"
+depend() {
+    need voider-appliance voider-firewall voider-wan
+    before tor
+}
+start_pre() {
+    /usr/local/sbin/voider-appliance-boot gate || return 1
+    mkdir -p /run/chrony || return 1
+    chown chrony:chrony /run/chrony || return 1
+    chmod 0750 /run/chrony || return 1
+    # Keep Chrony's native self-backgrounding initstepslew readiness handshake.
+    # Restarts after this boot's first synchronization must not step the clock.
+    [ ! -e /run/voider/clock-initialized ] || command_args="$command_args -R"
+    return 0
+}

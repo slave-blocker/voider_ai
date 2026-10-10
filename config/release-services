@@ -1,6 +1,12 @@
 voider-appliance
+voider-firewall
+voider-nfqd
+voider-buttons
 voider-tor-netns-socks
 voider-wan
 voider-phone
 voider
 voider-display
+chronyd
+tor
+sshd

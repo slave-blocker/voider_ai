@@ -67,9 +67,10 @@ static void delrawns(const std::string&ns,const std::string&r){
         "ip netns exec "+ns+" iptables -w -t raw -D "+r+"; done");
 }
 static void add_netns_sip_nfq(const std::string&ns,const std::string&match,int queue){
-    std::string nfq=match+" -j NFQUEUE --queue-num "+std::to_string(queue)+" --queue-bypass";
+    std::string nfq=match+" -j NFQUEUE --queue-num "+std::to_string(queue);
     std::string ct=match+" -j CT --notrack";
     std::string old=match+" -j NOTRACK";
+    delrawns(ns,nfq+" --queue-bypass");
     delrawns(ns,nfq);
     delrawns(ns,ct);
     delrawns(ns,old);
@@ -163,7 +164,6 @@ static void server_up(int x){
     run("ip link set "+wg+" netns "+ns+" 2>/dev/null || true");
     std::string wgip=server_wg_ip(x);
     std::string natid=server_nat_identity(x);
-    int sidx=ip4_last_octet(wgip,x);
     std::string wg_gateway="172.31.0.1";
     std::string remote="172.29.1.1";
     std::string handoff="10."+xS+".1.1";
@@ -227,17 +227,15 @@ static void server_up(int x){
         " -p udp --sport "+std::to_string(C.sip),q);
     add_netns_sip_nfq(ns,"PREROUTING -i tds+ -s "+remote+" -d "+natid+
         " -p udp --sport "+std::to_string(C.sip),q);
-    run("pkill -f 'voider-nfqd --netns-server "+xS+" ' 2>/dev/null || true");
-    run("ip netns exec "+ns+" /usr/local/sbin/voider-nfqd --netns-server "+xS+" "+
-        std::to_string(sidx)+" >/tmp/voider-nfqd-netns"+xS+".log 2>&1 &");
+    // peerd owns the translator process; this helper only prepares networking.
     run("ip netns exec "+ns+" sh -c 'for f in /proc/sys/net/ipv4/conf/*/rp_filter; do echo 0 > \"$f\"; done' 2>/dev/null || true");
     run("ip netns exec "+ns+" sh -c 'for f in /proc/sys/net/ipv4/conf/*/accept_local; do echo 1 > \"$f\"; done' 2>/dev/null || true");
     server_nat(x);
 }
-static void down(int x){
+static void down(int x,const std::string&role=""){
     std::string xS=X(x);
     std::string c=fc(x),s=fsrv(x);
-    if(!c.empty()){
+    if(role!="server"&&!c.empty()){
         delnat("PREROUTING -i "+C.phone_if+" -s "+C.phone_ip+" -d "+c+" -p udp ! --dport "+
         std::to_string(C.sip)+" -j DNAT --to-destination 172.29."+xS+".1");
         delnat("POSTROUTING -d 172.29."+xS+".1 -p udp -j SNAT --to-source 172.29.1.1");
@@ -249,7 +247,7 @@ static void down(int x){
         " -p udp ! --sport "+std::to_string(C.sip)+" -j SNAT --to-source "+c);
         run("ip route del 172.29."+xS+".1/32 via 172.31.0."+xS+" dev wg0 2>/dev/null || true");
     }
-    if(!s.empty()){
+    if(role!="client"&&!s.empty()){
         delnat("PREROUTING -i "+C.phone_if+" -s "+C.phone_ip+" -d "+s+" -p udp ! --dport "+
         std::to_string(C.sip)+" -j DNAT --to-destination 10."+xS+".1.1");
         delnat("POSTROUTING -d 10."+xS+".1.1 -p udp -j SNAT --to-source 172.30."+xS+".1");
@@ -259,7 +257,7 @@ static void down(int x){
         " -p udp ! --sport "+std::to_string(C.sip)+" -j SNAT --to-source "+s);
         run("ip route del 10."+xS+".1.1/32 via 172.30."+xS+".2 2>/dev/null || true");
     }
-    run("pkill -f 'voider-nfqd --netns-server "+xS+" ' 2>/dev/null || true");
+    if(role=="client")return;
     run("ip link del wg"+xS+" 2>/dev/null || true");
     run("ip netns exec netns"+xS+" ip link del wg"+xS+" 2>/dev/null || true");
     run("ip netns del netns"+xS+" 2>/dev/null || true");
@@ -278,6 +276,8 @@ int main(int ac,char**av){
         if(ac>3&&std::string(av[3])=="client")client_up(x);
         else server_up(x);
     }
+    else if(c=="client-down")down(x,"client");
+    else if(c=="server-down")down(x,"server");
     else if(c=="down"||c=="undialable")down(x);
     else return 2;
     return 0;

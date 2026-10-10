@@ -1,0 +1,23 @@
+#!/sbin/openrc-run
+description="Voider phone and incoming SIP translator"
+command="/usr/local/sbin/voider-nfqd"
+supervisor="supervise-daemon"
+pidfile="/run/voider-nfqd.pid"
+respawn_delay=2
+respawn_max=5
+respawn_period=60
+retry="TERM/5/KILL/2"
+output_log="/run/voider/nfqd.log"
+error_log="$output_log"
+healthcheck_delay=5
+healthcheck_timer=5
+depend() {
+    need voider-appliance voider-firewall
+    before voider
+}
+start_pre() {
+    /usr/local/sbin/voider-appliance-boot gate
+}
+healthcheck() {
+    /usr/local/sbin/voider-nfqd --healthcheck
+}

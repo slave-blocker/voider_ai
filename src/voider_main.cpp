@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <sstream>
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -18,6 +19,7 @@
 #include "voider_mailbox.hpp"
 #include "voider_transport_allowlist.hpp"
 #include "voider_util.hpp"
+#include "voider_runtime.hpp"
 
 using vu::cap;
 using vu::hex64;
@@ -53,9 +55,10 @@ static void log(const std::string&s){
 }
 static void operation(const std::string&state,const std::string&message,const std::string&detail=""){
     fs::create_directories("/run/voider");
-    std::ofstream f("/run/voider/operation.status",std::ios::trunc);
+    std::ostringstream f;
     f<<"STATE="<<state<<"\nMESSAGE="<<message<<"\n";
     if(!detail.empty())f<<"DETAIL="<<detail<<"\n";
+    vr::publish("/run/voider/operation.status",f.str());
 }
 static int root(){
     if(geteuid()!=0){std::cerr<<"MAIN_ERROR root required\n";return 1;}
@@ -204,7 +207,7 @@ static bool copy_admin_key(const std::string&src,const std::string&dst){
     fs::remove(next,ec);return false;
 }
 static int reload_admin_firewall(){
-    return run("/usr/local/sbin/voiderctl rules reload >/run/voider/last-admin-firewall 2>&1");
+    return run("/usr/local/sbin/voiderctl rules admin >/run/voider/last-admin-firewall 2>&1");
 }
 static std::string config_path(){
     const char*p=getenv("VOIDER_CONFIG");
@@ -372,21 +375,36 @@ static void reject_fp(const std::string&role,int slot){
     fs::create_directories(C.usb_reject_dir);
     std::ofstream(C.usb_reject_dir+"/"+fp)<<"REVOKED\n";
 }
+static bool request_peer(const std::string&role,int slot,bool stop=false){
+    fs::path directory="/run/voider/peer-reset";
+    fs::create_directories(directory);chmod(directory.c_str(),0700);
+    std::string token=std::to_string(getpid())+"-"+std::to_string(vr::monotonic_ms());
+    fs::path request=directory/(token+".req"),done=request.string()+".done";
+    if(!vr::publish(request,role+' '+std::to_string(slot)+(stop?" stop\n":"\n")))return false;
+    for(int i=0;i<300;i++){
+        if(fs::exists(done)){
+            bool ok=read1(done)=="OK";fs::remove(done);return ok;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    fs::remove(request);fs::remove(done);return false;
+}
 static int remove_contact(const std::string&role,int slot){
     if(root())return 1;
     if((role!="client"&&role!="server")||slot<2||slot>254||!occupied(role,slot))return 2;
-    reject_fp(role,slot);
-    if(role=="client"){
-        remove_mailboxes(slot);
-    }else{
-        run("pkill -f "+shq("tundup-v7-secure .* tds"+std::to_string(slot))+" 2>/dev/null || true");
-        run("/usr/local/sbin/voider-netns down "+std::to_string(slot)+" >/dev/null 2>&1 || true");
+    // Prevent reconciliation from re-admitting this contact during teardown.
+    vu::write1(admission_path(role,slot),"REMOVAL");
+    if(!request_peer(role,slot,true)){
+        fs::remove(admission_path(role,slot));operation("failed","CONNECTION RESET FAILED");return 11;
     }
+    reject_fp(role,slot);
+    if(role=="client")remove_mailboxes(slot);
     run("/usr/local/sbin/voider-peerctl remove "+role+" "+std::to_string(slot)+" >/dev/null 2>&1 || true");
     fs::remove_all(C.mat+"/"+role+"/"+std::to_string(slot));
     fs::remove(C.usb_fp_dir+"/"+(role=="client"?"client-":"import-server-")+std::to_string(slot)+".sha256");
     fs::remove(C.usb_fp_dir+"/import-"+role+"-"+std::to_string(slot)+".sha256");
     fs::remove("/etc/voider/private/sftp-"+role+"-"+std::to_string(slot)+".key");
+    fs::remove(admission_path(role,slot));
     int rc=persist("REMOVAL");
     operation(rc?"failed":"done",rc?"STATE SAVE FAILED":"CONNECTION REMOVED");
     log("remove "+role+" "+std::to_string(slot));
@@ -400,24 +418,9 @@ static int reset_connection(const std::string&role,const std::string&number){
     if((role!="client"&&role!="server")||slot<2||slot>254||
        number!=std::to_string(slot)||!occupied(role,slot))return 2;
     if(run("/usr/local/sbin/voider-appliance-boot gate >/dev/null 2>&1"))return 74;
-    fs::path directory="/run/voider/peer-reset";
-    fs::create_directories(directory);chmod(directory.c_str(),0700);
-    std::string token=std::to_string(getpid())+"-"+std::to_string(
-        std::chrono::steady_clock::now().time_since_epoch().count());
-    fs::path request=directory/(token+".req"),done=request.string()+".done";
-    fs::path temporary=request.string()+".tmp";
-    {std::ofstream out(temporary);out<<role<<' '<<slot<<'\n';if(!out)return 72;}
-    fs::rename(temporary,request);
-    for(int i=0;i<300;i++){
-        if(fs::exists(done)){
-            bool ok=read1(done)=="OK";fs::remove(done);
-            operation(ok?"done":"failed",ok?"CONNECTION RESTARTED":"CONNECTION RESET FAILED");
-            return ok?0:11;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-    fs::remove(request);fs::remove(done);
-    operation("failed","CONNECTION RESET FAILED");return 11;
+    bool ok=request_peer(role,slot);
+    operation(ok?"done":"failed",ok?"CONNECTION RESTARTED":"CONNECTION RESET FAILED");
+    return ok?0:11;
 }
 
 static int network_recover(){
@@ -512,6 +515,9 @@ static int factory_reset(){
        run("rc-service sshd start >/run/voider/reset-sshd.log 2>&1")||persist("FACTORY RESET")){
         operation("failed","RESET SAVE FAILED");return 82;
     }
+    if(run("rc-service voider start >/run/voider/reset-peerd.log 2>&1")){
+        operation("failed","RESET FAILED");return 82;
+    }
     operation("done","RESET COMPLETE");
     return 0;
 }
@@ -593,6 +599,9 @@ int main(int ac,char**av){
     if(c=="selftest")return selftest();
     if(c=="status")return status();
     if(c=="support")return support();
+    if(c=="show-onion")return std::cout<<read1(C.node_onion)<<"\n",0;
+    vr::Lock control("/run/voider/control.lock");
+    if(!control.held()){std::cerr<<"MAIN_BUSY another action is running\n";return 75;}
     if(c=="restore-reboot"&&fs::exists("/run/voider/restore-pending")){
         if(root())return 1;
         return run("sync")?72:run("/sbin/reboot");
@@ -617,7 +626,6 @@ int main(int ac,char**av){
     if(c=="factory-reset")return factory_reset();
     if(c=="poweroff")return safe_shutdown();
     if(c=="reboot")return safe_shutdown(true);
-    if(c=="show-onion")return std::cout<<read1(C.node_onion)<<"\n",0;
     std::cerr<<"usage: voider-main language-save en|de|bg|status|support|usb-select erase|read|pair-export|"
                "admin-key-new|admin-key-revoke|admin-ssh-enable|admin-ssh-disable|"
                "import-device DEVICE|remove ROLE SLOT|"

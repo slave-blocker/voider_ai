@@ -15,6 +15,7 @@
 #include <thread>
 #include <unistd.h>
 #include "voider_util.hpp"
+#include "voider_runtime.hpp"
 
 using vu::read_file;
 
@@ -100,7 +101,6 @@ static bool record_address(const std::string& current){
     vu::write1(path,current);
     bool changed=address_changed(previous,current);
     if(changed){
-        vu::run("rc-service tor restart >/dev/null 2>&1 || true");
         std::error_code error;
         std::filesystem::remove(C.pubip_file,error);
         error.clear();std::filesystem::remove(C.pubip_runtime,error);
@@ -122,7 +122,7 @@ static std::string script(){
 }
 static void write_status(const std::string& s){
     std::string v6=v6status();
-    vu::write1(C.wan_status,"STATE "+s+"\nCARRIER "+(carrier()?"up":"down")+"\nIP4 "+ip4()+"\nROUTE "+
+    vr::publish(C.wan_status,vr::stamp()+"STATE "+s+"\nCARRIER "+(carrier()?"up":"down")+"\nIP4 "+ip4()+"\nROUTE "+
         (defroute()?"ok":"missing")+"\nNET "+(netok()?"ok":"bad")+
         "\nIP6 "+v6field(v6,"PUB6")+"\nROUTE6 "+v6field(v6,"ROUTE6")+"\nNET6 "+v6field(v6,"PING6")+
         "\nIPV6_READY "+v6field(v6,"READY")+"\nHP6_REDIRECT "+v6field(v6,"REDIRECT6")+
@@ -165,6 +165,8 @@ static int replace_stale_lease(){
 }
 // Recovery is idempotent: safe to call after boot, after cable replug, or from the UI.
 static int recover(bool prepare=true){
+    vr::Lock lock("/run/voider/wan-recovery.lock");
+    if(!lock.held())return 0;
     if(prepare){ensure_ipv6_router_ra();vu::run("/usr/local/sbin/voider-tor-netns-socks start");}
     if(!carrier()){
         write_status("link-down");
@@ -182,6 +184,7 @@ static int recover(bool prepare=true){
     return 11;
 }
 static int monitor(){
+    vr::Lock owner("/run/voider/wan-monitor.lock");if(!owner.held())return 1;
     ensure_ipv6_router_ra();
     vu::run("/usr/local/sbin/voider-tor-netns-socks start");
     while(true){
@@ -198,6 +201,7 @@ static int status(){
 int main(int ac,char**av){
     C=cfg();
     std::string c=ac>1?av[1]:"status";
+    if(c=="--healthcheck")return vr::fresh(C.wan_status,90000)?0:1;
     if(c=="selftest"){
         if(address_changed("","10.0.0.1")||address_changed("10.0.0.1","10.0.0.1")||
            !address_changed("10.0.0.1","10.0.1.1"))return 1;
@@ -206,8 +210,10 @@ int main(int ac,char**av){
         std::cout<<"WAN_SELFTEST_OK\n";
         return 0;
     }
-    if(c=="start")return start();
-    if(c=="renew")return renew();
+    if(c=="start"||c=="renew"){
+        vr::Lock lock("/run/voider/wan-recovery.lock");
+        return lock.held()?(c=="start"?start():renew()):12;
+    }
     if(c=="recover")return recover();
     if(c=="monitor")return monitor();
     if(c=="status")return status();

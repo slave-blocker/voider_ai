@@ -1,0 +1,21 @@
+#!/sbin/openrc-run
+description="Voider four physical buttons"
+command="/usr/local/sbin/pitft-bridge"
+supervisor="supervise-daemon"
+pidfile="/run/pitft-bridge.pid"
+respawn_delay=2
+respawn_max=5
+respawn_period=60
+retry="TERM/10/KILL/2"
+output_log="/run/voider/buttons.log"
+error_log="$output_log"
+depend() {
+    need localmount
+    before voider-display
+}
+start_pre() {
+    mkdir -p /run/voider
+    command -v gpiomon >/dev/null || return 1
+    [ -c /dev/gpiochip0 ] || return 1
+    /usr/local/sbin/voider-ui --display-probe >/dev/null 2>&1
+}
