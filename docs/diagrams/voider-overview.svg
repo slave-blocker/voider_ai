@@ -23,7 +23,7 @@
 <marker id="green" viewBox="0 0 10 10" markerWidth="8" markerHeight="8" refX="9" refY="5" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9 Z" fill="#a0ffb6"/></marker>
 <marker id="gray" viewBox="0 0 10 10" markerWidth="8" markerHeight="8" refX="9" refY="5" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9 Z" fill="#b5c8c0"/></marker>
 </defs>
-<rect x="0" y="0" width="1280" height="1792" fill="#07100e"/>
+<rect x="0" y="0" width="1280" height="1792" fill="#145a32"/>
 <rect x="32" y="30" width="8" height="61" fill="#65d9dd"/>
 <text x="58" y="77" font-size="52" fill="#a0ffb6" font-family="DejaVu Sans, sans-serif" font-weight="700" text-anchor="start">Voider</text>
 <text x="300" y="61" font-size="27" fill="#a0ffb6" font-family="DejaVu Sans, sans-serif" font-weight="700" text-anchor="start">Private phone-to-phone calling</text>
