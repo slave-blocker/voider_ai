@@ -1,8 +1,43 @@
 # Voider
 
-![Voider: role-separated CAP2 mailboxes, phone call paths, integrity checks and USB pairing](docs/diagrams/voider-overview.png)
+![Voider architecture: isolated phone paths, connection selection, boot integrity and USB pairing](docs/diagrams/voider-overview.png)
 
 [Diagram source (SVG)](docs/diagrams/voider-overview.svg)
+
+<details>
+<summary>Network and integrity details</summary>
+
+- **Indexes and routing:** `X` is the local imported-server slot; `s` comes from
+  the paired certificate/WireGuard address. They are independent. Each `netnsX`
+  contains `wgX = 172.31.0.s`, `vethXb`, and NFQUEUE `1000 + X`. The `.2` bridge
+  endpoint is inside `netnsX`; `.1` is in the default namespace. WireGuard UDP
+  sockets remain in the default namespace. SIP uses NOTRACK and stateless rewrite.
+- **Phone link:** the factory-reset phone uses `172.16.19.85`, with the appliance
+  gateway at `172.16.19.86/30` on `eth1`. Readiness is a ping; phone web
+  administration is not required. The two blue arrows show dial targets over
+  this one physical link. Clients of this appliance share `wg0`.
+- **Tor fallback:** `tcs+` serves paired clients and `tds+` serves imported servers;
+  the namespace SOCKS helper is `172.30.255.1`. Tor supplies encryption, and
+  tundup authenticates using the paired secret and USB fingerprint. Its two
+  bidirectional streams deliver the first valid copy.
+- **CAP2 mailboxes:** each role and slot has a separate account, key path and
+  chroot. Incoming CAP2 uses client accounts; server accounts have no authorized
+  key. From the peer, OFFER and READY go to `/in`; ANSWER is read from `/out`.
+  Records use pair-secret HMAC, a shared transaction ID, atomic RAM storage,
+  and size, count and lifetime limits.
+
+  | Role | Account | Mailbox root |
+  | --- | --- | --- |
+  | Client | `vmcNNN` | `/var/sftp/clients/vmbNNN` |
+  | Server | `vmsNNN` | `/var/sftp/servers/vmbNNN` |
+
+- **Integrity:** the device checks the complete raw BOOT and SYSTEM partitions.
+  The human STATE check covers the internal manifest and deterministic saved
+  STATE archive. Compare the displayed fingerprint with your trusted record;
+  Internet and calls stay off until both checks pass. After an intentional
+  STATE change, record the new check code.
+
+</details>
 
 Manual: [German / English / Bulgarian](docs/manual/voider-manual-de-en-bg.pdf)
 
