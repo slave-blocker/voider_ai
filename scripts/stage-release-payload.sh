@@ -20,7 +20,11 @@ for x in $BINS; do
     [ -x "$BUILD_DIR/$x" ] || die "missing native binary: $BUILD_DIR/$x"
 done
 
-WORK=$(mktemp -d)
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+# Keep staging on the clone filesystem, not the RAM-backed /tmp.
+WORK_BASE="$SCRIPT_DIR/../image-work"
+mkdir -p "$WORK_BASE"
+WORK=$(mktemp -d "$WORK_BASE/payload.XXXXXX")
 trap 'rm -rf "$WORK"' EXIT INT TERM
 ROOT="$WORK/voider-installer"
 mkdir -p "$ROOT/assets/fonts" "$ROOT/build" "$ROOT/config" "$ROOT/openrc" "$ROOT/scripts"

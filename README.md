@@ -98,33 +98,44 @@ Use a Raspberry Pi with 64-bit/aarch64 boot support and a 2x20 GPIO header for
 the display. The release image uses Alpine's Raspberry Pi kernel and bootloader,
 64-bit boot mode.
 
-## Build
+## Build and flash
 
-The repository contains the source and release tooling used to build Voider binaries
-and stage a flashable release image.
+Use a Raspberry Pi running **Alpine Linux 3.23, aarch64**, with Internet access
+and at least **4 GB free on the disk holding your clone**. These commands assume
+an account with `doas` administrator access. Run each block in order; stop if a
+command fails. Build on this Pi, then flash a separate microSD card in a USB reader.
 
-Native binaries:
-
-```sh
-make
-```
-
-Stage the offline installer payload after a native build:
+Install the build and flashing tools:
 
 ```sh
-./scripts/stage-release-payload.sh release/voider-installer-payload.tar.gz
+doas apk add git build-base linux-headers openssl-dev libnetfilter_queue-dev \
+  python3 util-linux sfdisk dosfstools e2fsprogs tar gzip openssh-client
 ```
 
-Build the fixed-size flashable image on an Alpine aarch64 builder as root. The
-build creates the compressed image, metadata, and checksum files together:
+Download the source:
 
 ```sh
-./scripts/build-release-image.sh \
-  release/voider-installer-payload.tar.gz \
-  release/voider-aarch64.img.gz
+git clone https://github.com/slave-blocker/voider_ai.git
+cd voider_ai
 ```
 
-The expected outputs are:
+Build the programs and prepare the offline installer:
+
+```sh
+make -j2
+./scripts/stage-release-payload.sh
+```
+
+Create the image:
+
+```sh
+doas ./scripts/build-release-image.sh
+```
+
+Everything stays inside this clone: programs in `build/`, temporary build and
+flash files in `image-work/`, and the finished image in `release/`. Temporary
+working folders are removed when the scripts exit normally. No `TMPDIR` setting
+is needed. The build produces these three files together:
 
 ```text
 release/voider-aarch64.img.gz
@@ -132,11 +143,35 @@ release/voider-aarch64.img.gz.meta
 release/voider-aarch64.img.gz.sha256
 ```
 
-Flash with explicit source and target validation:
+Insert the target microSD card into a USB reader connected to the build Pi.
+Identify it by its size and model:
 
 ```sh
-./scripts/flash-release-image.sh release/voider-aarch64.img.gz /dev/EXACT_CARD
+lsblk -o NAME,SIZE,MODEL,TRAN,MOUNTPOINTS
 ```
+
+Do not select the disk running the build Pi. Enter the **whole USB card device**,
+for example `/dev/sda`, not a partition such as `/dev/sda1`:
+
+```sh
+printf 'USB card device: '
+read -r CARD
+doas ./scripts/flash-release-image.sh release/voider-aarch64.img.gz "$CARD" --readback
+```
+
+The flasher validates the source and target, shows the selected disk, and asks
+you to type `FLASH /dev/...` before erasing it. Wait for **Flash complete**.
+The card must hold at least 940,572,672 bytes (nominal 1 GB or larger).
+
+Management SSH is off by default. To enable it, append
+`--ssh-key /path/to/your-public-key.pub` to the flashing command. Supply only a
+public key; keep its private key on your management computer.
+
+Put the flashed card in the Voider, connect its supported display and buttons,
+Ethernet uplink and supported factory-reset phone, then power it on. Hold
+**INSTALL** on the display and follow the instructions. Installation is offline
+and requests one reboot. Repeat for the second appliance, then follow the
+[manual](docs/manual/voider-manual-de-en-bg.pdf) to pair them and make a call.
 
 ## Monero
 

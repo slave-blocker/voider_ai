@@ -23,7 +23,10 @@ python3 "$SCRIPT_DIR/check-release-image.py" --layout-only
 case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 case "$PAYLOAD" in /*) ;; *) PAYLOAD="$PWD/$PAYLOAD" ;; esac
 mkdir -p "$(dirname "$OUT")"
-WORK=$(mktemp -d)
+# Keep staging on the clone filesystem, not the RAM-backed /tmp.
+WORK_BASE="$SCRIPT_DIR/../image-work"
+mkdir -p "$WORK_BASE"
+WORK=$(mktemp -d "$WORK_BASE/build.XXXXXX")
 IMAGE="$WORK/voider-aarch64.img"
 ROOT="$WORK/root"
 LOOP=

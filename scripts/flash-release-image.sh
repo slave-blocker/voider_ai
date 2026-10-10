@@ -31,7 +31,10 @@ TARGET=$(readlink -f "$TARGET")
 [ "$(lsblk -ndo TYPE "$TARGET")" = disk ] || die "target must be a whole disk, not a partition"
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
-WORK=$(mktemp -d "${TMPDIR:-/var/tmp}/voider-flash.XXXXXX")
+# Keep staging on the clone filesystem, not the RAM-backed /tmp.
+WORK_BASE="$SCRIPT_DIR/../image-work"
+mkdir -p "$WORK_BASE"
+WORK=$(mktemp -d "$WORK_BASE/flash.XXXXXX")
 cleanup(){
     rc=$?; trap - EXIT; set +e
     if mountpoint -q "$WORK/boot"; then
