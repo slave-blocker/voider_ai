@@ -21,6 +21,8 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/file.h>
+#include <sys/inotify.h>
+#include <poll.h>
 #include <thread>
 #include <unistd.h>
 #include <fcntl.h>
@@ -42,9 +44,9 @@ namespace fs=std::filesystem;
 static Cfg C;
 
 struct RGB{ unsigned char r,g,b; };
-static constexpr RGB NAVY{13,43,55},BLUE{28,116,179},GREEN{45,166,93};
+static constexpr RGB NAVY{13,43,55},BLUE{28,116,179},GREEN{27,117,67};
 static constexpr RGB YELLOW{246,194,40},RED{211,54,61},ORANGE{239,116,42};
-static constexpr RGB CREAM{247,244,232},WHITE{255,255,255},BLACK{10,16,19},GREY{104,116,120};
+static constexpr RGB CREAM{247,244,232},WHITE{255,255,255},BLACK{10,16,19},GREY{90,103,109};
 static constexpr RGB OFF{0,0,0};
 
 static std::map<std::string,std::string> fields(const std::string&p){
@@ -90,7 +92,8 @@ static std::string tr(const std::string&key){
 struct State{
     bool boot=false,os_ok=false,os_checking=false,wan_carrier=false,wan=false,net=false;
     bool phone_carrier=false,phone=false,ipv6=false,admin_key=false,admin_ssh=false,state_update_pending=false,restore_pending=false;
-    int peers=0,os_progress=0, cursor=-1,language_choice=-1;
+    int peers=0,os_progress=0, cursor=-1,language_choice=-1,contact_number=1;
+    std::string contact_role="client";
     std::string method="WAIT",operation_state,operation_message,operation_detail;
     std::string integrity_state,integrity_phase,integrity_failure,user_integrity;
     std::string boot_sha,system_sha,combined_sha,external_sha;
@@ -152,6 +155,9 @@ static State snapshot(){
     s.usb_model=fields("/run/voider/usb.selection")["MODEL"];
     s.peer_modes=peer;
     s.contacts=vc::contacts(C);
+    auto selection=fields("/run/voider/ui.selection");
+    s.contact_role=selection["ROLE"]=="server"?"server":"client";
+    s.contact_number=std::clamp(toi(selection["NUMBER"],1),0,299);
     return s;
 }
 
@@ -292,8 +298,10 @@ static int text_width(const std::string&s,int size){int n=0;for(auto c:codepoint
 // Every line is measured against its own component. No truncation or wrapping.
 static void line(Canvas&c,int x,int y,int w,int h,const std::string&value,int wanted,RGB ink,bool center=true){
     if(value.empty())return;
-    int size=16;for(int n:{48,40,32,28,24,20,16})if(n<=wanted&&text_width(value,n)<=w){size=n;break;}
-    int width=text_width(value,size),left=center?x+(w-width)/2:x,baseline=y+(h-size)/2+size*4/5;
+    int size=20;for(int n:{80,64,48,40,32,28,24,20})if(n<=wanted&&text_width(value,n)<=w){size=n;break;}
+    int top=0,bottom=0;
+    for(auto code:codepoints(value)){const auto&g=glyph(code,size);top=std::min(top,g.top);bottom=std::max(bottom,g.top+g.h);}
+    int width=text_width(value,size),left=center?x+(w-width)/2:x,baseline=y+(h-(bottom-top))/2-top;
     int xx=left,minx=left,maxx=left,miny=y+h,maxy=y;
     for(auto code:codepoints(value)){const auto&g=glyph(code,size);int px=0;
         for(int j=0;j<g.length;j++){unsigned run=ui_font::pixels[g.offset+j];int alpha=(run&15)*17;
@@ -308,15 +316,16 @@ static void line(Canvas&c,int x,int y,int w,int h,const std::string&value,int wa
 static std::string fitted_value(const std::string&value,int width){
     std::string clean;for(unsigned char ch:value)if(ch>=32&&ch<127)clean+=(char)ch;
     if(clean.empty())clean="USB";
-    if(text_width(clean,16)<=width)return clean;
-    while(!clean.empty()&&text_width(clean+"...",16)>width)clean.pop_back();
+    if(text_width(clean,20)<=width)return clean;
+    while(!clean.empty()&&text_width(clean+"...",20)>width)clean.pop_back();
     return clean+"...";
 }
 static void label(Canvas&c,int x,int y,int w,int h,const std::string&key,int size,RGB ink,bool center=true){line(c,x,y,w,h,tr(key),size,ink,center);}
 static void header(Canvas&c,const std::string&title,const State&,bool=true){c.rect(0,0,320,40,NAVY);label(c,12,2,296,36,title,24,WHITE,false);}
 
 enum class Action{
-    None,UsbDone,Home,Contacts,ContactOpen,Previous,Next,PairStart,AddStart,PairScan,PairRun,AddScan,AddRun,
+    None,UsbDone,Home,Contacts,ContactOpen,Previous,Next,ContactKinds,SelectClients,SelectServers,SelectCurrent,
+    DigitHundreds,DigitTens,DigitOnes,SelectOpen,SelectBack,PairStart,AddStart,PairScan,PairRun,AddScan,AddRun,
     Check,CheckRun,Network,NetworkConfirm,NetworkRun,System,SystemMore,Support,PowerConfirm,PowerRun,RebootConfirm,RebootRun,
     BackupStart,BackupScan,BackupRun,RestoreStart,RestoreScan,RestoreRun,RestoreReboot,ResetWarn,ResetConfirm,ResetRun,
     Manage,RemoveConfirm,RemoveRun,ConnectionResetConfirm,ConnectionResetRun,Operation,
@@ -332,6 +341,15 @@ static Button b(std::string label,Action s,Action l=Action::None,RGB color=BLUE)
 static Button hold(std::string label,Action l,RGB color=RED){return {std::move(label),Action::None,l,color,true};}
 static Button blank(){return {"",Action::None,Action::None,GREY};}
 static vc::Contact selected_contact(const State&s);
+static int numbered_contact(const State&s){
+    for(size_t i=0;i<s.contacts.size();i++)
+        if(s.contacts[i].role==s.contact_role&&s.contacts[i].slot-1==s.contact_number)return (int)i;
+    return -1;
+}
+static int turn_digit(int number,int digit){
+    int place=digit==0?100:(digit==1?10:1),radix=digit==0?3:10;
+    return number+(((number/place)%radix+1)%radix-(number/place)%radix)*place;
+}
 
 static PageSpec spec(const std::string&page,const State&s){
     if(page=="home")return {page,"VOIDER",{b("POWER",Action::PowerConfirm,Action::None,NAVY),b("LINKS",Action::Contacts),b("CHECK",Action::Integrity),b("NET",Action::Network)}};
@@ -339,9 +357,13 @@ static PageSpec spec(const std::string&page,const State&s){
     // Creating another relationship must remain reachable after the first
     // contact exists. Browsing belongs on the opened contact page, where the
     // existing PREV/NEXT controls remain available.
-    if(page=="contacts")return {page,"CONNECTIONS",{b("HOME",Action::Home,Action::None,NAVY),b("SHARE",Action::PairStart,Action::None,GREEN),b("ADD",Action::AddStart),b("OPEN",Action::ContactOpen,Action::None,GREEN)}};
+    if(page=="contacts")return {page,"CONNECTIONS",{b("HOME",Action::Home,Action::None,NAVY),b("SHARE",Action::PairStart,Action::None,GREEN),b("ADD",Action::AddStart),b("OPEN",Action::ContactKinds,Action::None,GREEN)}};
+    if(page=="contact_kind")return {page,"FIND CONNECTION",{b("BACK",Action::Contacts,Action::None,NAVY),b("CLIENTS",Action::SelectClients),b("SERVERS",Action::SelectServers),blank()}};
+    if(page=="contact_select")return {page,s.contact_role=="client"?"CLIENT":"SERVER",{
+        b("HUNDREDS",Action::DigitHundreds),b("TENS",Action::DigitTens),b("ONES",Action::DigitOnes),
+        b(numbered_contact(s)>=0?"OPEN":"EMPTY",numbered_contact(s)>=0?Action::SelectOpen:Action::None,Action::SelectBack,numbered_contact(s)>=0?GREEN:GREY)}};
     if(page=="contact")return {page,"DIAL",{b("HOME",Action::Home,Action::None,NAVY),b("PREV",Action::Previous),b("NEXT",Action::Next),b("MORE",Action::Manage,Action::None,ORANGE)}};
-    if(page=="manage")return {page,"CONNECTION",{b("HOME",Action::Home,Action::None,NAVY),b("RETRY",Action::ConnectionResetConfirm,Action::None,ORANGE),b("REMOVE",Action::RemoveConfirm,Action::None,RED),b("BACK",Action::ContactOpen)}};
+    if(page=="manage")return {page,"CONNECTION",{b("BACK",Action::ContactOpen,Action::None,NAVY),b("FIND",Action::SelectCurrent),b("RETRY",Action::ConnectionResetConfirm,Action::None,ORANGE),b("REMOVE",Action::RemoveConfirm,Action::None,RED)}};
     if(page=="pair_insert")return {page,"USB KEY",{b("CANCEL",Action::Contacts,Action::None,NAVY),b("RETRY",Action::PairScan,Action::None,GREEN),blank(),blank()}};
     if(page=="pair_erase")return {page,"USB KEY",{b("CANCEL",Action::Contacts,Action::None,NAVY),hold("ERASE",Action::PairRun,RED),blank(),blank()}};
     if(page=="add_insert")return {page,"ADD LINK",{b("CANCEL",Action::Contacts,Action::None,NAVY),blank(),b("RETRY",Action::AddScan,Action::None,GREEN),blank()}};
@@ -399,17 +421,41 @@ static void buttons(Canvas&c,const PageSpec&p){
         const auto&b=p.buttons[i];int x=i*80;
         c.rect(x,200,80,40,b.label.empty()?NAVY:b.color);c.rect(x,200,2,40,CREAM);
         if(b.label.empty())continue;
+        if(p.id=="contact_select"&&i==3){
+            label(c,x+4,201,72,19,b.label,20,WHITE);
+            c.rect(x+5,226,8,2,WHITE);c.rect(x+5,230,8,2,WHITE);
+            label(c,x+16,220,60,19,"BACK",20,WHITE);
+            continue;
+        }
         if(b.label=="I RECORDED IT"){
             // Deliberate two-line confirmation within its one physical button cell.
-            label(c,x+4,201,72,19,"RECORDED LINE 1",20,NAVY);
-            label(c,x+4,220,72,19,"RECORDED LINE 2",20,NAVY);
+            label(c,x+4,201,72,19,"RECORDED LINE 1",20,WHITE);
+            label(c,x+4,220,72,19,"RECORDED LINE 2",20,WHITE);
             continue;
+        }
+        std::string text=tr(b.label);auto split=text.find(' ');
+        if(!b.held&&text_width(text,20)>72&&split!=std::string::npos){
+            line(c,x+4,200,72,20,text.substr(0,split),20,WHITE);
+            line(c,x+4,220,72,20,text.substr(split+1),20,WHITE);continue;
         }
         // A bar above the label distinguishes a held action without extra copy.
         bool held=b.held;
         if(held){c.rect(x+25,204,30,3,WHITE);c.rect(x+25,208,30,2,WHITE);}
-        label(c,x+4,held?213:204,72,held?24:32,b.label,20,(b.color.r==GREEN.r||b.color.r==ORANGE.r||b.color.r==YELLOW.r)?NAVY:WHITE);
+        label(c,x+4,held?213:204,72,held?24:32,b.label,20,(b.color.r==ORANGE.r||b.color.r==YELLOW.r)?NAVY:WHITE);
     }
+}
+static void button_feedback(Canvas&c,const PageSpec&p){
+    auto feedback=fields("/run/voider/ui.feedback");
+    int number=toi(feedback["BUTTON"],0);
+    long long started=std::strtoll(feedback["START"].c_str(),nullptr,10);
+    auto now=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+    if(number<1||number>4||started<=0||started>now||now-started>5000)return;
+    const auto& button=p.buttons[(size_t)number-1];if(button.label.empty())return;
+    int x=(number-1)*80;
+    c.rect(x+2,200,78,2,WHITE);c.rect(x+2,238,78,2,WHITE);
+    c.rect(x+2,202,2,36,WHITE);c.rect(x+78,202,2,36,WHITE);
+    if(button.held||button.long_action!=Action::None)
+        c.rect(x+4,200,std::min(74,(int)((now-started)*74/800)),4,YELLOW);
 }
 static int selected_index(const State&s){
     if(s.contacts.empty())return 0;
@@ -458,7 +504,20 @@ static State diagnostic_fixture(State s,int issue){
     return s;
 }
 static void message(Canvas&c,const std::string&key,RGB color=CREAM){
-    c.rect(0,44,320,150,color);label(c,12,72,296,84,key,40,(color.r==NAVY.r||color.r==RED.r||color.r==GREEN.r||color.r==BLUE.r)?WHITE:NAVY);
+    c.rect(0,44,320,150,color);
+    RGB ink=(color.r==NAVY.r||color.r==RED.r||color.r==GREEN.r||color.r==BLUE.r)?WHITE:NAVY;
+    std::string value=tr(key);
+    if(text_width(value,32)<=296){line(c,12,70,296,88,value,40,ink);return;}
+    // Deliberately balance two measured lines rather than shrinking a whole
+    // instruction into small type. Never split words or hide text.
+    size_t split=std::string::npos;int widest=100000;
+    for(size_t at=value.find(' ');at!=std::string::npos;at=value.find(' ',at+1)){
+        int width=std::max(text_width(value.substr(0,at),32),text_width(value.substr(at+1),32));
+        if(width<widest){widest=width;split=at;}
+    }
+    if(split==std::string::npos){line(c,12,70,296,88,value,32,ink);return;}
+    line(c,12,64,296,46,value.substr(0,split),32,ink);
+    line(c,12,112,296,46,value.substr(split+1),32,ink);
 }
 static void digest_seal(Canvas&c,const std::string&digest,const std::string&code){
     static constexpr std::array<RGB,6> palette={RED,BLUE,GREEN,YELLOW,ORANGE,NAVY};
@@ -476,13 +535,35 @@ static void render(Canvas&c,const std::string&page,const State&s){
         c.rect(8,48,304,66,BLUE);c.rect(8,122,304,66,GREEN);
         label(c,20,56,150,48,"CLIENTS",32,WHITE,false);line(c,176,56,124,48,std::to_string(cc)+"/"+std::to_string(clients),40,WHITE);c.ink.back().value=tr("CLIENTS")+" "+c.ink.back().value;
         label(c,20,130,150,48,"SERVERS",32,WHITE,false);line(c,176,130,124,48,std::to_string(sc)+"/"+std::to_string(servers),40,WHITE);c.ink.back().value=tr("SERVERS")+" "+c.ink.back().value;
+    }else if(page=="contact_kind"){
+        int clients=0,servers=0;
+        for(const auto&x:s.contacts)(x.role=="client"?clients:servers)++;
+        c.rect(8,52,304,62,BLUE);c.rect(8,124,304,62,GREEN);
+        label(c,20,57,184,48,"CLIENTS",32,WHITE,false);c.ink.back().value="clients-role";line(c,212,57,88,48,std::to_string(clients),40,WHITE);c.ink.back().value="clients-count";
+        label(c,20,129,184,48,"SERVERS",32,WHITE,false);c.ink.back().value="servers-role";line(c,212,129,88,48,std::to_string(servers),40,WHITE);c.ink.back().value="servers-count";
+    }else if(page=="contact_select"){
+        int number=s.contact_number;
+        for(int i=0;i<3;i++){
+            int place=i==0?100:(i==1?10:1),x=i*80+6;
+            c.rect(x,54,68,92,NAVY);c.rect(x+2,56,64,43,BLACK);
+            line(c,x+2,59,64,80,std::to_string(number/place%10),80,WHITE);
+            c.ink.back().value="digit-"+std::to_string(i);
+            c.rect(x,99,68,2,GREY);c.rect(x,95,3,10,GREY);c.rect(x+65,95,3,10,GREY);
+        }
+        int index=numbered_contact(s);
+        if(index>=0){
+            const auto&x=s.contacts[(size_t)index];
+            label(c,12,155,296,36,contact_status(s,x),28,contact_connected(s,x)?GREEN:BLUE);
+        }else label(c,12,155,296,36,"NOT SAVED",28,GREY);
+        c.rect(246,54,68,92,index>=0?GREEN:GREY);
+        line(c,250,65,60,66,index>=0?">":"--",64,WHITE);
     }else if(page=="contacts"||page=="contact"||page=="manage"){
         if(s.contacts.empty())message(c,"NO CONNECTIONS",YELLOW);
         else {auto x=selected_contact(s);bool up=contact_connected(s,x);c.rect(8,48,304,54,up?GREEN:BLUE);
             line(c,16,51,288,48,contact_name(x),32,WHITE);
             label(c,12,108,296,32,contact_status(s,x),28,NAVY);
-            if(up)label(c,12,143,296,24,contact_method(s,x),20,BLUE);
-            if(page!="contacts")line(c,12,170,296,26,x.dial_ip,24,NAVY);
+            if(page=="contact")line(c,12,145,296,48,x.dial_ip,40,NAVY);
+            else if(up)label(c,12,150,296,40,contact_method(s,x),28,BLUE);
         }
     }else if(page=="language"){
         int selected=s.language_choice<0?language:s.language_choice;
@@ -490,7 +571,7 @@ static void render(Canvas&c,const std::string&page,const State&s){
         c.rect(8,60,304,104,BLUE);line(c,16,76,288,64,names[selected],40,WHITE);
     }else if(page=="pair_insert"||page=="add_insert"||page=="backup_insert"||page=="restore_insert")message(c,"USB MISSING");
     else if(page=="admin_new_insert")message(c,"INSERT USB STICK");
-    else if(page=="pair_erase"||page=="backup_erase"||page=="admin_new_erase"){message(c,"ERASE USB",RED);line(c,12,164,296,28,fitted_value(s.usb_model,296),16,WHITE);}
+    else if(page=="pair_erase"||page=="backup_erase"||page=="admin_new_erase"){message(c,"ERASE USB",RED);line(c,12,164,296,28,fitted_value(s.usb_model,296),20,WHITE);}
     else if(page=="usb_remove")message(c,"SAFE TO REMOVE",GREEN);
     else if(page=="add_confirm")message(c,"VALID VOIDER KEY",GREEN);
     else if(page=="pair_wait"){
@@ -525,7 +606,7 @@ static void render(Canvas&c,const std::string&page,const State&s){
         static const std::array<std::string,7> names={"LAN IPv4","LAN IPv6","DIRECT IPv4","DIRECT IPv6","PRIVATE IPv4","PRIVATE IPv6","TOR"};
         std::string n=names[s.path_index];auto split=n.find(' ');std::string display=tr(n.substr(0,split))+(split==std::string::npos?"":n.substr(split));
         line(c,12,60,296,56,display,40,NAVY);label(c,12,128,296,42,vta::available(s.paths_available,vta::TOKENS[s.path_index])?"ON":"OFF",32,BLUE);
-        line(c,270,175,38,22,std::to_string(s.path_index+1)+"/7",16,NAVY);
+        line(c,254,173,54,26,std::to_string(s.path_index+1)+"/7",20,NAVY);
     }else if(page=="network_confirm")message(c,"RETRY NETWORK?",YELLOW);
     else if(page=="paths_apply")message(c,"APPLY PATH CHANGES?",YELLOW);
     else if(page=="system"||page=="system_more")message(c,s.admin_ssh?"MANAGEMENT ON":"MANAGEMENT OFF",BLUE);
@@ -564,7 +645,7 @@ static void render(Canvas&c,const std::string&page,const State&s){
         message(c,key,page=="operation"?YELLOW:(ok?GREEN:RED));
         if(page=="operation"&&!s.operation_detail.empty()&&std::all_of(s.operation_detail.begin(),s.operation_detail.end(),[](unsigned char ch){return std::isdigit(ch);}))line(c,12,164,296,30,s.operation_detail+"%",24,NAVY);
     }
-    buttons(c,p);
+    buttons(c,p);button_feedback(c,p);
 }
 
 static void save_page(const std::string&p){write1(C.ui_page_file,p);}
@@ -647,6 +728,23 @@ static int execute(Action a,const State&s,const std::string&page){
     }
     case Action::None:return 0;case Action::Home:save_page("home");return 0;case Action::Contacts:save_page("contacts");return 0;
     case Action::ContactOpen:save_page(s.contacts.empty()?"contacts":"contact");return 0;
+    case Action::ContactKinds:save_page("contact_kind");return 0;
+    case Action::SelectClients:case Action::SelectServers:case Action::SelectCurrent:{
+        auto current=selected_contact(s);
+        std::string role=a==Action::SelectCurrent?current.role:(a==Action::SelectServers?"server":"client");
+        int number=1;
+        for(const auto&x:s.contacts)if(x.role==role){number=x.slot-1;break;}
+        if(current.role==role)number=current.slot-1;
+        write_fields("/run/voider/ui.selection",{{"ROLE",role},{"NUMBER",std::to_string(number)}});
+        save_page("contact_select");return 0;}
+    case Action::DigitHundreds:case Action::DigitTens:case Action::DigitOnes:{
+        int digit=a==Action::DigitHundreds?0:(a==Action::DigitTens?1:2);
+        write_fields("/run/voider/ui.selection",{{"ROLE",s.contact_role},{"NUMBER",std::to_string(turn_digit(s.contact_number,digit))}});
+        return 0;}
+    case Action::SelectOpen:{
+        int index=numbered_contact(s);if(index<0)return 0;
+        write1("/run/voider/ui.contact",std::to_string(index));save_page("contact");return 0;}
+    case Action::SelectBack:save_page("contact_kind");return 0;
     case Action::Previous:case Action::Next:{
         if(s.contacts.empty())return 0;
         int i=selected_index(s)+(a==Action::Next?1:-1);
@@ -778,12 +876,17 @@ static std::string visible_page(const State&s,const std::string&requested){
     return requested.empty()?"home":requested;
 }
 static int button_event(int number,const std::string&kind){
-    if(number<1||number>4||(kind!="short"&&kind!="long"))return 2;
+    if(number<1||number>4||(kind!="short"&&kind!="long"&&kind!="press"))return 2;
     ButtonLock lock;if(!lock.held())return 2;
+    if(kind=="press"){
+        auto now=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+        write_fields("/run/voider/ui.feedback",{{"BUTTON",std::to_string(number)},{"START",std::to_string(now)}});return 0;
+    }
+    fs::remove("/run/voider/ui.feedback");
     State s=snapshot();std::string page=read1(C.ui_page_file);page=visible_page(s,page);
     PageSpec p=spec(page,s);const Button&x=p.buttons[number-1];
     fs::create_directories(fs::path(C.ui_event_log).parent_path());
-    std::ofstream(C.ui_event_log,std::ios::app)<<std::time(nullptr)<<" "<<page<<" B"<<number<<" "<<kind<<" "<<x.label<<"\n";
+    vu::append_log(C.ui_event_log,std::to_string(std::time(nullptr))+" "+page+" B"+std::to_string(number)+" "+kind+" "+x.label);
     return execute(kind=="short"?x.short_action:x.long_action,s,page);
 }
 
@@ -797,7 +900,7 @@ static FactoryIntent factory_intent(const std::string&state,int number,const std
     return FactoryIntent::None;
 }
 
-static std::vector<std::string> page_ids(){return {"home","language","contacts","contact","manage","pair_insert","pair_erase","add_insert","add_confirm","usb_remove","pair_wait","check","integrity_verify","integrity_boot","integrity_system","integrity_combined","integrity_state","integrity_user_ok","integrity_user_fail","full_boot","full_system","full_combined","full_state","state_updated","network","network_confirm","paths","paths_apply","system","system_more","admin","admin_enable","admin_disable","admin_new_confirm","admin_new_insert","admin_new_erase","admin_revoke","power_confirm","powering_off","reboot_confirm","rebooting","connection_reset_confirm","backup_insert","backup_erase","restore_insert","restore_confirm","restore_ready","reset_warn","reset_confirm","remove_confirm","support","operation","result"};}
+static std::vector<std::string> page_ids(){return {"home","language","contacts","contact_kind","contact_select","contact","manage","pair_insert","pair_erase","add_insert","add_confirm","usb_remove","pair_wait","check","integrity_verify","integrity_boot","integrity_system","integrity_combined","integrity_state","integrity_user_ok","integrity_user_fail","full_boot","full_system","full_combined","full_state","state_updated","network","network_confirm","paths","paths_apply","system","system_more","admin","admin_enable","admin_disable","admin_new_confirm","admin_new_insert","admin_new_erase","admin_revoke","power_confirm","powering_off","reboot_confirm","rebooting","connection_reset_confirm","backup_insert","backup_erase","restore_insert","restore_confirm","restore_ready","reset_warn","reset_confirm","remove_confirm","support","operation","result"};}
 static State demo_state(){
     State s;s.boot=s.os_ok=s.wan_carrier=s.wan=s.net=s.phone_carrier=s.phone=s.ipv6=s.admin_key=s.admin_ssh=true;s.peers=1;
     s.contacts={{"client",2,"CLIENT 1",std::string(64,'a'),"10.1.2.1"},{"server",254,"SERVER 253",std::string(64,'b'),"10.254.1.1"}};
@@ -847,7 +950,7 @@ static int selftest(){
     if(spec("language",demo).buttons[2].short_action!=Action::LanguageTry||spec("language",demo).buttons[3].long_action!=Action::LanguageSave)fails++;
     if(factory_intent("READY",2,"short")!=FactoryIntent::None||factory_intent("READY",2,"long")!=FactoryIntent::Install)fails++;
     Canvas black;render_factory(black,{{"STATE","REBOOTING"}});if(!std::all_of(black.p.begin(),black.p.end(),[](RGB p){return !p.r&&!p.g&&!p.b;}))fails++;
-    std::cout<<"UI_TEST cases="<<cases<<" pages="<<page_ids().size()<<" languages=3 min-font-px=16 fails="<<fails<<"\n";return fails?1:0;
+    std::cout<<"UI_TEST cases="<<cases<<" pages="<<page_ids().size()<<" languages=3 min-font-px=20 fails="<<fails<<"\n";return fails?1:0;
 }
 static int render_dir(const std::string&dir){
     int fails=0,files=0;State s=demo_state();
@@ -861,6 +964,10 @@ static int render_dir(const std::string&dir){
             for(const auto&role:{"client","server"})for(int n=2;n<=254;n++){maximum.contacts.push_back({role,n,vc::connection_name(role,n),std::string(64,'f'),vc::dial_ip(role,n)});maximum.peer_modes[std::string(role)+"_"+std::to_string(n)]="holepunch6";}
             maximum.cursor=505;if(page=="result"){maximum.operation_state="failed";maximum.operation_message="STATE SAVE FAILED";}Canvas m;render(m,page,maximum);save(m,page+"-max");
         }
+        State numbered=s;numbered.contact_role="client";numbered.contact_number=40;
+        numbered.contacts.push_back({"client",41,vc::connection_name("client",41),std::string(64,'f'),vc::dial_ip("client",41)});
+        numbered.cursor=(int)numbered.contacts.size()-1;numbered.peer_modes["client_41"]="direct4";
+        for(auto page:{"contact_select","contact"}){Canvas c;render(c,page,numbered);save(c,std::string(page)+"-040");}
         for(auto state:{"READY","INSTALLING","FAILED","COMPLETE","RESTARTING","REBOOTING","LANGUAGE","POWERING_OFF"}){Canvas c;render_factory(c,{{"STATE",state},{"PROGRESS","91"},{"EXTERNAL_STATE_SHA256",s.external_sha},{"EXTERNAL_STATE_CODE",s.external_code}});save(c,std::string("factory-")+state);}
         for(const auto&entry:ui_operation_states){State v=s;v.operation_state=entry.first;v.operation_message=entry.second;v.operation_detail="100";Canvas c;render(c,entry.first=="working"?"operation":"result",v);save(c,"operation-"+entry.first+"-"+entry.second);}
         for(int issue=0;issue<6;issue++){Canvas c;render(c,"support",diagnostic_fixture(s,issue));save(c,"support-"+std::to_string(issue));}
@@ -906,6 +1013,8 @@ static void render_ssh(const std::string&page,const State&s){
     if(page=="restore_ready")std::cout<<tr("RESTART TO APPLY")<<"\n";
     if(page=="state_updated")std::cout<<tr("WRITE THIS DOWN")<<"\n";
     if(page=="contact"&&!s.contacts.empty()){auto x=selected_contact(s);std::cout<<x.name<<"  DIAL "<<x.dial_ip<<"\n";}
+    if(page=="contact_select")std::cout<<s.contact_role<<' '<<s.contact_number<<"  "
+        <<tr(numbered_contact(s)>=0?"OPEN":"NOT SAVED")<<"; hold B4 to go back\n";
     if(page=="paths")for(size_t i=0;i<vta::TOKENS.size();i++)
         std::cout<<(i==(size_t)s.path_index?"> ":"  ")<<vta::LABELS[i]<<"  "
                  <<(vta::available(s.paths_available,vta::TOKENS[i])?"ON":"OFF")<<"\n";
@@ -942,7 +1051,7 @@ static void render_factory(Canvas&c,const std::map<std::string,std::string>&f){
         else{auto u=fields("/run/voider/state-updated.status");if(f.count("EXTERNAL_STATE_CODE"))u=f;digest_seal(c,u["EXTERNAL_STATE_SHA256"],u["EXTERNAL_STATE_CODE"]);}
     }else if(state=="RESTARTING")message(c,"PLEASE WAIT",NAVY);
     else message(c,"OFFLINE SETUP",BLUE);
-    buttons(c,p);
+    buttons(c,p);button_feedback(c,p);
 }
 static void show_factory_transition(const std::string&state){
     std::string dev=display_device();if(dev.empty())return;
@@ -953,8 +1062,13 @@ static void show_factory_transition(const std::string&state){
     if(state=="REBOOTING")fb.blank();
 }
 static int factory_button_event(int number,const std::string&kind){
-    if(number<1||number>4||(kind!="short"&&kind!="long"))return 2;
+    if(number<1||number>4||(kind!="short"&&kind!="long"&&kind!="press"))return 2;
     ButtonLock lock;if(!lock.held())return 2;
+    if(kind=="press"){
+        auto now=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+        write_fields("/run/voider/ui.feedback",{{"BUTTON",std::to_string(number)},{"START",std::to_string(now)}});return 0;
+    }
+    fs::remove("/run/voider/ui.feedback");
     auto f=fields("/run/voider/factory-install.status");std::string state=f["STATE"];
     if(fs::exists("/run/voider/factory-language")){
         if(kind!="short")return 0;
@@ -992,10 +1106,47 @@ static int factory_button_event(int number,const std::string&kind){
     }
     return 0;
 }
+class DisplayWake{
+    int fd_=-1;
+public:
+    DisplayWake(){
+        fd_=inotify_init1(IN_NONBLOCK|IN_CLOEXEC);
+        if(fd_>=0&&inotify_add_watch(fd_,"/run/voider",IN_CLOSE_WRITE|IN_MOVED_TO|IN_DELETE)<0){close(fd_);fd_=-1;}
+    }
+    ~DisplayWake(){if(fd_>=0)close(fd_);}
+    bool wait(int milliseconds){
+        auto deadline=std::chrono::steady_clock::now()+std::chrono::milliseconds(milliseconds);
+        do {
+            auto remaining=std::chrono::duration_cast<std::chrono::milliseconds>(deadline-std::chrono::steady_clock::now()).count();
+            if(remaining<=0)return false;
+            pollfd descriptor{fd_,POLLIN,0};
+            if(poll(&descriptor,fd_>=0?1:0,(int)remaining)<=0)return false;
+            alignas(inotify_event) char buffer[8192];ssize_t length=read(fd_,buffer,sizeof buffer);bool changed=false;
+            for(ssize_t offset=0;offset+(ssize_t)sizeof(inotify_event)<=length;){
+                auto* event=reinterpret_cast<inotify_event*>(buffer+offset);
+                std::string name=event->len?event->name:"";
+                changed|=(event->mask&IN_Q_OVERFLOW)||name.rfind("ui.",0)==0||name=="display-blank"||
+                    name=="factory-install.status"||name=="factory-language"||name=="operation.status"||
+                    name=="state-updated.status"||name=="user-integrity.status"||name=="integrity.status"||
+                    name==fs::path(C.status).filename()||name==fs::path(C.wan_status).filename()||name==fs::path(C.phone_status).filename();
+                offset+=sizeof(inotify_event)+event->len;
+            }
+            if(changed)return true;
+        }while(true);
+    }
+};
+static int feedback_interval(){
+    auto feedback=fields("/run/voider/ui.feedback");
+    long long started=std::strtoll(feedback["START"].c_str(),nullptr,10);
+    auto now=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+    return started>0&&started<=now&&now-started<=5000?40:1000;
+}
+
 static int factory_display(bool loop){
     std::string dev=display_device();if(dev.empty())return 1;ConsoleGuard console;console.acquire();Framebuffer fb;if(!fb.open_panel(dev))return 1;
+    DisplayWake wake;
     do{load_language();Canvas c;auto f=fields("/run/voider/factory-install.status");if(fs::exists("/run/voider/factory-language"))f["STATE"]="LANGUAGE";
-        if(fs::exists("/run/voider/display-blank")){c.clear(OFF);fb.show(c);fb.blank();}else{render_factory(c,f);fb.unblank();fb.show(c);}if(loop)std::this_thread::sleep_for(std::chrono::seconds(1));}while(loop);return 0;
+        if(fs::exists("/run/voider/display-blank")){c.clear(OFF);fb.show(c);fb.blank();}else{render_factory(c,f);fb.unblank();fb.show(c);}if(loop)wake.wait(feedback_interval());}while(loop);return 0;
 }
 
 int main(int ac,char**av){
@@ -1023,6 +1174,35 @@ int main(int ac,char**av){
     if(mode!="display"){render_ssh(page,s);return 0;}if(dev.empty()){std::cerr<<"DISPLAY_ERROR no supported physical panel\n";return 1;}
     ConsoleGuard console;console.acquire();
     Framebuffer fb;if(!fb.open_panel(dev)){std::cerr<<"DISPLAY_ERROR cannot open "<<dev<<"\n";return 1;}
-    do{load_language();State now=snapshot();std::string current=read1(C.ui_page_file);current=visible_page(now,current.empty()?page:current);Canvas canvas;if(fs::exists("/run/voider/display-blank")){canvas.clear(OFF);fb.show(canvas);fb.blank();}else{render(canvas,current,now);fb.unblank();fb.show(canvas);}if(!vr::publish("/run/voider/display.status",vr::stamp()))return 1;if(loop)std::this_thread::sleep_for(std::chrono::seconds(std::max(1,C.ui_refresh)));}while(loop);
+    DisplayWake wake;bool dirty=true;State now=s;Canvas previous;bool shown=false;
+    auto refresh=std::chrono::steady_clock::now();
+    int old_number=-1;std::string old_page;
+    do{
+        if(dirty||std::chrono::steady_clock::now()>=refresh){
+            load_language();now=snapshot();refresh=std::chrono::steady_clock::now()+std::chrono::seconds(1);
+        }
+        std::string current=read1(C.ui_page_file);current=visible_page(now,current.empty()?page:current);Canvas canvas;
+        if(fs::exists("/run/voider/display-blank")){canvas.clear(OFF);fb.show(canvas);fb.blank();}
+        else{
+            render(canvas,current,now);fb.unblank();
+            if(shown&&current=="contact_select"&&old_page==current&&old_number!=now.contact_number){
+                // Three short flap frames, confined to changed digit cards.
+                // Status and button labels already show the new selection.
+                for(int cut:{84,114}){
+                    Canvas flap=canvas;
+                    for(int digit=0,place=100;digit<3;digit++,place/=10)if(old_number/place%10!=now.contact_number/place%10){
+                        int x=digit*80+6;
+                        for(int y=cut;y<146;y++)for(int xx=x;xx<x+68;xx++)flap.p[y*320+xx]=previous.p[y*320+xx];
+                        flap.rect(x,cut-2,68,4,BLACK);
+                    }
+                    fb.show(flap);std::this_thread::sleep_for(std::chrono::milliseconds(30));
+                }
+            }
+            if(!shown||memcmp(canvas.p.data(),previous.p.data(),canvas.p.size()*sizeof(RGB)))fb.show(canvas);
+        }
+        previous=std::move(canvas);shown=true;old_number=now.contact_number;old_page=current;
+        if(!vr::publish("/run/voider/display.status",vr::stamp()))return 1;
+        if(loop)dirty=wake.wait(feedback_interval());
+    }while(loop);
     return 0;
 }

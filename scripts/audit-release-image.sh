@@ -68,7 +68,9 @@ for name in (src/'config/release-binaries').read_text().split():
     with p.open('rb') as f: header=f.read(20)
     assert header[:4]==b'\x7fELF' and header[4:6]==b'\x02\x01' and struct.unpack_from('<H',header,18)[0]==183,name
 for path in actual:
-    if not path.startswith('build/') and path!='offline.ready': assert digest(payload/path)==digest(src/path),path
+    if not path.startswith('build/') and path not in ('offline.ready','build-dependencies.sha256'):
+        assert digest(payload/path)==digest(src/path),path
+assert (payload/'build-dependencies.sha256').read_text().strip()==digest(src/'config/build-dependencies.json')
 for script in ('voider-factory-bootstrap','voider-factory-dhcp'):
     assert digest(root/'usr/local/sbin'/script)==digest(src/'scripts'/script)
 assert digest(root/'etc/init.d/voider-factory-bootstrap')==digest(src/'openrc/voider-factory-bootstrap')

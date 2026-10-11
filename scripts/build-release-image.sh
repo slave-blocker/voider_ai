@@ -6,8 +6,8 @@ OUT=${2:-release/voider-aarch64.img.gz}
 # Fixed 897 MiB image; larger cards deliberately retain an unused tail.
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
 . "$SCRIPT_DIR/../config/release-layout"
-SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH:-0}
-ALPINE_BRANCH=${ALPINE_BRANCH:-v3.23}
+SOURCE_DATE_EPOCH=$(python3 "$SCRIPT_DIR/locked-packages.py" epoch)
+export SOURCE_DATE_EPOCH
 
 die(){ echo "ERROR: $*" >&2; exit 1; }
 need(){ command -v "$1" >/dev/null 2>&1 || die "missing command: $1"; }
@@ -19,6 +19,9 @@ for path in "$OUT" "$OUT.sha256" "$OUT.meta"; do
 done
 for c in apk sfdisk losetup mkfs.vfat mkfs.ext4 mount umount tar sha256sum gzip truncate blkid python3 fsck.vfat e2fsck; do need "$c"; done
 python3 "$SCRIPT_DIR/check-release-image.py" --layout-only
+python3 "$SCRIPT_DIR/locked-packages.py" installed build
+python3 "$SCRIPT_DIR/locked-packages.py" verify image
+DEPENDENCIES_SHA256=$(python3 "$SCRIPT_DIR/locked-packages.py" hash)
 
 case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 case "$PAYLOAD" in /*) ;; *) PAYLOAD="$PWD/$PAYLOAD" ;; esac
@@ -93,16 +96,11 @@ mount "${LOOP}p3" "$ROOT/mnt/voider-state"; mounted_state=1
 mkdir -p "$ROOT/etc/apk/keys" "$ROOT/etc/apk"
 cp -p /etc/apk/keys/*.rsa.pub "$ROOT/etc/apk/keys/"
 REPOS="$WORK/repositories"
-printf 'https://dl-cdn.alpinelinux.org/alpine/%s/main\nhttps://dl-cdn.alpinelinux.org/alpine/%s/community\n' \
-    "$ALPINE_BRANCH" "$ALPINE_BRANCH" > "$REPOS"
+: > "$REPOS"
 cp "$REPOS" "$ROOT/etc/apk/repositories"
 
-PACKAGES="alpine-base linux-rpi raspberrypi-bootloader linux-firmware-brcm linux-firmware-cypress \
-ifupdown-ng iproute2 iptables ip6tables wireguard-tools tor tor-openrc openssh openssh-server-pam \
-openssh-sftp-server conntrack-tools bridge-utils busybox busybox-extras netcat-openbsd wget curl \
-openssl libstdc++ libnetfilter_queue libgpiod util-linux e2fsprogs dosfstools tar chrony"
-apk --root "$ROOT" --arch aarch64 --initdb --keys-dir "$ROOT/etc/apk/keys" \
-    --repositories-file "$REPOS" --no-cache --no-logfile add $PACKAGES
+python3 "$SCRIPT_DIR/locked-packages.py" install image --root "$ROOT"
+python3 "$SCRIPT_DIR/locked-packages.py" installed image --root "$ROOT"
 
 for service in devfs dmesg hwdrivers mdev; do
     chroot "$ROOT" rc-update add "$service" sysinit
@@ -120,6 +118,7 @@ tar -xzf "$PAYLOAD" -C "$ROOT/opt"
     cd "$ROOT/opt/voider-installer"
     sha256sum -c MANIFEST.sha256
 )
+[ "$(cat "$ROOT/opt/voider-installer/build-dependencies.sha256")" = "$DEPENDENCIES_SHA256" ] || die "payload dependency lock differs"
 cat > "$ROOT/usr/local/bin/install" <<'EOF'
 #!/bin/sh
 set -eu
@@ -266,6 +265,8 @@ STATE_OFFSET_BYTES=$STATE_OFFSET_BYTES
 STATE_SIZE_BYTES=$STATE_SIZE_BYTES
 STATE_SHA256=$STATE_SHA256
 PAYLOAD_SHA256=$(sha256sum "$PAYLOAD" | awk '{print $1}')
+DEPENDENCIES_SHA256=$DEPENDENCIES_SHA256
+SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH
 EOF
 python3 "$SCRIPT_DIR/check-release-image.py" "$OUT"
 complete=1

@@ -105,11 +105,10 @@ and at least **4 GB free on the disk holding your clone**. These commands assume
 an account with `doas` administrator access. Run each block in order; stop if a
 command fails. Build on this Pi, then flash a separate microSD card in a USB reader.
 
-Install the build and flashing tools:
+Install the tools needed to download the source:
 
 ```sh
-doas apk add git build-base linux-headers openssl-dev libnetfilter_queue-dev \
-  python3 util-linux sfdisk dosfstools e2fsprogs tar gzip openssh-client
+doas apk add git python3
 ```
 
 Download the source:
@@ -119,14 +118,22 @@ git clone https://github.com/slave-blocker/voider_ai.git
 cd voider_ai
 ```
 
-Build the programs and prepare the offline installer:
+Fetch and verify the locked packages, install the exact build tools, then build:
 
 ```sh
+doas ./scripts/prepare-build.sh
+make clean
 make -j2
 ./scripts/stage-release-payload.sh
 ```
 
-Create the image:
+`config/build-dependencies.json` fixes the build and image package versions,
+archive checksums and release timestamp. Keep `image-work/packages/` for future
+offline builds: Alpine may eventually remove old archives. An absent or changed
+package stops the build; it never silently substitutes a newer version.
+This fixes the inputs; byte-identical filesystem images are not promised.
+
+Create the image from the verified local cache, without network downloads:
 
 ```sh
 doas ./scripts/build-release-image.sh

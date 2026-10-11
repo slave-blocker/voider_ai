@@ -9,6 +9,13 @@ SHARE|Share|Teilen|Сподели
 ADD|Add|Neu|Добави
 SYSTEM|Settings|Menü|Меню
 OPEN|Open|Öffnen|Отвори
+FIND|Find|Suchen|Търси
+FIND CONNECTION|Choose connection|Verbindung wählen|Избери връзка
+HUNDREDS|100|100|100
+TENS|10|10|10
+ONES|1|1|1
+EMPTY|Empty|Leer|Празно
+NOT SAVED|Not saved|Nicht gespeichert|Не е запазен
 PREV|Prev|Zurück|Назад
 NEXT|Next|Weiter|Напред
 MORE|More|Mehr|Още
@@ -146,7 +153,7 @@ ACTION FAILED|Action failed|Aktion fehlgeschlagen|Неуспешно дейст�
 TRY AGAIN|Unchanged|Unverändert|Без промяна
 INSTALL VOIDER|Voider setup|Voider Einrichtung|Настройка на Voider
 INSTALLING|Installing|Installation|Инсталиране
-INSTALL FAILED|Setup failed|Installation fehlgeschlagen|Неуспешна настройка
+INSTALL FAILED|Setup failed|Installation fehlgeschlagen|Грешка при настройка
 INSTALL COMPLETE|Setup complete|Installation fertig|Настройката е готова
 RESTARTING|Restarting|Neustart|Рестартиране
 REBOOT FAILED|Restart failed|Neustart fehlgeschlagen|Неуспешен рестарт
@@ -240,7 +247,7 @@ curated STATE commit|Data save failed|Daten nicht gespeichert|Неуспешен
 BOOT and SYSTEM seal|Device seal failed|Gerät nicht versiegelt|Неуспешно запечатване на уреда
 SEE INSTALL LOG|Setup error|Installationsfehler|Грешка при настройката
 NETWORK READY|Network ready|Netzwerk bereit|Мрежата е готова
-CONFIRM|Confirm|Bestätigen|Потвърди
+CONFIRM|OK|OK|OK
 CREATE LOGIN KEY?|Create login key?|Zugangsschlüssel erstellen?|Създаване на ключ за вход?
 REPLACE LOGIN KEY?|Replace login key?|Zugangsschlüssel ersetzen?|Смяна на ключа за вход?
 OLD KEY WILL|The old key will|Der alte Schlüssel|Старият ключ

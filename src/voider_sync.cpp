@@ -59,6 +59,7 @@ static int transfer(const Cfg& c,const std::string& role,int id,const std::strin
     }
     fs::path directory=fs::path(c.sync)/role/std::to_string(id);
     fs::create_directories(directory);
+    vmb::prune_sync(c,role,id);
     fs::path batch_file=directory/(".batch-"+std::to_string(getpid()));
     std::ofstream(batch_file,std::ios::trunc)<<batch;
     // A Tor onion SFTP round trip can exceed 20 seconds even after the

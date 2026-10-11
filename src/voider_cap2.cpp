@@ -354,7 +354,9 @@ static int exchange(const std::string& role,int id){
     for(int attempt=0;attempt<3;attempt++){
         std::this_thread::sleep_for(std::chrono::milliseconds(350));
         if(sync_command("cap2-get",role,id,"answer",xid))continue;
-        Record answer=vtp::parse_record(read1(local_sync_file(role,id,"answer",xid)));
+        fs::path downloaded=local_sync_file(role,id,"answer",xid);
+        Record answer=vtp::parse_record(read1(downloaded));
+        fs::remove(downloaded);
         if(vtp::correlated(offer,answer)&&authenticate(answer,pair_secret(role,id))){
             Record ready=make_ready(role,id,offer,answer);
             if(!ready.ok())return 13;

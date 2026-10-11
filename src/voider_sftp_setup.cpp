@@ -10,6 +10,7 @@
 #include <grp.h>
 #include <pwd.h>
 #include <sys/stat.h>
+#include <sys/mount.h>
 #include <unistd.h>
 #include "voider_config.hpp"
 #include "voider_util.hpp"
@@ -191,6 +192,17 @@ static bool setup_slot(const std::string& role,int slot,bool clean){
     fs::path root=vmb::root(C,role,slot),incoming=root/"in",outgoing=root/"out";
     if(!safe_directory(C.sftp_base)||!safe_directory(parent)||!safe_directory(root)||
        !safe_directory(incoming)||!safe_directory(outgoing))return false;
+    if(role=="client"&&provisioned_client_slot(slot)&&!vu::mounted(incoming.string())){
+        // A paired peer must not exhaust shared /run by creating arbitrary
+        // files faster than cleanup. A separate bounded tmpfs also caps its
+        // inode count. Only active client mailboxes need one.
+        for(const auto& entry:fs::directory_iterator(incoming)){
+            std::error_code error;fs::remove_all(entry.path(),error);if(error)return false;
+        }
+        std::string options="size=128k,nr_inodes=64,mode=0700,uid="+
+            std::to_string(account->pw_uid)+",gid="+std::to_string(account->pw_gid);
+        if(mount("tmpfs",incoming.c_str(),"tmpfs",MS_NOSUID|MS_NODEV|MS_NOEXEC,options.c_str()))return false;
+    }
     if(clean){
         for(const auto& dir:{incoming,outgoing})for(const auto& entry:fs::directory_iterator(dir)){
             std::error_code error;
@@ -206,6 +218,8 @@ static bool setup_slot(const std::string& role,int slot,bool clean){
 }
 static bool remove_slot_resources(const std::string& role,int slot){
     std::error_code root_error,key_error;
+    fs::path incoming=vmb::root(C,role,slot)/"in";
+    if(vu::mounted(incoming.string())&&umount2(incoming.c_str(),MNT_DETACH))return false;
     fs::remove_all(vmb::root(C,role,slot),root_error);
     fs::remove(vmb::keys(C,role,slot),key_error);
     return !root_error&&!key_error;
@@ -256,9 +270,18 @@ static void setup_keys(){
     run("find "+C.mailbox_key_dir+" -type f -exec chown root:root {} + -exec chmod 644 {} + 2>/dev/null || true");
 }
 static void setup_limits(){
-    write_file(C.sftp_limits,"# Per-pairing CAP2 mailbox bounds (kilobyte fsize).\n@"+
-        C.mailbox_group+" hard nproc 4\n@"+C.mailbox_group+" hard maxlogins 2\n@"+
-        C.mailbox_group+" hard fsize 8\n",0644);
+    write_file(C.sftp_limits,"# Per-pairing CAP2 bounds; fsize is in KiB.\n@"+
+        C.mailbox_group+" - nproc 4\n@"+C.mailbox_group+" - nofile 32\n@"+
+        C.mailbox_group+" - fsize 8\n@"+C.mailbox_group+" - core 0\n",0644);
+    // The image contains sshd.pam. Do not depend on distribution include
+    // stacks: they may be absent, and UsePAM=no silently ignores limits.
+    // OpenSSH still authenticates public keys; PAM cannot accept passwords.
+    write_file("/etc/pam.d/sshd",
+        "# Voider: public-key authentication is owned by OpenSSH.\n"
+        "auth required pam_deny.so\n"
+        "account required pam_unix.so\n"
+        "password required pam_deny.so\n"
+        "session required pam_limits.so conf="+C.sftp_limits+"\n",0644);
 }
 static void setup_sshd(){
     const std::string include_line="Include /etc/ssh/sshd_config.d/*.conf";
@@ -281,7 +304,7 @@ static void setup_sshd(){
             key=="x11forwarding"||key=="allowtcpforwarding"||key=="allowagentforwarding"||
             key=="permittunnel"||key=="gatewayports"||key=="maxstartups"||
             key=="persourcemaxstartups"||key=="channeltimeout"||
-            key=="unusedconnectiontimeout")) continue;
+            key=="unusedconnectiontimeout"||key=="usepam")) continue;
         cleaned+=line+"\n";
     }
     write_file("/etc/ssh/sshd_config",
@@ -289,6 +312,7 @@ static void setup_sshd(){
         include_line+"\n"+cleaned,0644);
     write_file("/etc/ssh/sshd_config.d/10-voider-security.conf",
         "# Voider shipping SSH policy: keys only.\n"
+        "UsePAM yes\n"
         "PasswordAuthentication no\n"
         "KbdInteractiveAuthentication no\n"
         "ChallengeResponseAuthentication no\n"
@@ -386,6 +410,8 @@ static int publish_identity(){
     return fs::is_regular_file(C.node_onion)&&fs::is_regular_file(C.sftp_host_pub)?0:2;
 }
 static int apply(){
+    if(access("/usr/sbin/sshd.pam",X_OK)||
+       access("/usr/lib/security/pam_limits.so",R_OK))return 15;
     cleanup_legacy_shared_identity();
     for(const std::string role:{"client","server"})for(int slot=2;slot<=254;slot++)
         if(!mailbox_account_valid(role,slot))return 2;
@@ -393,19 +419,20 @@ static int apply(){
     if(setup_slots())return 2;
     setup_limits();
     setup_sshd();
-    if(run("sshd -t")) return 3;
-    if(run("sshd -T | grep -qx 'passwordauthentication no'")) return 4;
-    if(run("sshd -T | grep -qx 'kbdinteractiveauthentication no'")) return 5;
-    if(run("sshd -T | grep -qx 'allowtcpforwarding no'")) return 6;
-    if(run("sshd -T | grep -qx 'authenticationmethods publickey'")) return 7;
-    if(run("sshd -T | grep -qx 'authorizedkeysfile "+C.admin_auth_keys+"'")) return 8;
-    if(run("sshd -T | grep -Eq '^permitrootlogin (prohibit-password|without-password)$'")) return 9;
-    if(run("sshd -T | grep -qx 'maxstartups 8:30:16'"))return 10;
-    if(run("sshd -T | grep -qx 'persourcemaxstartups 8'"))return 11;
+    if(run("/usr/sbin/sshd.pam -t")) return 3;
+    if(run("/usr/sbin/sshd.pam -T | grep -qx 'usepam yes'"))return 15;
+    if(run("/usr/sbin/sshd.pam -T | grep -qx 'passwordauthentication no'")) return 4;
+    if(run("/usr/sbin/sshd.pam -T | grep -qx 'kbdinteractiveauthentication no'")) return 5;
+    if(run("/usr/sbin/sshd.pam -T | grep -qx 'allowtcpforwarding no'")) return 6;
+    if(run("/usr/sbin/sshd.pam -T | grep -qx 'authenticationmethods publickey'")) return 7;
+    if(run("/usr/sbin/sshd.pam -T | grep -qx 'authorizedkeysfile "+C.admin_auth_keys+"'")) return 8;
+    if(run("/usr/sbin/sshd.pam -T | grep -Eq '^permitrootlogin (prohibit-password|without-password)$'")) return 9;
+    if(run("/usr/sbin/sshd.pam -T | grep -qx 'maxstartups 8:30:16'"))return 10;
+    if(run("/usr/sbin/sshd.pam -T | grep -qx 'persourcemaxstartups 8'"))return 11;
     std::string context=" -C user=vmc002,host=localhost,addr=127.0.0.1";
-    if(run("sshd -T"+context+" | grep -qx 'maxsessions 1'"))return 12;
-    if(run("sshd -T"+context+" | grep -q '^forcecommand internal-sftp '"))return 13;
-    if(run("sshd -T"+context+" | grep -q '^authorizedkeysfile "+C.mailbox_key_dir+"/'"))return 14;
+    if(run("/usr/sbin/sshd.pam -T"+context+" | grep -qx 'maxsessions 1'"))return 12;
+    if(run("/usr/sbin/sshd.pam -T"+context+" | grep -q '^forcecommand internal-sftp '"))return 13;
+    if(run("/usr/sbin/sshd.pam -T"+context+" | grep -q '^authorizedkeysfile "+C.mailbox_key_dir+"/'"))return 14;
     setup_tor();
     run("rc-service sshd restart 2>/dev/null || /etc/init.d/sshd restart 2>/dev/null || true");
     return 0;

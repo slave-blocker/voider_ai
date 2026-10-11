@@ -5,6 +5,7 @@
 // one-line file IO, and simple status-file parsing.
 
 #pragma once
+#include <algorithm>
 #include <array>
 #include <cerrno>
 #include <cstdio>
@@ -70,6 +71,44 @@ namespace vu {
     }
     inline bool mounted(const std::string& p){
         return std::system(("mountpoint -q "+shq(p)).c_str())==0;
+    }
+    // Keep an open logger's inode: renaming it would leave supervised writers
+    // filling an unlinked RAM file. The caller serializes its own appends.
+    inline bool trim_log(const fs::path& path,size_t limit=262144,size_t keep=65536){
+        int fd=::open(path.c_str(),O_RDWR|O_CLOEXEC|O_NOFOLLOW);
+        if(fd<0)return false;
+        struct stat st{};
+        bool ok=::fstat(fd,&st)==0&&S_ISREG(st.st_mode)&&st.st_nlink==1&&st.st_uid==geteuid();
+        if(ok&&st.st_size>(off_t)limit){
+            std::string tail(std::min(keep,(size_t)st.st_size),'\0');
+            ssize_t n=::pread(fd,tail.data(),tail.size(),st.st_size-(off_t)tail.size());
+            if(n!=(ssize_t)tail.size())ok=false;
+            else {
+                auto newline=tail.find('\n');
+                if(newline!=std::string::npos)tail.erase(0,newline+1);
+                // O_APPEND writers retain their descriptor and continue at
+                // the new end. Recheck next sweep after any concurrent write.
+                ok=::pwrite(fd,tail.data(),tail.size(),0)==(ssize_t)tail.size()&&
+                    ::ftruncate(fd,tail.size())==0;
+            }
+        }
+        ::close(fd);return ok;
+    }
+    inline void append_log(const fs::path& path,const std::string& line){
+        trim_log(path);
+        int fd=::open(path.c_str(),O_WRONLY|O_APPEND|O_CREAT|O_CLOEXEC|O_NOFOLLOW,0600);
+        if(fd<0)return;
+        struct stat st{};
+        if(::fstat(fd,&st)==0&&S_ISREG(st.st_mode)&&st.st_nlink==1&&st.st_uid==geteuid()){
+            std::string record=line+'\n';size_t done=0;
+            while(done<record.size()){
+                ssize_t n=::write(fd,record.data()+done,record.size()-done);
+                if(n<0&&errno==EINTR)continue;
+                if(n<=0)break;
+                done+=(size_t)n;
+            }
+        }
+        ::close(fd);
     }
     inline bool replace_config_value(const std::string& p,const std::string& key,const std::string& value){
         std::error_code ec;

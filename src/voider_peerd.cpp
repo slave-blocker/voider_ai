@@ -90,6 +90,7 @@ struct Peer {
     bool tun_configured=false;
     int health_failures=0;
     Clock::time_point next_recovery=Clock::now();
+    Clock::time_point next_mailbox_check=Clock::now();
     Method proven_method=Method::None;
     bool was_up=false;
     // Only this short handoff is shared. The worker owns all fields above.
@@ -132,8 +133,7 @@ static bool local_ntp_ready(const std::string& tracking){
 static void log(const Peer& peer,const std::string& message){
     std::lock_guard<std::mutex> guard(log_mutex);
     fs::create_directories("/run/voider");
-    std::ofstream("/run/voider/peerd.log",std::ios::app)
-        <<peer.role<<'/'<<peer.id<<' '<<message<<'\n';
+    vu::append_log("/run/voider/peerd.log",peer.role+'/'+std::to_string(peer.id)+' '+message);
 }
 
 static std::string peer_conf(const Peer& peer){
@@ -629,12 +629,28 @@ static void retry_later(Peer& peer,const std::string& error){
 }
 
 static std::string cap2_reply(Peer& peer){
-    // Idle mailboxes need no process. Keep responding even while our tunnel is
-    // healthy so the other endpoint can finish its own setup/recovery.
+    // Sweep any mailbox content, including junk and interrupted uploads.
+    // Empty mailboxes need no process. Bound polling per worker.
+    auto now=Clock::now();
+    if(now<peer.next_mailbox_check)return "";
+    peer.next_mailbox_check=now+std::chrono::milliseconds(500);
     std::error_code error;
     bool pending=false;
-    for(const auto& entry:fs::directory_iterator(vmb::root(C,"client",peer.cert_slot)/"in",error))
-        if(entry.path().extension()==".offer"){pending=true;break;}
+    fs::path mailbox=vmb::root(C,"client",peer.cert_slot);
+    auto directory=fs::directory_iterator(mailbox/"in",error);
+    pending=!error&&directory!=fs::directory_iterator{};
+    if(!pending){
+        error.clear();
+        // Fresh answers need no responder until READY arrives. Reap orphaned
+        // answers when they expire without spawning an idle process per pair.
+        for(const auto& entry:fs::directory_iterator(mailbox/"out",error)){
+            auto changed=entry.last_write_time(error);
+            if(!error&&fs::file_time_type::clock::now()-changed>std::chrono::seconds(C.mailbox_ttl_sec)){
+                pending=true;break;
+            }
+            error.clear();
+        }
+    }
     if(!pending)return "";
     return cap("/usr/local/sbin/voider-cap2 respond client "+std::to_string(peer.id)+" 2>/dev/null");
 }
@@ -993,6 +1009,14 @@ static int selftest(){
     return 0;
 }
 
+static void maintain_runtime(const Peers& peers){
+    std::lock_guard<std::mutex> guard(log_mutex);
+    std::error_code error;
+    for(const auto& entry:fs::directory_iterator("/run/voider",error))
+        if(entry.path().extension()==".log")vu::trim_log(entry.path());
+    for(const auto& item:peers)vmb::prune_sync(C,item.second->role,item.second->id);
+}
+
 int main(int argc,char** argv){
     C=cfg();paths=path_mask(vta::canonical(C.transports_available));
     if(argc==2&&std::string(argv[1])=="--selftest")return selftest();
@@ -1000,7 +1024,7 @@ int main(int argc,char** argv){
     vr::Lock owner("/run/voider/peerd.lock");if(!owner.held())return 1;
     signal(SIGTERM,[](int){running=false;});signal(SIGINT,[](int){running=false;});
     LanDiscovery lan;Peers peers;
-    auto next=Clock::now();
+    auto next=Clock::now(),maintenance=next;
     while(running){
         lan.poll(peers);
         if(Clock::now()>=next){
@@ -1008,6 +1032,7 @@ int main(int argc,char** argv){
             ntp_ready=local_ntp_ready(cap("timeout 2 chronyc tracking 2>/dev/null"));
             if(ntp_ready&&!fs::exists("/run/voider/clock-initialized"))vr::publish("/run/voider/clock-initialized","synchronized\n");
             reconcile(peers,lan);requested_resets(peers);write_status(peers);
+            if(Clock::now()>=maintenance){maintain_runtime(peers);maintenance=Clock::now()+std::chrono::seconds(10);}
             next=Clock::now()+std::chrono::seconds(1);
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(20));

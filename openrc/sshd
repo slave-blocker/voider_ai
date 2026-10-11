@@ -1,7 +1,6 @@
 #!/sbin/openrc-run
 description="Voider restricted SFTP and optional LAN management"
-command="/usr/sbin/sshd"
-[ ! -x /usr/sbin/sshd.pam ] || command="/usr/sbin/sshd.pam"
+command="/usr/sbin/sshd.pam"
 command_args="-D -e"
 supervisor="supervise-daemon"
 pidfile="/run/voider-sshd.pid"

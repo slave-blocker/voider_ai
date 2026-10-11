@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cctype>
+#include <chrono>
 #include <cstdio>
 #include <filesystem>
 #include <string>
@@ -42,6 +43,19 @@ inline bool xid(const std::string& value){
 inline std::filesystem::path record(const Cfg& c,const std::string& role,int slot,const std::string& direction,
                                     const std::string& xid_value,const std::string& type){
     return root(c,role,slot)/direction/(xid_value+'.'+type);
+}
+
+inline void prune_sync(const Cfg& c,const std::string& role,int slot){
+    namespace fs=std::filesystem;
+    std::error_code error;
+    auto now=fs::file_time_type::clock::now();
+    for(const auto& entry:fs::directory_iterator(fs::path(c.sync)/role/std::to_string(slot),error)){
+        std::string name=entry.path().filename().string();
+        if(name.size()<33||!xid(name.substr(0,32))||name[32]!='.')continue;
+        auto time=entry.last_write_time(error);
+        if(!error&&now-time>std::chrono::seconds(c.mailbox_ttl_sec))fs::remove(entry.path(),error);
+        error.clear();
+    }
 }
 
 } // namespace vmb

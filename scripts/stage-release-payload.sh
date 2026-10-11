@@ -3,7 +3,9 @@ set -eu
 
 OUT=${1:-release/voider-installer-payload.tar.gz}
 BUILD_DIR=${BUILD_DIR:-build}
-SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH:-0}
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+SOURCE_DATE_EPOCH=$(python3 "$SCRIPT_DIR/locked-packages.py" epoch)
+export SOURCE_DATE_EPOCH
 
 die(){ echo "ERROR: $*" >&2; exit 1; }
 need(){ command -v "$1" >/dev/null 2>&1 || die "missing command: $1"; }
@@ -12,6 +14,8 @@ need sha256sum
 need mktemp
 need gzip
 [ -d "$BUILD_DIR" ] || die "native build directory missing: $BUILD_DIR"
+[ "$(uname -m)" = aarch64 ] || die "build the release payload on an aarch64 Pi"
+python3 "$SCRIPT_DIR/locked-packages.py" installed build
 case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 [ ! -e "$OUT" ] || die "output already exists: $OUT"
 
@@ -20,7 +24,6 @@ for x in $BINS; do
     [ -x "$BUILD_DIR/$x" ] || die "missing native binary: $BUILD_DIR/$x"
 done
 
-SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
 # Keep staging on the clone filesystem, not the RAM-backed /tmp.
 WORK_BASE="$SCRIPT_DIR/../image-work"
 mkdir -p "$WORK_BASE"
@@ -34,6 +37,7 @@ cp -p assets/fonts/OFL.txt "$ROOT/assets/fonts/OFL.txt"
 cp -p config/voider.conf "$ROOT/config/voider.conf"
 cp -p config/release-binaries "$ROOT/config/release-binaries"
 cp -p config/release-services "$ROOT/config/release-services"
+cp -p config/build-dependencies.json "$ROOT/config/build-dependencies.json"
 cp -p scripts/pitft-bridge "$ROOT/scripts/pitft-bridge"
 cp -p scripts/voider-tor "$ROOT/scripts/voider-tor"
 cp -p scripts/voider-factory-bootstrap "$ROOT/scripts/voider-factory-bootstrap"
@@ -43,6 +47,7 @@ for x in $(cat config/release-services) voider-factory-bootstrap 01-quiet-pitft-
 done
 
 printf 'VOIDER_OFFLINE_PAYLOAD=1\n' > "$ROOT/offline.ready"
+python3 "$SCRIPT_DIR/locked-packages.py" hash > "$ROOT/build-dependencies.sha256"
 find "$ROOT" -type f -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 (
     cd "$ROOT"

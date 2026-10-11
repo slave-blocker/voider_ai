@@ -1,9 +1,9 @@
 # Voider customer manual
 
-German, English and Bulgarian review editions, updated for the USB workflow
-rewrite on 2026-09-21. These are **not a customer release approval**. Physical
+German, English and Bulgarian review editions, updated for numbered contact selection, immediate button feedback and
+Grandstream GXP1610 direct calling on 2026-10-11. These are **not a customer release approval**. Physical
 USB acceptance, hardware handoff and the remaining release gates are separate.
-No hardware specifications, package contents, phone keys or support contacts
+No hardware specifications, package contents, power ratings or support contacts
 have been invented.
 
 ## Build and review
@@ -37,10 +37,10 @@ Actual final compilation:
 
 | PDF under `release/` | Pages | Language start pages |
 | --- | ---: | --- |
-| `voider-manual-de.pdf` | 14 | German 1 |
-| `voider-manual-en.pdf` | 14 | English 1 |
-| `voider-manual-bg.pdf` | 14 | Bulgarian 1 |
-| `voider-manual-de-en-bg.pdf` | 43 | German 2, English 16, Bulgarian 30 |
+| `voider-manual-de.pdf` | 15 | German 1 |
+| `voider-manual-en.pdf` | 15 | English 1 |
+| `voider-manual-bg.pdf` | 15 | Bulgarian 1 |
+| `voider-manual-de-en-bg.pdf` | 46 | German 2, English 17, Bulgarian 32 |
 
 The PDFs are A5, 148 × 210 mm, in reading order with clickable references and
 language/chapter bookmarks. Body text is 12 pt; captions and release notes are
@@ -71,7 +71,7 @@ same `TEXMFHOME`. Point `TEXFORMATS` at the resulting format as above.
 ## Maintain one set of instructions
 
 `manual.tex` owns typography, diagrams, navigation and edition selection.
-`de.tex`, `en.tex`, `bg.tex` have the same 14 named sections and procedures.
+`de.tex`, `en.tex`, `bg.tex` have the same 15 named sections and procedures.
 All editions include those same files; there are no separate combined-PDF
 translations. `ui-labels.tex` is generated from the application's TSV. `\UI{KEY}`
 prints the exact translated label without breaking it across lines.
@@ -95,13 +95,14 @@ fixtures**, not photos or captures of the paired appliances. Their captions
 identify examples. No customer/device fingerprint is embedded. To regenerate:
 
 ```sh
-make build/voider-ui
+make -j2 build/voider-ui
 ./build/voider-ui --render-dir /tmp/voider-manual-ui
 python3 - <<'PY'
 from pathlib import Path
 from PIL import Image
 for lang in ('de', 'en', 'bg'):
-    for page in ('language', 'factory-READY', 'integrity_state', 'contact'):
+    for page in ('language', 'factory-READY', 'integrity_state', 'contact',
+                 'contact_select-040', 'contact-040'):
         source = Path('/tmp/voider-manual-ui') / lang / (page + '.ppm')
         dest = Path('docs/manual/assets') / lang / (page + '.png')
         Image.open(source).save(dest)
@@ -127,9 +128,14 @@ fingerprint. Physical panel readability, native-language review and a beginner
 following the physical workflow remain acceptance work.
 
 Remaining customer release gates include final enclosure/socket labels, power
-requirements and supported phone model/firmware/key sequence; human pairing
+requirements and phone firmware acceptance; human pairing
 verification; factory SSH state/switch and host-key handoff; fresh physical
-installations and key lifecycle tests; the reconnection matrix and full Tor
+installations and key lifecycle acceptance; the reconnection matrix and full Tor
 stability acceptance. Prior Tor observation was 601 seconds, not one hour.
 See the existing README and ignored consolidated evidence for current software
 validation. Historical rendered proofs do not validate this revision's layout.
+
+The calling instructions follow the manufacturer’s [GXP16xx user guide](https://documentation.grandstream.com/knowledge-base/gxp16xx-series-user-guide/),
+“Making Calls Using IP Addresses”: use the full displayed IPv4 address, `*`
+for dots and the phone’s Direct IP Call menu. Quick IP Call mode is not required.
+Client/Server numbers are display numbers (`slot - 1`), not raw WireGuard slots.

@@ -61,6 +61,7 @@ function fire(b, kind, cmd, rc, offset) {
   logmsg("FIRE button=" b " kind=" kind " cmd=" cmd);
   rc = system(cmd);
   logmsg("DONE button=" b " kind=" kind " rc=" rc);
+  if (kind == "press") return;
   # The UI command can take seconds while it writes USB media or saves STATE.
   # Discard presses buffered in the FIFO during that action: they refer to the
   # previous screen and must never operate a newly displayed confirmation.
@@ -84,6 +85,7 @@ function fire(b, kind, cmd, rc, offset) {
 
   if (e == "falling") {
     down[o] = t;
+    fire(b, "press");
     next;
   }
 

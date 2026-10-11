@@ -16,7 +16,7 @@ if "--strings-only" not in sys.argv:
     cmap=TTFont(font).getBestCmap()
     assert all(ord(c) in cmap for c in chars)
     rows=[]; data=[]
-    for size in (16,20,24,28,32,40,48):
+    for size in (16,20,24,28,32,40,48,64,80):
         f=ImageFont.truetype(str(font),size,layout_engine=ImageFont.Layout.RAQM)
         for char in chars:
             kw=dict(language='bg',features=['-kern','-liga'])

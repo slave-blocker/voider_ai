@@ -1,7 +1,7 @@
 \page{start}{01}{Ihr Voider}
 Voider verbindet unterstützte Ethernet-Telefone über gekoppelte Geräte. Sie sprechen am Telefon. Die Einrichtung steuern Sie am Voider-Display mit vier Tasten.
 \heading{Das brauchen Sie}
-Auf jeder Seite: einen Voider mit unterstütztem Display und Tasten, eine vorbereitete microSD-Karte, ein unterstütztes Telefon in Werkseinstellung, passende Netzteile und Ethernet-Kabel.
+Auf jeder Seite: einen Voider mit unterstütztem Display und Tasten, eine vorbereitete microSD-Karte, ein Grandstream GXP1610 in Werkseinstellung, passende Netzteile und Ethernet-Kabel.
 
 An getrennten Orten braucht jeder Voider Internet über ein Kabel zum Router. Gekoppelte Geräte funktionieren auch im selben lokalen Netz ohne Internet.
 
@@ -13,7 +13,7 @@ Zum Koppeln: einen USB-Stick, der gelöscht werden darf. Bewahren Sie jeden Prü
 \entry{call}{Telefonieren}
 \entry{help}{Wenn etwas nicht funktioniert}
 \entry{backup}{Sichern und Laden}
-\note{Prüffassung}{Für Kandidat 68881a782994, 20. September 2026. Beachten Sie die offenen Punkte auf Seite \pageref{de:security}.}
+\note{Prüffassung}{Aktualisierter Quellstand, 11. Oktober 2026. Beachten Sie die offenen Punkte auf Seite \pageref{de:security}.}
 
 \page{wire}{02}{Kabel anschließen}
 \wiring{Router / lokales Netz}{Netzwerkanschluss (eth0)}{Telefonanschluss (eth1)}{Telefon: Netzwerkbuchse}{Funktionsplan. Die Lage der Buchsen ist nicht dargestellt.}
@@ -24,12 +24,10 @@ Zum Koppeln: einen USB-Stick, der gelöscht werden darf. Bewahren Sie jeden Prü
 \item Schließen Sie die vorgesehenen Netzteile an Voider und Telefon an. Wiederholen Sie dies auf der anderen Seite.
 \end{enumerate}
 Sie sehen die Einrichtung oder \UI{DEVICE CHECK}. Nach den Startprüfungen zeigt \UI{NET} bei \UI{PHONE}: \UI{CONNECTED}, sobald das Telefon erreichbar ist. Ein Anruf muss noch geprüft werden.
-\note{Hardware zuerst klären}{Gehäusebeschriftung, Buchsenlage, Stromversorgung und freigegebene Telefone sind nicht dokumentiert. Vor dem Anschluss klären lassen. Ethernet liefert nicht automatisch Strom.}
+\note{Hardware zuerst klären}{Gehäusebeschriftung, Buchsenlage, und Stromversorgung sind nicht dokumentiert. Vor dem Anschluss klären lassen. Ethernet liefert nicht automatisch Strom.}
 
 \page{controls}{03}{Tasten und Sprache}
-Vier Tasten, vier Felder unten im Display: Sie gehören von links nach rechts zusammen. Die Beschriftung wechselt. Leere Felder haben keine Funktion.
-
-\textbf{Drücken:} kurz drücken und loslassen. \textbf{Halten:} etwa eine Sekunde drücken, dann loslassen. Zwei weiße Balken über dem Text kennzeichnen Halten. Lesen Sie jede neue Ansicht vor dem nächsten Tastendruck.
+Die vier Tasten gehören zu den Feldern darüber, von links nach rechts. Leere Felder tun nichts. Kurz drücken und loslassen; zum Halten etwa eine Sekunde drücken, dann loslassen. Zwei weiße Balken markieren Halten. Das Feld reagiert sofort beim Drücken.
 \shot{language}{Ansicht aus der echten Display-Software mit Beispieldaten.}
 \begin{enumerate}
 \item Auf der Startseite: \UI{NET}, dann \UI{SYSTEM}, dann \UI{LANGUAGE} drücken.
@@ -86,25 +84,35 @@ Die Software speichert einen eigenen Fingerabdruck der USB-Datei. Dieser Kandida
 
 Bei Fehlern: Seite \pageref{de:help}. Nicht erneut teilen, nur weil die Verbindung noch wartet.
 
-\page{call}{08}{Anrufen und annehmen}
+\page{find}{08}{Direkt zur Nummer}
 \begin{enumerate}
-\item \UI{LINKS}, dann \UI{OPEN} drücken. Mit \UI{PREV} oder \UI{NEXT} auswählen.
-\item Auf \UI{CONNECTED} warten. Adresse unter \UI{DIAL} ablesen.
-\item Am Telefon die Funktion \textbf{Direct IP Call} verwenden. Diese Adresse eingeben und den Anruf starten.
-\item Das andere Telefon sollte klingeln. Zum Annehmen den Hörer abheben. Ton in beiden Richtungen prüfen. Zum Beenden auflegen.
+\item Auf der Startseite \UI{LINKS}, dann \UI{OPEN} drücken. \UI{CLIENTS} oder \UI{SERVERS} wählen.
+\item Drei Karten zeigen die Nummer. Die ersten drei Tasten erhöhen einzeln Hunderter, Zehner und Einer. Links wechseln 0–2, auf den anderen Karten 0–9.
+\item Für Client 40: \textbf{040}. Ab 001: links bei 0 lassen, die zweite Taste viermal und die dritte neunmal drücken. Nach der letzten Ziffer kommt 0.
+\item Die vierte Taste, \UI{OPEN}, drücken. Zum Zurückgehen dieselbe Taste halten. Bei \UI{NOT SAVED} lässt sich die Nummer nicht öffnen.
 \end{enumerate}
-\shot{contact}{Beispiel: hier 10.1.2.1 wählen. Ihre eigene angezeigte Adresse verwenden.}
-Voiders Tasten wählen nicht am Telefon. Beide Seiten können anrufen. Eine wechselnde Anruferadresse mit 172.16.x.x ist kein Wahlziel. Zum Rückruf die Voider-Ansicht verwenden.
-\note{Noch offen}{Telefonmodell, Menü und Tasten für Direct IP Call vor Auslieferung bestätigen lassen.}
+\shot{contact_select-040}{Beispiel: Client 40 ist gespeichert und kann geöffnet werden.}
+\UI{PREV}/\UI{NEXT} blättern zu benachbarten Einträgen. Andere Nummer: \UI{MORE} \arr \UI{FIND}. Person, Rolle und Nummer notieren: Client 40 und Server 40 sind verschieden.
 
-\page{manage}{09}{Beziehungen verwalten}
+\page{call}{09}{Anrufen mit dem GXP1610}
+Die gespeicherte Verbindung wie auf der vorigen Seite öffnen. Auf \UI{CONNECTED} warten und die große Adresse unter \UI{DIAL} ablesen.
+\shot{contact-040}{Beispiel: Client 40. Ihre eigene angezeigte Adresse wählen.}
+\begin{enumerate}
+\item Am ruhenden Grandstream GXP1610 \textbf{MENU} drücken. Mit den Pfeilen \textbf{Direct IP Call} wählen, erneut \textbf{MENU} drücken.
+\item Adresse eingeben, jeden Punkt durch \textbf{*} ersetzen. Für 10.1.41.1: \textbf{10*1*41*1}. Eine Portnummer ist nicht nötig.
+\item Mit \textbf{More} prüfen, dass \textbf{IPv4} gewählt ist. Mit der Display-Taste \textbf{OK} anrufen.
+\item Wenn das andere Telefon klingelt, dort den Hörer abheben. Ton in beide Richtungen prüfen; zum Beenden auflegen.
+\end{enumerate}
+Beide Seiten können anrufen. Voiders Tasten wählen nicht am Telefon. Für Rückrufe die Voider-Adresse verwenden, nicht eine wechselnde Anruferadresse mit 172.16.x.x. Keine Anmeldung oder Einrichtung über die Telefon-Webseite nötig.
+
+\page{manage}{10}{Beziehungen verwalten}
 \textbf{Weitere Person:} Seiten \pageref{de:share}–\pageref{de:add} mit neuem \UI{SHARE} auf A wiederholen. Auch die gefüllte Liste bietet \UI{SHARE} und \UI{ADD}. Für Anrufe in beide Richtungen nicht doppelt koppeln.
 
 \UI{CLIENT} und \UI{SERVER} sind lokale Rollen, keine Personennamen. Teilen erzeugt auf A einen Client-Eintrag, Hinzufügen auf B einen Server-Eintrag. Notieren Sie, wer zu welchem Eintrag gehört. Umbenennen ist im Display nicht möglich.
 
 \textbf{Eine Beziehung löschen:}
 \begin{enumerate}
-\item \UI{LINKS} \arr \UI{OPEN}; Eintrag mit \UI{PREV}/\UI{NEXT} wählen.
+\item Nummer wie auf Seite \pageref{de:find} öffnen; Namen prüfen.
 \item \UI{MORE} \arr \UI{REMOVE}. Namen prüfen, dann \UI{REMOVE} halten.
 \item Neuen Code notieren und bestätigen. Der Eintrag verschwindet nur hier. Die andere Liste bleibt bestehen. Dieses Gerät lehnt die entfernte USB-Datei beim Import ab.
 \end{enumerate}
@@ -113,37 +121,37 @@ Voiders Tasten wählen nicht am Telefon. Beide Seiten können anrufen. Eine wech
 
 \textbf{Reset:} \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{RESET}, dann \UI{NEXT} und \UI{RESET} halten. Löscht alle Beziehungen und den SSH-Zugangsschlüssel, schaltet SSH aus und erzeugt neue Geräteidentitäten. Gegenstellen brauchen neue Kopplungen. Manche Einstellungen, darunter Sprache, bleiben. Neuen Code notieren. Kein Mittel gegen langsame Verbindungen.
 
-\page{status}{10}{Verbindungsstatus lesen}
+\page{status}{11}{Verbindungsstatus lesen}
 \UI{NET} zeigt Internet und Telefon. \UI{PHONE}: \UI{CONNECTED} heißt: Voider erreicht das Telefon.
 
 \textbf{Zahlen auf der Startseite:} 1/2 bedeutet: Eine von zwei gespeicherten Beziehungen ist verbunden. Clients und Server werden getrennt gezählt. Es sind keine Anrufzahlen.
 
 \textbf{\UI{CONNECTED}:} Ein Weg zum anderen Voider ist aktiv. \textbf{\UI{CONNECTING}:} Ein Verbindungsversuch läuft. \textbf{\UI{OFFLINE}:} Kein aktiver Weg wird angezeigt. Das beweist nicht, dass der andere Voider ausgeschaltet ist.
 
-Voider versucht normalerweise \UI{LAN}, dann \UI{DIRECT}, dann \UI{PRIVATE} (WireGuard durch Router), dann \UI{TOR}. Der angezeigte Weg gilt für diese Beziehung. Auch LAN verwendet WireGuard. Verbindungen zeigen \UI{LAN4}, \UI{LAN6}, \UI{DIRECT4} oder \UI{DIRECT6} für die gewählte IP-Version.
+Voider versucht normalerweise \UI{LAN}, dann \UI{DIRECT}, dann \UI{PRIVATE} (WireGuard durch Router), dann \UI{TOR}. Der gewählte Weg steht unter \UI{MORE}. Eine gesunde Verbindung behält ihn bis zum Ausfall, Löschen oder Abschalten. Auch LAN verwendet WireGuard. Verbindungen zeigen \UI{LAN4}, \UI{LAN6}, \UI{DIRECT4} oder \UI{DIRECT6} für die gewählte IP-Version.
 
-\textbf{Zeit lassen.} Prüfungen, Uhrzeiteinstellung und Tor-Start können Minuten dauern. Ein Tor-Wiederverbindungsversuch hat ein Zeitfenster von 90 Sekunden. Der gesamte Aufbau kann länger dauern. Eine feste Wartezeit ist nicht garantiert. Beide Geräte eingeschaltet lassen, während das Netz zurückkehrt. Neues Koppeln beschleunigt dies nicht.
+\textbf{Zeit lassen.} Uhrprüfung und Tor-Start können Minuten dauern. Ein Tor-Wiederverbindungsversuch hat 90 Sekunden; der gesamte Aufbau kann länger dauern. Beide Geräte eingeschaltet lassen. Neues Koppeln hilft nicht schneller.
 
-Im selben lokalen Netz kann eine aktive LAN-Verbindung auch ohne Internet funktionieren. Die Erreichbarkeit des Telefons wird separat geprüft.
+Eine LAN-Verbindung kann ohne Internet arbeiten. Die Telefonbereitschaft wird separat geprüft.
 
 \textbf{\UI{PATHS}:} Normalerweise alle sieben eingeschaltet lassen. Bewusst ändern: \UI{UP}/\UI{DOWN} wählt, \UI{REMOVE}/\UI{ADD} schaltet um. \UI{BACK}, dann \UI{APPLY} halten speichert; neuen Code bestätigen. \UI{CANCEL} führt zur Bearbeitung zurück. Mindestens ein Weg muss an bleiben. Einschränkungen können Anrufe verhindern.
 
-\page{help}{11}{Wenn etwas nicht klappt}
+\page{help}{12}{Wenn etwas nicht klappt}
 \begin{enumerate}
-\item Beide Displays prüfen. Auf beiden Geräten müssen die Startprüfungen abgeschlossen sein.
-\item \UI{NET} drücken. Bei fehlendem Telefon Strom und Kabel zum Telefonanschluss prüfen. Bei fehlendem Netz Uplink-Kabel und Router prüfen.
-\item Beide Geräte einige Minuten eingeschaltet lassen. Noch offline? Unter \UI{NETWORK} \UI{RETRY} drücken, auf der nächsten Seite halten. Das startet die Netzprüfung erneut und kann Anrufe unterbrechen.
-\item Bei weiterem Fehler Meldung und gewählte Beziehung notieren. Kopplung und Prüfcodes behalten. Nicht als normale Reparatur löschen oder zurücksetzen.
+\item Auf beiden Voidern beide Startprüfungen abschließen.
+\item \UI{NET} drücken. Fehlt das Telefon: Strom und Kabel prüfen. Fehlt das Netz: Uplink-Kabel und Router prüfen.
+\item Beide Geräte einige Minuten eingeschaltet lassen. Noch offline? \UI{NETWORK} \arr \UI{RETRY}, dann \UI{RETRY} halten. Kann einen Anruf unterbrechen.
+\item Bleibt der Fehler: Meldung und Verbindungsnummer notieren. Kopplung und Prüfcodes behalten. Nicht routinemäßig löschen oder zurücksetzen.
 \end{enumerate}
-\textbf{USB:} Die Anzeige unterscheidet fehlende, getrennte oder gewechselte Sticks sowie Lese-, Schreib- und Prüffehler. Nur einen Stick verwenden. Eingehängte oder unsichere Medien werden abgelehnt. Nach Fehlern die Aktion öffnen und den Stick erneut auswählen.
+\textbf{USB-Fehler:} Einen Stick verwenden. Eingehängte oder unsichere Medien werden abgelehnt. Nach Fehlern den Vorgang neu öffnen und den Stick erneut wählen.
 
-\textbf{Kein Ton oder Klingeln:} Adresse und beide Telefone prüfen. Eine grüne Verbindung oder ein erreichbares Telefon beweist keinen Sprachton. Die Webverwaltung des Telefons wird nicht gebraucht.
+\textbf{Kein Ton oder Klingeln:} Adresse und beide Telefone prüfen. Eine grüne Verbindung oder ein Ping beweist keinen Ton. Telefon-Webverwaltung ist unnötig.
 
-\textbf{Normal ausschalten:} Startseite \arr \UI{POWER}, dann \UI{POWER} halten. Sie sehen \UI{POWERING OFF}. Daten werden gespeichert; zum Beginn des Herunterfahrens wird das Display schwarz. Vor dem Trennen des Stroms Zeit lassen. Ein schwarzes Display allein bestätigt keinen abgeschlossenen Vorgang.
+\textbf{Ausschalten:} Startseite \arr \UI{POWER}, dann \UI{POWER} halten. Abschalten abwarten, bevor Sie Strom trennen. Ein schwarzes Display allein beweist keinen Abschluss.
 
-\textbf{Normal neu starten:} Startseite \arr \UI{POWER}, dann rechts daneben \UI{REBOOT}. Auf der Bestätigungsseite \UI{REBOOT} halten. Gespeicherte Beziehungen bleiben erhalten; nach dem Start die normalen Prüfungen abschließen.
+\textbf{Neustart:} Startseite \arr \UI{POWER} \arr \UI{REBOOT}, dann \UI{REBOOT} halten. Kopplung bleibt gespeichert; danach die Startprüfungen abschließen.
 
-\page{backup}{12}{Sicherung erstellen}
+\page{backup}{13}{Sicherung erstellen}
 Eine Sicherung enthält Geräteidentität, Beziehungen, Schlüssel und Einstellungen. Sie sichert weder das Telefon noch die ganze Systemkarte. Die Dateien sind unverschlüsselt. Den Stick wie einen Geräteschlüssel schützen.
 \begin{enumerate}
 \item Startseite: \UI{NET} \arr \UI{SYSTEM} \arr \UI{BACKUP}.
@@ -156,7 +164,7 @@ Sicherungsstick einstecken. \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{RE
 
 \UI{RESTOR} nur halten, wenn alle gespeicherten Einstellungen, Identitäten und Verbindungen durch diese Sicherung ersetzt werden sollen. Neuere Änderungen gehen verloren. Neuen Prüfcode notieren und \UI{I RECORDED IT} drücken. Stick entfernen, dann \UI{REBOOT} halten. Alte Betriebsdaten können die Sicherung nicht überschreiben. Nach dem Neustart den Code mit \UI{MATCH} oder \UI{DIFFER} vergleichen.
 
-\page{ssh}{13}{Optional: Fernzugriff}
+\page{ssh}{14}{Optional: Fernzugriff}
 Mit SSH verwaltet eine vertraute Fachperson Voider vom Computer. Für Anrufe unnötig. Öffnen: \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{SSH}. Anzeige: \UI{MANAGEMENT ON} oder \UI{MANAGEMENT OFF}.
 
 \textbf{An oder aus:} \UI{ON} oder \UI{OFF} drücken, dann dieselbe Taste zur Bestätigung halten. Neuen Code notieren und bestätigen. Aus sperrt neue Anmeldungen, behält aber den Schlüssel. Bestehende Sitzungen können bleiben. Der interne Anruftransport ist getrennt.
@@ -169,7 +177,7 @@ Mit SSH verwaltet eine vertraute Fachperson Voider vom Computer. Für Anrufe unn
 \end{enumerate}
 \textbf{Dauerhaft entfernen:} \UI{REMOVE} wählen, dann \UI{REMOVE} halten. Der Schlüssel wird widerrufen, SSH bleibt aus. Neuen Code notieren. Bei USB-Fehlern bleiben bisheriger Schlüssel und Zugangseinstellung erhalten. Voider behält nur den öffentlichen Teil; verlorene private Schlüssel sind nicht wiederherstellbar.
 
-\page{security}{14}{Was die Prüfungen sagen}
+\page{security}{15}{Was die Prüfungen sagen}
 \textbf{Geräteprüfung:} Vergleich des installierten Systems mit gespeicherten Werten. \textbf{Deine Prüfung:} Vergleich des gespeicherten Zustands mit Ihrer eigenen Notiz. Beides beweist nicht die Identität der Person am anderen Telefon.
 
 \textbf{Kopplung:} erzeugt gemeinsame Geheimnisse. Der Kopplungsfingerabdruck ist hier nicht zum Vergleichen sichtbar (Seite \pageref{de:add}). Kopplungssticks und Sicherungen schützen.
@@ -180,4 +188,4 @@ Das eigene Protokoll wurde nicht unabhängig geprüft. Voider garantiert keine A
 
 \textbf{SSH-Grenzen:} root-Zugang nur mit Schlüssel aus privaten Netzen am Ethernet-Uplink. Keine Passwörter, Telefon-, öffentliche WAN- oder Tor-Anmeldung; keine Weiterleitung. Ein vorbereiteter Schlüssel aktiviert Installations-SSH; ohne bleibt es aus. Danach gelten beide Startprüfungen. Hostschlüssel fachkundig prüfen lassen. Dafür und für Installations-SSH fehlt eine Display-Seite.
 
-\mini{\textbf{Vor Auslieferung:} Anschlüsse, Stromversorgung, Telefontasten und Installations-SSH klären; Kopplungsprüfung klären. Muttersprachliche und Anfängerprüfung stehen aus. Frische Installationen und Freigabetests sind offen. Die Tor-Beobachtung dauerte 601 Sekunden, keine Stunde. Dieses Handbuch erklärt das Abbild nicht für verkaufsfertig.}
+\mini{\textbf{Vor Auslieferung:} Anschlüsse, Stromversorgung und Installations-SSH klären; Kopplungsprüfung klären. Muttersprachliche und Anfängerprüfung stehen aus. Frische Installationen und physische Abnahme sind offen. Die Tor-Beobachtung dauerte 601 Sekunden, keine Stunde. Dieses Handbuch erklärt das Abbild nicht für verkaufsfertig.}
