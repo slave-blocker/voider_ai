@@ -54,7 +54,7 @@ static int config(){
          "STATE includes Tor identity while volatile Tor/SFTP runtime data stays in RAM");
     want(C.transports_available==vta::all()&&vta::valid(C.transports_available),
          "fresh configuration makes all seven transports available in fixed priority order");
-    want(C.mailbox_record_bytes==4096&&C.mailbox_max_pending==8&&C.mailbox_ttl_sec==600,
+    want(C.mailbox_record_bytes==1024&&C.mailbox_max_pending==1&&C.mailbox_ttl_sec==600,
          "CAP2 mailbox record count, size, and lifetime are bounded");
     return fails;
 }

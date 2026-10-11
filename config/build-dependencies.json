@@ -572,6 +572,13 @@
       "sha256": "bed00eeec4f8aa00328cd023ff4a6df4e60cac0b65253328532d74b96097d5dc"
     },
     {
+      "name": "openssl",
+      "version": "3.5.9-r0",
+      "file": "openssl-3.5.9-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssl-3.5.9-r0.apk",
+      "sha256": "b7e30bda67ab5eeadf45ebb1e745f3ca685a84b89477ae8b487bc7c5275fd27e"
+    },
+    {
       "name": "openssl-dev",
       "version": "3.5.9-r0",
       "file": "openssl-dev-3.5.9-r0.apk",

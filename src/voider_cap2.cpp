@@ -266,10 +266,10 @@ static void remove_transaction(const std::string& role,int slot,const std::strin
 
 static std::vector<std::string> pending_offers(const std::string& role,int slot){
     std::vector<std::pair<fs::file_time_type,std::string>> found;
+    std::vector<std::pair<fs::file_time_type,fs::path>> uploads;
     fs::path root=vmb::root(C,role,slot),incoming=root/"in",outgoing=root/"out";
     std::error_code error;
     if(!fs::is_directory(incoming,error)||!fs::is_directory(outgoing,error))return {};
-    int temporary_count=0;
     for(const auto& entry:fs::directory_iterator(incoming,error)){
         if(error)break;
         fs::path path=entry.path();std::string name=path.filename().string();
@@ -278,10 +278,10 @@ static std::vector<std::string> pending_offers(const std::string& role,int slot)
             // open(2) and write(2).  Keep it until the atomic rename, while
             // still rejecting links, oversized files, stale uploads, and a
             // flood beyond the bounded temporary allowance.
-            if(!regular_upload(path)||old_file(path,30)||++temporary_count>C.mailbox_max_pending*2){
+            if(!regular_upload(path)||old_file(path,30)){
                 error.clear();
                 fs::remove_all(path,error);
-            }
+            }else uploads.push_back({fs::last_write_time(path,error),path});
             continue;
         }
         size_t dot=name.find('.');
@@ -299,13 +299,20 @@ static std::vector<std::string> pending_offers(const std::string& role,int slot)
         }
         if(kind=="offer")found.push_back({fs::last_write_time(path,error),xid});
     }
+    // Retain the newest uploads, rather than directory iteration order: an
+    // interrupted old upload must not displace the currently arriving one.
+    std::sort(uploads.begin(),uploads.end(),[](const auto& a,const auto& b){return a.first>b.first;});
+    while(uploads.size()>(size_t)C.mailbox_max_pending*2){
+        error.clear();fs::remove(uploads.back().second,error);uploads.pop_back();
+    }
     error.clear();
     for(const auto& entry:fs::directory_iterator(outgoing,error)){
         if(error)break;
         fs::path path=entry.path();std::string name=path.filename().string();size_t dot=name.find('.');
         std::string xid=dot==std::string::npos?"":name.substr(0,dot);
         if(!vmb::xid(xid)||name.substr(dot+1)!="answer"||old_file(path,C.mailbox_ttl_sec)||
-           !read_mailbox(path,"answer",slot,xid).ok()){
+           !read_mailbox(path,"answer",slot,xid).ok()||
+           !read_mailbox(mailbox(role,"offer",slot,xid),"offer",slot,xid).ok()){
             error.clear();fs::remove_all(path,error);
         }
     }
@@ -319,7 +326,7 @@ static std::vector<std::string> pending_offers(const std::string& role,int slot)
 }
 
 static bool write_mailbox(const fs::path& path,const std::string& line){
-    if(line.empty()||line.size()>(size_t)C.mailbox_record_bytes)return false;
+    if(line.empty()||line.size()+1>(size_t)C.mailbox_record_bytes)return false;
     std::error_code error;
     if(!fs::is_directory(path.parent_path(),error)||error)return false;
     std::string nonce=vtp::random_hex(8);if(nonce.empty())return false;
@@ -437,6 +444,20 @@ static int selftest(){
     offer.fields["AVAILABLE"]="lan4";
     if(!plan(offer,local).empty())return 10;
     offer.fields["AVAILABLE"]=vta::all();
+    // Full ANSWER with maximum-width normal endpoints and identifiers must
+    // fit the tightened record cap, including its on-disk newline.
+    Record maximum=offer;
+    maximum.fields.insert({{"AEAD","none"},{"AUTH",std::string(64,'a')},
+        {"HP4_PORT","65535"},{"HP6_PORT","65535"},{"MAILBOX_USER","vmc254"},
+        {"PUB4","255.255.255.255"},{"PUB6","ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255"},
+        {"SCHED","dup"},{"SERVER_PUBLIC_KEY",std::string(43,'A')+'='},
+        {"SFTP_ONION",std::string(56,'a')+".onion"},{"TUNMODE","fp-only"},
+        {"TUNPORT","65535"},{"TUN_ONION",std::string(56,'a')+".onion"},
+        {"WG4","65535"},{"WG6","65535"},{"OFFER_HASH",std::string(64,'b')},
+        {"PLAN","direct4,direct6,hp4,hp6,tor"}});
+    maximum.fields["TYPE"]="ANSWER";maximum.fields["CERT_SLOT"]="254";
+    size_t maximum_bytes=vtp::serialize(maximum).size()+1;
+    if(maximum_bytes>1024||!vtp::parse_record(vtp::serialize(maximum)).ok())return 21;
     std::string saved=C.ps;
     fs::path directory=fs::path("/tmp")/("voider-cap2-selftest-"+std::to_string(getpid()));
     fs::create_directories(directory);
@@ -479,7 +500,7 @@ static int selftest(){
     std::string saved_base=C.sftp_base;
     int saved_max=C.mailbox_max_pending,saved_bytes=C.mailbox_record_bytes;
     fs::path boxes=fs::path("/tmp")/("voider-cap2-mailbox-"+std::to_string(getpid()));
-    fs::remove_all(boxes);C.sftp_base=boxes.string();C.mailbox_max_pending=2;C.mailbox_record_bytes=1024;
+    fs::remove_all(boxes);C.sftp_base=boxes.string();C.mailbox_max_pending=1;C.mailbox_record_bytes=1024;
     for(int slot:{7,8}){fs::create_directories(vmb::root(C,"client",slot)/"in");fs::create_directories(vmb::root(C,"client",slot)/"out");}
     auto put_offer=[&](int slot,const std::string& xid){
         Record value=offer;value.fields["CERT_SLOT"]=std::to_string(slot);value.fields["XID"]=xid;
@@ -499,13 +520,45 @@ static int selftest(){
     if(fs::exists(traversal))return 18;
     put_offer(7,"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
     put_offer(7,"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
-    if(pending_offers("client",7).size()!=2)return 19;
+    fs::last_write_time(mailbox("client","offer",7,xid7),fs::file_time_type::clock::now()-std::chrono::seconds(3));
+    fs::last_write_time(mailbox("client","offer",7,"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
+        fs::file_time_type::clock::now()-std::chrono::seconds(2));
+    Record stale_answer=offer;
+    stale_answer.fields["TYPE"]="ANSWER";stale_answer.fields["OFFER_HASH"]=std::string(64,'a');
+    stale_answer.fields["PLAN"]="tor";stale_answer.fields["XID"]=xid7;
+    std::ofstream(mailbox("client","answer",7,xid7))<<vtp::serialize(stale_answer)<<'\n';
+    auto newest=pending_offers("client",7);
+    if(newest.size()!=1||newest.front()!="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"||
+       fs::exists(mailbox("client","answer",7,xid7)))return 19;
+    // Two interrupted uploads can overlap the next atomic upload. Preserve
+    // exactly the allowance and remove further temporaries on the sweep.
+    for(char ch:{'d','e','f'}){
+        fs::path path=vmb::root(C,"client",7)/"in"/
+            ("."+std::string(32,ch)+".offer.0123456789abcdef.tmp");
+        std::ofstream(path).close();
+        fs::last_write_time(path,fs::file_time_type::clock::now()-std::chrono::seconds('g'-ch));
+    }
+    pending_offers("client",7);
+    int temporaries=0;
+    for(const auto& entry:fs::directory_iterator(vmb::root(C,"client",7)/"in"))
+        if(temporary_name(entry.path().filename().string()))temporaries++;
+    if(temporaries!=2||
+       fs::exists(vmb::root(C,"client",7)/"in"/("."+std::string(32,'d')+".offer.0123456789abcdef.tmp"))||
+       !fs::exists(vmb::root(C,"client",7)/"in"/("."+std::string(32,'f')+".offer.0123456789abcdef.tmp")))return 22;
+    // A valid ANSWER without its OFFER must not accumulate in root-owned out.
+    stale_answer.fields["XID"]=std::string(32,'c');
+    std::ofstream(mailbox("client","answer",7,std::string(32,'c')))<<vtp::serialize(stale_answer)<<'\n';
+    pending_offers("client",7);
+    if(fs::exists(mailbox("client","answer",7,std::string(32,'c'))))return 23;
+    fs::path edge=vmb::root(C,"client",7)/"out/boundary";
+    if(!write_mailbox(edge,std::string(1023,'x'))||fs::file_size(edge)!=1024||
+       write_mailbox(edge,std::string(1024,'x'))||fs::file_size(edge)!=1024)return 24;
     fs::path oversized=vmb::root(C,"client",7)/"in/cccccccccccccccccccccccccccccccc.offer";
     std::ofstream(oversized)<<std::string(1025,'x');pending_offers("client",7);
     if(fs::exists(oversized))return 20;
     C.sftp_base=saved_base;C.mailbox_max_pending=saved_max;C.mailbox_record_bytes=saved_bytes;
     fs::remove_all(boxes);
-    std::cout<<"CAP2_SELFTEST_OK mailbox-isolation=2 pending-bound=2\n";
+    std::cout<<"CAP2_SELFTEST_OK mailbox-isolation=2 pending-bound=1 maximum-answer-bytes="<<maximum_bytes<<"\n";
     return 0;
 }
 

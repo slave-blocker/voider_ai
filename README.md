@@ -23,13 +23,23 @@
 - **CAP2 mailboxes:** each role and slot has a separate account, key path and
   chroot. Incoming CAP2 uses client accounts; server accounts have no authorized
   key. From the peer, OFFER and READY go to `/in`; ANSWER is read from `/out`.
-  Records use pair-secret HMAC, a shared transaction ID, atomic RAM storage,
-  and size, count and lifetime limits.
+  Records use pair-secret HMAC, a shared transaction ID and atomic RAM storage.
+  Each mailbox retains one pending exchange; records are capped at 1 KiB
+  including the newline. Active inboxes have four file entries and a
+  four-page tmpfs ceiling (16 KiB on the release kernel). Restricted SFTP
+  sessions enforce the same file limit, 32 descriptors and four processes.
+  Fresh mailbox accounts accept public keys without a password-change
+  prompt; passwords remain disabled. Junk, expired exchanges, interrupted
+  uploads and orphan answers are cleaned automatically.
 
   | Role | Account | Mailbox root |
   | --- | --- | --- |
   | Client | `vmcNNN` | `/var/sftp/clients/vmbNNN` |
   | Server | `vmsNNN` | `/var/sftp/servers/vmbNNN` |
+
+- **Runtime logs:** logs live in RAM. Every ten seconds, the connection
+  coordinator trims logs above 256 KiB to approximately the newest 64 KiB
+  while preserving the open file inode. Reboot clears these logs.
 
 - **Integrity:** the device checks the complete raw BOOT and SYSTEM partitions.
   The human STATE check covers the internal manifest and deterministic saved
@@ -124,7 +134,7 @@ Fetch and verify the locked packages, install the exact build tools, then build:
 doas ./scripts/prepare-build.sh
 make clean
 make -j2
-./scripts/stage-release-payload.sh
+doas ./scripts/stage-release-payload.sh
 ```
 
 `config/build-dependencies.json` fixes the build and image package versions,

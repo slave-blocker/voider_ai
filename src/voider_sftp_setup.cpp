@@ -89,6 +89,24 @@ static bool mailbox_name(const std::string& name){
     std::string role=name.rfind("vmc",0)==0?"client":"server";
     return vmb::slot_ok(slot)&&name==vmb::user(role,slot);
 }
+static std::string ready_mailbox_shadow_line(const std::string& line){
+    size_t a=line.find(':');
+    std::string name=a==std::string::npos?"":line.substr(0,a);
+    if(!mailbox_name(name))return line;
+    size_t b=line.find(':',a+1),c=b==std::string::npos?b:line.find(':',b+1);
+    if(b==std::string::npos||c==std::string::npos)return line;
+    // Alpine adduser writes lastchg=0, which PAM treats as an immediate
+    // password-change requirement. These accounts have no usable password,
+    // so leave lastchg empty (no password-aging check) and accept keys only.
+    return name+":NP::"+line.substr(c+1);
+}
+static bool mailbox_shadow_line_ready(const std::string& name,const std::string& line){
+    size_t a=line.find(':'),b=a==std::string::npos?a:line.find(':',a+1);
+    size_t c=b==std::string::npos?b:line.find(':',b+1);
+    return a!=std::string::npos&&b!=std::string::npos&&c!=std::string::npos&&
+           line.substr(0,a)==name&&line.substr(a+1,b-a-1)=="NP"&&
+           line.substr(b+1,c-b-1).empty();
+}
 static bool make_mailbox_accounts_pubkey_only(){
     // OpenSSH rejects a shadow-locked account before public-key processing.
     // "NP" is not a usable hash; global password authentication is also off,
@@ -99,16 +117,8 @@ static bool make_mailbox_accounts_pubkey_only(){
     std::string l;
     bool changed=false;
     while(std::getline(in,l)){
-        size_t a=l.find(':');
-        std::string name=a==std::string::npos?"":l.substr(0,a);
-        if(mailbox_name(name)){
-            size_t b=l.find(':',a+1);
-            std::string field=(a!=std::string::npos&&b!=std::string::npos)?l.substr(a+1,b-a-1):"";
-            if(field!="NP"&&b!=std::string::npos){
-                l=name+":NP"+l.substr(b);
-                changed=true;
-            }
-        }
+        std::string ready=ready_mailbox_shadow_line(l);
+        if(ready!=l){l=ready;changed=true;}
         lines.push_back(l);
     }
     if(changed){
@@ -120,14 +130,13 @@ static bool make_mailbox_accounts_pubkey_only(){
     return true;
 }
 
-static bool mailbox_shadow_is_np(const std::string&name){
+static bool mailbox_shadow_is_ready(const std::string&name){
     std::ifstream in("/etc/shadow");
     std::string line;
     while(std::getline(in,line)){
         size_t a=line.find(':');
-        if(a==std::string::npos||line.substr(0,a)!=name)continue;
-        size_t b=line.find(':',a+1);
-        return b!=std::string::npos&&line.substr(a+1,b-a-1)=="NP";
+        if(a!=std::string::npos&&line.substr(0,a)==name)
+            return mailbox_shadow_line_ready(name,line);
     }
     return false;
 }
@@ -138,7 +147,7 @@ static bool mailbox_account_valid(const std::string& role,int slot){
     return account&&group&&account->pw_dir&&account->pw_shell&&account->pw_gid==group->gr_gid&&
            std::string(account->pw_dir)==vmb::root(C,role,slot).string()&&
            std::string(account->pw_shell)=="/sbin/nologin"&&
-           mailbox_shadow_is_np(name);
+           mailbox_shadow_is_ready(name);
 }
 static int setup_accounts(){
     if(run("getent group "+C.mailbox_group+" >/dev/null 2>&1 || addgroup -S "+C.mailbox_group))return 2;
@@ -199,7 +208,15 @@ static bool setup_slot(const std::string& role,int slot,bool clean){
         for(const auto& entry:fs::directory_iterator(incoming)){
             std::error_code error;fs::remove_all(entry.path(),error);if(error)return false;
         }
-        std::string options="size=128k,nr_inodes=64,mode=0700,uid="+
+        long page_size=sysconf(_SC_PAGESIZE);
+        if(page_size<=0||C.mailbox_record_bytes<=0||C.mailbox_record_bytes>4096||
+           C.mailbox_max_pending<=0||C.mailbox_max_pending>8)return false;
+        // Per pending exchange: OFFER + READY and two overlapping uploads.
+        // tmpfs charges at least one whole page for each nonempty file.
+        size_t files=4u*C.mailbox_max_pending;
+        size_t file_pages=(C.mailbox_record_bytes+(size_t)page_size-1)/(size_t)page_size;
+        std::string options="size="+std::to_string(files*file_pages*page_size)+
+            ",nr_inodes="+std::to_string(files+1)+",mode=0700,uid="+
             std::to_string(account->pw_uid)+",gid="+std::to_string(account->pw_gid);
         if(mount("tmpfs",incoming.c_str(),"tmpfs",MS_NOSUID|MS_NODEV|MS_NOEXEC,options.c_str()))return false;
     }
@@ -272,7 +289,8 @@ static void setup_keys(){
 static void setup_limits(){
     write_file(C.sftp_limits,"# Per-pairing CAP2 bounds; fsize is in KiB.\n@"+
         C.mailbox_group+" - nproc 4\n@"+C.mailbox_group+" - nofile 32\n@"+
-        C.mailbox_group+" - fsize 8\n@"+C.mailbox_group+" - core 0\n",0644);
+        C.mailbox_group+" - fsize "+std::to_string((C.mailbox_record_bytes+1023)/1024)+
+        "\n@"+C.mailbox_group+" - core 0\n",0644);
     // The image contains sshd.pam. Do not depend on distribution include
     // stacks: they may be absent, and UsePAM=no silently ignores limits.
     // OpenSSH still authenticates public keys; PAM cannot accept passwords.
@@ -452,6 +470,18 @@ static int selftest(){
     C.mailbox_key_dir=(work/"certs/mailboxes").string();
     int cases=0,failures=0,slot=7;
     auto want=[&](bool ok){cases++;if(!ok)failures++;};
+    std::string expired="vmc002:!:0:0:99999:7:::";
+    std::string ready="vmc002:NP::0:99999:7:::";
+    want(ready_mailbox_shadow_line(expired)==ready&&
+         mailbox_shadow_line_ready("vmc002",ready)&&
+         !mailbox_shadow_line_ready("vmc002",expired));
+    want(ready_mailbox_shadow_line(ready)==ready&&
+         ready_mailbox_shadow_line("vms254:NP:0:0:99999:7:::")=="vms254:NP::0:99999:7:::"&&
+         !mailbox_shadow_line_ready("vmc002","vmc002:NP:0:0:99999:7:::"));
+    std::string root_shadow="root:*:0:0:99999:7:::";
+    want(ready_mailbox_shadow_line(root_shadow)==root_shadow&&
+         ready_mailbox_shadow_line("vmc001:!:0:0:99999:7:::")=="vmc001:!:0:0:99999:7:::"&&
+         ready_mailbox_shadow_line("vmc002:!")=="vmc002:!");
     fs::create_directories(fs::path(C.pc));
     fs::path material=fs::path(C.mat)/"client"/std::to_string(slot);
     fs::create_directories(material);

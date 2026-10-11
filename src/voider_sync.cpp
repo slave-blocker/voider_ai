@@ -109,7 +109,7 @@ static int cap2(const Cfg& c,const std::string& action,const std::string& role,i
     fs::create_directories(directory);
     std::string remote=std::string(put?"/in/":"/out/")+xid+'.'+kind;
     if(put){
-        if(payload.empty()||payload.size()>(size_t)c.mailbox_record_bytes||
+        if(payload.empty()||payload.size()+1>(size_t)c.mailbox_record_bytes||
            payload.find('\n')!=std::string::npos)return 2;
         fs::path local=local_path(c,role,id,xid,kind,".local");
         std::ofstream out(local,std::ios::trunc);out<<payload<<'\n';out.close();
