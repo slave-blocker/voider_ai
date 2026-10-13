@@ -135,7 +135,8 @@
 <use href="#lock" x="655" y="1042" width="43" height="55" overflow="hidden" fill="none" stroke="#7ce59c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
 <text x="716" y="1061" font-size="23" fill="#7ce59c" font-family="DejaVu Sans, sans-serif" font-weight="700" text-anchor="start">Tor / tundup</text>
 <text x="716" y="1094" font-size="20" fill="#dfece7" font-family="DejaVu Sans, sans-serif" font-weight="400" text-anchor="start">Pair secret + USB fingerprint → HMAC</text>
-<text x="716" y="1124" font-size="19" fill="#a9c1b7" font-family="DejaVu Sans, sans-serif" font-weight="400" text-anchor="start">Two bidirectional streams · first valid copy wins</text>
+<text x="716" y="1124" font-size="19" fill="#a9c1b7" font-family="DejaVu Sans, sans-serif" font-weight="400" text-anchor="start">Two bidirectional streams</text>
+<text x="716" y="1152" font-size="19" fill="#a9c1b7" font-family="DejaVu Sans, sans-serif" font-weight="400" text-anchor="start">First valid arrival of each voice packet wins</text>
 <rect x="32" y="1172" width="42" height="36" fill="#a6ffb5"/>
 <text x="53" y="1198" font-size="21" fill="#08100f" font-family="DejaVu Sans, sans-serif" font-weight="700" text-anchor="middle">02</text>
 <text x="90" y="1200" font-size="27" fill="#a6ffb5" font-family="DejaVu Sans, sans-serif" font-weight="700" text-anchor="start">Both boot checks must pass</text>

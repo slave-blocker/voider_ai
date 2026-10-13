@@ -19,7 +19,8 @@
 - **Tor fallback:** `tcs+` serves paired clients and `tds+` serves imported servers;
   the namespace SOCKS helper is `172.30.255.1`. Tor supplies encryption, and
   tundup authenticates using the paired secret and USB fingerprint. Its two
-  bidirectional streams deliver the first valid copy.
+  bidirectional streams carry each voice packet; the first valid arrival is
+  forwarded and later duplicates are discarded.
 - **CAP2 mailboxes:** each role and slot has a separate account, key path and
   chroot. Incoming CAP2 uses client accounts; server accounts have no authorized
   key. From the peer, OFFER and READY go to `/in`; ANSWER is read from `/out`.
