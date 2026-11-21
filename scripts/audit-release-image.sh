@@ -48,7 +48,7 @@ mount -o ro,noload,nosuid,nodev,noexec "${loop}p3" "$work/state"
 python3 "$source_tree/scripts/check-release-image.py" --space "$work/boot" "$work/system" "$work/state"
 python3 - "$work" "$source_tree" <<'PY'
 from pathlib import Path
-import hashlib,re,struct,sys
+import hashlib,json,re,struct,sys
 work,src=map(Path,sys.argv[1:]); root=work/'system'; boot=work/'boot'; state=work/'state'; payload=root/'opt/voider-installer'
 def digest(p):
     h=hashlib.sha256()
@@ -92,7 +92,17 @@ assert '172.16.19.86' in interfaces and '255.255.255.252' in interfaces
 assert 'net.ipv6.conf.default.accept_ra=0' in (root/'etc/sysctl.d/90-voider-factory-lan.conf').read_text()
 assert not (root/'etc/apk/repositories').read_text()
 assert (root/'etc/resolv.conf').is_symlink()
-(src/'output/image-package-db.txt').write_bytes((root/'lib/apk/db/installed').read_bytes())
+db=(root/'lib/apk/db/installed').read_text()
+installed={}
+for block in db.split('\n\n'):
+    fields=dict(line.split(':',1) for line in block.splitlines() if ':' in line)
+    if 'P' in fields: installed[fields['P']]=fields['V']
+lock=json.loads((src/'config/build-dependencies.json').read_text())
+assert installed=={pkg['name']:pkg['version'] for pkg in lock['image']},'image package set differs from lock'
+assert (root/'etc/alpine-release').read_text().strip()==installed['alpine-release'].split('-r')[0]
+assert (boot/'overlays/pitft28-resistive.dtbo').is_file()
+(src/'output/image-package-db.txt').write_text(db)
+print('PASS exact image package set:',len(installed),'Alpine',installed['alpine-release'],'OpenSSH',installed['openssh-server'])
 # Factory STATE has no archive or identity until the physical installation.
 # No log/cache/runtime/test-harness files are allowed in the distributable.
 for path in ('var/log','var/cache','tmp','run','var/lib/tor','var/lib/chrony','root'):
