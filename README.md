@@ -111,8 +111,7 @@ the display. The release image uses Alpine's Raspberry Pi kernel and bootloader,
 
 ## Build and flash
 
-Use a Raspberry Pi running **Alpine Linux on aarch64**, on the branch named by
-`alpine` in `config/build-dependencies.json`, with Internet access
+Use a Raspberry Pi running **64-bit Alpine Linux 3.24**, with Internet access
 and at least **4 GB free on the disk holding your clone**. These commands assume
 an account with `doas` administrator access. Run each block in order; stop if a
 command fails. Build on this Pi, then flash a separate microSD card in a USB reader.
