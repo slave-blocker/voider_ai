@@ -2,7 +2,7 @@
   "format": 1,
   "arch": "aarch64",
   "alpine": "3.23",
-  "source_date_epoch": 1791669600,
+  "source_date_epoch": 1795219200,
   "build": [
     {
       "name": "acl-libs",
@@ -34,10 +34,10 @@
     },
     {
       "name": "brotli-libs",
-      "version": "1.2.0-r0",
-      "file": "brotli-libs-1.2.0-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/brotli-libs-1.2.0-r0.apk",
-      "sha256": "c8a9113b0007d40291e55cfc196744b64004253707e37b3c07e188166fb2d0a0"
+      "version": "1.2.1-r0",
+      "file": "brotli-libs-1.2.1-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/brotli-libs-1.2.1-r0.apk",
+      "sha256": "bec9ee522095e9fd01113d8732119847944e3152f228034246a33e2ab82e4195"
     },
     {
       "name": "build-base",
@@ -62,17 +62,17 @@
     },
     {
       "name": "c-ares",
-      "version": "1.34.8-r0",
-      "file": "c-ares-1.34.8-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/c-ares-1.34.8-r0.apk",
-      "sha256": "7468b8355eb7a54c2829ed3e72b61f49b2968c1dd0281e16ddf939fcf1c9e91b"
+      "version": "1.34.9-r0",
+      "file": "c-ares-1.34.9-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/c-ares-1.34.9-r0.apk",
+      "sha256": "2af302c4a232fff2abeb56ec9f16edabdb06f0e5f8d040d6e466e91f1c473d00"
     },
     {
       "name": "ca-certificates-bundle",
-      "version": "20260909-r0",
-      "file": "ca-certificates-bundle-20260909-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/ca-certificates-bundle-20260909-r0.apk",
-      "sha256": "ad418de0031d2de47650002084ab494e0c8f28c386e8744173311b410e56fcf5"
+      "version": "20261020-r0",
+      "file": "ca-certificates-bundle-20261020-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/ca-certificates-bundle-20261020-r0.apk",
+      "sha256": "bdf6033710a251d8239f63236eacf40c84afdf8f7b25bb58d69a2c75202350e7"
     },
     {
       "name": "cfdisk",
@@ -80,6 +80,41 @@
       "file": "cfdisk-2.41.6-r1.apk",
       "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/cfdisk-2.41.6-r1.apk",
       "sha256": "6862689319720b6a14dc81aa358319c9a277e9ef0c16b553d9d6ba5ac696390b"
+    },
+    {
+      "name": "coreutils",
+      "version": "9.8-r1",
+      "file": "coreutils-9.8-r1.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/coreutils-9.8-r1.apk",
+      "sha256": "c62cee029f61df485f8b37eb0d53082b5f3523c8e1f3fe3b87aee184a6e79516"
+    },
+    {
+      "name": "coreutils-env",
+      "version": "9.8-r1",
+      "file": "coreutils-env-9.8-r1.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/coreutils-env-9.8-r1.apk",
+      "sha256": "dbb91b2c44ef80905b32c7cb987e949bfcd78a01946f5ad93cd0a763343835de"
+    },
+    {
+      "name": "coreutils-fmt",
+      "version": "9.8-r1",
+      "file": "coreutils-fmt-9.8-r1.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/coreutils-fmt-9.8-r1.apk",
+      "sha256": "504f4118bee40a8c51d9120df0cffbd908c29cdef4b8ce00a33c69936ed5b13c"
+    },
+    {
+      "name": "coreutils-sha512sum",
+      "version": "9.8-r1",
+      "file": "coreutils-sha512sum-9.8-r1.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/coreutils-sha512sum-9.8-r1.apk",
+      "sha256": "d91ac4e3fe749bec043a4eda40b754e2cb92957342d720f01648fc604e52022f"
+    },
+    {
+      "name": "device-mapper-libs",
+      "version": "2.03.35-r0",
+      "file": "device-mapper-libs-2.03.35-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/device-mapper-libs-2.03.35-r0.apk",
+      "sha256": "dd7bf614ada871f82311a0360cdc7e17a5370376b6d6d74d1f16b6b04ca4de40"
     },
     {
       "name": "dmesg",
@@ -167,17 +202,17 @@
     },
     {
       "name": "git",
-      "version": "2.52.0-r0",
-      "file": "git-2.52.0-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/git-2.52.0-r0.apk",
-      "sha256": "7c9d69ea4db366c8337789ca8b334bde338b9b064ae25baebad6872781e906fc"
+      "version": "2.52.1-r0",
+      "file": "git-2.52.1-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/git-2.52.1-r0.apk",
+      "sha256": "b7f80755f78ab9b52f62e5bd3c9d75986e13fced5917ce5348eb9ecb2cad2ab2"
     },
     {
       "name": "git-init-template",
-      "version": "2.52.0-r0",
-      "file": "git-init-template-2.52.0-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/git-init-template-2.52.0-r0.apk",
-      "sha256": "186a00427cc7ea94ad05b0831320d2a77f757743033392998a28b7247e410e63"
+      "version": "2.52.1-r0",
+      "file": "git-init-template-2.52.1-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/git-init-template-2.52.1-r0.apk",
+      "sha256": "e20badd8c09ca0def9c0f9c91cba5c19ea57fc1b096af1983a7ceac6b2e0a6da"
     },
     {
       "name": "gmp",
@@ -229,6 +264,13 @@
       "sha256": "1a44d408b77d92f1b3f002e1045399fad81c1d58409b895eeaba0bb5c3fe4402"
     },
     {
+      "name": "libattr",
+      "version": "2.5.2-r2",
+      "file": "libattr-2.5.2-r2.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/libattr-2.5.2-r2.apk",
+      "sha256": "4063382ebe248feb1b1389c07963c253f2b3f668715ee9c3901ab71603617025"
+    },
+    {
       "name": "libblkid",
       "version": "2.41.6-r1",
       "file": "libblkid-2.41.6-r1.apk",
@@ -265,10 +307,10 @@
     },
     {
       "name": "libcurl",
-      "version": "8.22.0-r0",
-      "file": "libcurl-8.22.0-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/libcurl-8.22.0-r0.apk",
-      "sha256": "ef6b8fa24dcfeac950582c3f5702212c56cc40db5d09286d7dc3bdca1490151a"
+      "version": "8.23.0-r0",
+      "file": "libcurl-8.23.0-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/libcurl-8.23.0-r0.apk",
+      "sha256": "a7cf7d0813d3a96f2cb65fbf873e8a8661866a843f2b7769b629024d9e5809bc"
     },
     {
       "name": "libeconf",
@@ -286,10 +328,10 @@
     },
     {
       "name": "libexpat",
-      "version": "2.8.5-r0",
-      "file": "libexpat-2.8.5-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/libexpat-2.8.5-r0.apk",
-      "sha256": "18e5a4f1715dd9fee420d250d14be9e59936352929085939f33da01c3fbde28d"
+      "version": "2.10.0-r0",
+      "file": "libexpat-2.10.0-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/libexpat-2.10.0-r0.apk",
+      "sha256": "f6483389ab602a351891337be7e9975106d0749d57aa5339b0725bb4051e4bc3"
     },
     {
       "name": "libfdisk",
@@ -524,17 +566,17 @@
     },
     {
       "name": "musl",
-      "version": "1.2.5-r23",
-      "file": "musl-1.2.5-r23.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/musl-1.2.5-r23.apk",
-      "sha256": "6a3edd924ead1fad88a69e28c5775809af3026b322f58428001cd02fedc5299e"
+      "version": "1.2.5-r24",
+      "file": "musl-1.2.5-r24.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/musl-1.2.5-r24.apk",
+      "sha256": "d7043c549029c98d438e9bc94213b006e5c88540eb58d1f5b0f0d1d56dbf9c98"
     },
     {
       "name": "musl-dev",
-      "version": "1.2.5-r23",
-      "file": "musl-dev-1.2.5-r23.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/musl-dev-1.2.5-r23.apk",
-      "sha256": "19032a762b8c6967d3789de1bf540754a0121e517402022eebd3ae6f1c9965a4"
+      "version": "1.2.5-r24",
+      "file": "musl-dev-1.2.5-r24.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/musl-dev-1.2.5-r24.apk",
+      "sha256": "8e3a2e5b78069ebd1307cb092972de2f95deb0b21b866a788d1ac7d6972db43e"
     },
     {
       "name": "ncurses-terminfo-base",
@@ -552,24 +594,24 @@
     },
     {
       "name": "openssh-client-common",
-      "version": "10.2_p1-r0",
-      "file": "openssh-client-common-10.2_p1-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-client-common-10.2_p1-r0.apk",
-      "sha256": "6cdaff1e0ef45f60f3ee9cbecc8c24fa57bb9f3442f2548272fb3273d3bb2f5c"
+      "version": "10.2_p1-r1",
+      "file": "openssh-client-common-10.2_p1-r1.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-client-common-10.2_p1-r1.apk",
+      "sha256": "58164902d6d288cff3f10fbb48faf22fc6a4d04964221b38dcef59400bd1eaa3"
     },
     {
       "name": "openssh-client-default",
-      "version": "10.2_p1-r0",
-      "file": "openssh-client-default-10.2_p1-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-client-default-10.2_p1-r0.apk",
-      "sha256": "c221efc67cae60fc325ebce7cea2de68dbcc159478e668aa5c7074c13ae6d520"
+      "version": "10.2_p1-r1",
+      "file": "openssh-client-default-10.2_p1-r1.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-client-default-10.2_p1-r1.apk",
+      "sha256": "54760fb5f2053e301042d6778fb73354f315e63cc4521ac0cd67f349a0556d34"
     },
     {
       "name": "openssh-keygen",
-      "version": "10.2_p1-r0",
-      "file": "openssh-keygen-10.2_p1-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-keygen-10.2_p1-r0.apk",
-      "sha256": "bed00eeec4f8aa00328cd023ff4a6df4e60cac0b65253328532d74b96097d5dc"
+      "version": "10.2_p1-r1",
+      "file": "openssh-keygen-10.2_p1-r1.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-keygen-10.2_p1-r1.apk",
+      "sha256": "0decd1e7744b65c203782ff07ccf738235caa647ec3b2bfe996db914cafa6c9f"
     },
     {
       "name": "openssl",
@@ -584,6 +626,13 @@
       "file": "openssl-dev-3.5.9-r0.apk",
       "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssl-dev-3.5.9-r0.apk",
       "sha256": "c3ae49acc49425d6b3a14ef467d933006fcfb085497d1e7efed056cd0ab0c61d"
+    },
+    {
+      "name": "parted",
+      "version": "3.6-r2",
+      "file": "parted-3.6-r2.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/parted-3.6-r2.apk",
+      "sha256": "0f9343c2c8cd87bbac1cf0a306444e963f12d27ffde726d0c4aa0ae57d4a3459"
     },
     {
       "name": "partx",
@@ -615,31 +664,31 @@
     },
     {
       "name": "pyc",
-      "version": "3.12.15-r0",
-      "file": "pyc-3.12.15-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/pyc-3.12.15-r0.apk",
-      "sha256": "864c2b1abddcea1df94db00b5977ed37ff34ca63e399db63fe19d83acf7c6ca0"
+      "version": "3.12.16-r0",
+      "file": "pyc-3.12.16-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/pyc-3.12.16-r0.apk",
+      "sha256": "b56b8c18175463031bb613f72f35ed85dcd6a74f6277f5d7dbcc03db9aa998f9"
     },
     {
       "name": "python3",
-      "version": "3.12.15-r0",
-      "file": "python3-3.12.15-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/python3-3.12.15-r0.apk",
-      "sha256": "dabc892646c32cc6619afadd30256d1845b1ef34a3f5bebff84895813b55b95b"
+      "version": "3.12.16-r0",
+      "file": "python3-3.12.16-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/python3-3.12.16-r0.apk",
+      "sha256": "a4ea335bd189fca31e002e63cb2b9a11679b302934d4c326aa0433948fb65af9"
     },
     {
       "name": "python3-pyc",
-      "version": "3.12.15-r0",
-      "file": "python3-pyc-3.12.15-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/python3-pyc-3.12.15-r0.apk",
-      "sha256": "15382195d229840ee74e6e64f04ee65b93c24bc1817b1a3203ffed0ae02433ac"
+      "version": "3.12.16-r0",
+      "file": "python3-pyc-3.12.16-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/python3-pyc-3.12.16-r0.apk",
+      "sha256": "3a92011d53912d8a6ff6c9ab20dbdcba06ffb70f7adb840c298873ab93ccc0da"
     },
     {
       "name": "python3-pycache-pyc0",
-      "version": "3.12.15-r0",
-      "file": "python3-pycache-pyc0-3.12.15-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/python3-pycache-pyc0-3.12.15-r0.apk",
-      "sha256": "c7fd197ffd37a95172e6fdcee188b146b76bd5b15b71ed8222ac8347cdfdd632"
+      "version": "3.12.16-r0",
+      "file": "python3-pycache-pyc0-3.12.16-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/python3-pycache-pyc0-3.12.16-r0.apk",
+      "sha256": "a32ea76b5dcd8245b40d45773296b6d2f5c00bc223f2ea468ca6e4fdd03351d8"
     },
     {
       "name": "readline",
@@ -755,10 +804,10 @@
     },
     {
       "name": "zlib",
-      "version": "1.3.2-r1",
-      "file": "zlib-1.3.2-r1.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/zlib-1.3.2-r1.apk",
-      "sha256": "82d52fa82a46c73aae8b9f95d7f31a196137f3ce4a000980cdbbfc05c245e7bf"
+      "version": "1.4-r0",
+      "file": "zlib-1.4-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/zlib-1.4-r0.apk",
+      "sha256": "c9bc3c75104ffba5785277b38eb83bf90ea83539e3bb26c617864fb78dcb4462"
     },
     {
       "name": "zstd-libs",
@@ -792,10 +841,10 @@
     },
     {
       "name": "alpine-base",
-      "version": "3.23.6-r0",
-      "file": "alpine-base-3.23.6-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/alpine-base-3.23.6-r0.apk",
-      "sha256": "84c53bbc050e048a8d0c2c5306f312dc35ca563a6aa3e8928c6912d099cb5641"
+      "version": "3.23.8-r0",
+      "file": "alpine-base-3.23.8-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/alpine-base-3.23.8-r0.apk",
+      "sha256": "1042d74b78c397dc1cf05a80667d76c37240556a6074e7b1d8df4087d7bc2e69"
     },
     {
       "name": "alpine-baselayout",
@@ -827,17 +876,17 @@
     },
     {
       "name": "alpine-release",
-      "version": "3.23.6-r0",
-      "file": "alpine-release-3.23.6-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/alpine-release-3.23.6-r0.apk",
-      "sha256": "d203cf0afca284f529b0b81e2fe94009ea604a668fd01243f4efa6da49e5260b"
+      "version": "3.23.8-r0",
+      "file": "alpine-release-3.23.8-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/alpine-release-3.23.8-r0.apk",
+      "sha256": "669c7560a1ee9007d27ddd0115066ca4d186bc2a4c9c0958f91c3b4e1506397e"
     },
     {
       "name": "apk-tools",
-      "version": "3.0.8-r0",
-      "file": "apk-tools-3.0.8-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/apk-tools-3.0.8-r0.apk",
-      "sha256": "19c7a0de80fe9c7ab9e21f93e157fe5df18d6bdb2bae055612fcd3cd9e68de06"
+      "version": "3.0.9-r0",
+      "file": "apk-tools-3.0.9-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/apk-tools-3.0.9-r0.apk",
+      "sha256": "52e05730d7256ca321e48d618ebcdda270cf6c2522f2a27ce15c00201bfb75fa"
     },
     {
       "name": "bash",
@@ -869,10 +918,10 @@
     },
     {
       "name": "brotli-libs",
-      "version": "1.2.0-r0",
-      "file": "brotli-libs-1.2.0-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/brotli-libs-1.2.0-r0.apk",
-      "sha256": "c8a9113b0007d40291e55cfc196744b64004253707e37b3c07e188166fb2d0a0"
+      "version": "1.2.1-r0",
+      "file": "brotli-libs-1.2.1-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/brotli-libs-1.2.1-r0.apk",
+      "sha256": "bec9ee522095e9fd01113d8732119847944e3152f228034246a33e2ab82e4195"
     },
     {
       "name": "busybox",
@@ -918,17 +967,17 @@
     },
     {
       "name": "c-ares",
-      "version": "1.34.8-r0",
-      "file": "c-ares-1.34.8-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/c-ares-1.34.8-r0.apk",
-      "sha256": "7468b8355eb7a54c2829ed3e72b61f49b2968c1dd0281e16ddf939fcf1c9e91b"
+      "version": "1.34.9-r0",
+      "file": "c-ares-1.34.9-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/c-ares-1.34.9-r0.apk",
+      "sha256": "2af302c4a232fff2abeb56ec9f16edabdb06f0e5f8d040d6e466e91f1c473d00"
     },
     {
       "name": "ca-certificates-bundle",
-      "version": "20260909-r0",
-      "file": "ca-certificates-bundle-20260909-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/ca-certificates-bundle-20260909-r0.apk",
-      "sha256": "ad418de0031d2de47650002084ab494e0c8f28c386e8744173311b410e56fcf5"
+      "version": "20261020-r0",
+      "file": "ca-certificates-bundle-20261020-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/ca-certificates-bundle-20261020-r0.apk",
+      "sha256": "bdf6033710a251d8239f63236eacf40c84afdf8f7b25bb58d69a2c75202350e7"
     },
     {
       "name": "cfdisk",
@@ -974,10 +1023,10 @@
     },
     {
       "name": "curl",
-      "version": "8.22.0-r0",
-      "file": "curl-8.22.0-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/curl-8.22.0-r0.apk",
-      "sha256": "27674b4f5a4a9b51db6673bf7e75e247b51c711294a4fff638fe9a67ae21ed48"
+      "version": "8.23.0-r0",
+      "file": "curl-8.23.0-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/curl-8.23.0-r0.apk",
+      "sha256": "0cfccc09e110f49c6008f1969e0d203023934157ca62282fdb8752ea16eb2a66"
     },
     {
       "name": "device-mapper-libs",
@@ -1044,10 +1093,10 @@
     },
     {
       "name": "gnutls",
-      "version": "3.8.13-r0",
-      "file": "gnutls-3.8.13-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/gnutls-3.8.13-r0.apk",
-      "sha256": "fe6373105d41819118717a1512a791685f3b429193b043430b8875c935b54fb6"
+      "version": "3.8.14-r0",
+      "file": "gnutls-3.8.14-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/gnutls-3.8.14-r0.apk",
+      "sha256": "39c2830da15a40da0b86802802eb02c697ccc7737fcf8bbb1e5df1114e95e375"
     },
     {
       "name": "hexdump",
@@ -1156,10 +1205,10 @@
     },
     {
       "name": "libapk",
-      "version": "3.0.8-r0",
-      "file": "libapk-3.0.8-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/libapk-3.0.8-r0.apk",
-      "sha256": "36f4160a3d9e885652435f78b80b80ba2b74abbfab116958808772128b8785d5"
+      "version": "3.0.9-r0",
+      "file": "libapk-3.0.9-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/libapk-3.0.9-r0.apk",
+      "sha256": "89fed5d57190643d3b146162773cca0efb8edc439f56b283fbfd4912a8f3a0da"
     },
     {
       "name": "libblkid",
@@ -1205,10 +1254,10 @@
     },
     {
       "name": "libcurl",
-      "version": "8.22.0-r0",
-      "file": "libcurl-8.22.0-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/libcurl-8.22.0-r0.apk",
-      "sha256": "ef6b8fa24dcfeac950582c3f5702212c56cc40db5d09286d7dc3bdca1490151a"
+      "version": "8.23.0-r0",
+      "file": "libcurl-8.23.0-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/libcurl-8.23.0-r0.apk",
+      "sha256": "a7cf7d0813d3a96f2cb65fbf873e8a8661866a843f2b7769b629024d9e5809bc"
     },
     {
       "name": "libeconf",
@@ -1436,10 +1485,10 @@
     },
     {
       "name": "linux-rpi",
-      "version": "6.12.85-r0",
-      "file": "linux-rpi-6.12.85-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/linux-rpi-6.12.85-r0.apk",
-      "sha256": "cf1342cb1b21d83d8ece6282cfa8e5f764a1c697b90622d848f4996a9c73c17d"
+      "version": "6.12.115-r0",
+      "file": "linux-rpi-6.12.115-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/linux-rpi-6.12.115-r0.apk",
+      "sha256": "9d78fa7bcb1c0853fbd6fe618819e09a3343974eef47af689468bffc00a5bcaf"
     },
     {
       "name": "logger",
@@ -1499,17 +1548,17 @@
     },
     {
       "name": "musl",
-      "version": "1.2.5-r23",
-      "file": "musl-1.2.5-r23.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/musl-1.2.5-r23.apk",
-      "sha256": "6a3edd924ead1fad88a69e28c5775809af3026b322f58428001cd02fedc5299e"
+      "version": "1.2.5-r24",
+      "file": "musl-1.2.5-r24.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/musl-1.2.5-r24.apk",
+      "sha256": "d7043c549029c98d438e9bc94213b006e5c88540eb58d1f5b0f0d1d56dbf9c98"
     },
     {
       "name": "musl-utils",
-      "version": "1.2.5-r23",
-      "file": "musl-utils-1.2.5-r23.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/musl-utils-1.2.5-r23.apk",
-      "sha256": "0d87307c117d4327f4db4ed96b9d403775fe0c1804ae54e7aefcc720f997f573"
+      "version": "1.2.5-r24",
+      "file": "musl-utils-1.2.5-r24.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/musl-utils-1.2.5-r24.apk",
+      "sha256": "df4a9a4bb81a76af36779d2c5ef28ac5a1778670788bb4cd152def522904df8f"
     },
     {
       "name": "ncurses-terminfo-base",
@@ -1562,66 +1611,66 @@
     },
     {
       "name": "openssh",
-      "version": "10.2_p1-r0",
-      "file": "openssh-10.2_p1-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-10.2_p1-r0.apk",
-      "sha256": "e3aef5cea702c7d131ee50f0d2f7f899a4291f116c58ccd2e4c5ca002942783b"
+      "version": "10.2_p1-r1",
+      "file": "openssh-10.2_p1-r1.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-10.2_p1-r1.apk",
+      "sha256": "edae34efb311779c3de556ff5c8f7cd1342d8599370782d125e5acddb077a15f"
     },
     {
       "name": "openssh-client-common",
-      "version": "10.2_p1-r0",
-      "file": "openssh-client-common-10.2_p1-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-client-common-10.2_p1-r0.apk",
-      "sha256": "6cdaff1e0ef45f60f3ee9cbecc8c24fa57bb9f3442f2548272fb3273d3bb2f5c"
+      "version": "10.2_p1-r1",
+      "file": "openssh-client-common-10.2_p1-r1.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-client-common-10.2_p1-r1.apk",
+      "sha256": "58164902d6d288cff3f10fbb48faf22fc6a4d04964221b38dcef59400bd1eaa3"
     },
     {
       "name": "openssh-client-default",
-      "version": "10.2_p1-r0",
-      "file": "openssh-client-default-10.2_p1-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-client-default-10.2_p1-r0.apk",
-      "sha256": "c221efc67cae60fc325ebce7cea2de68dbcc159478e668aa5c7074c13ae6d520"
+      "version": "10.2_p1-r1",
+      "file": "openssh-client-default-10.2_p1-r1.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-client-default-10.2_p1-r1.apk",
+      "sha256": "54760fb5f2053e301042d6778fb73354f315e63cc4521ac0cd67f349a0556d34"
     },
     {
       "name": "openssh-keygen",
-      "version": "10.2_p1-r0",
-      "file": "openssh-keygen-10.2_p1-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-keygen-10.2_p1-r0.apk",
-      "sha256": "bed00eeec4f8aa00328cd023ff4a6df4e60cac0b65253328532d74b96097d5dc"
+      "version": "10.2_p1-r1",
+      "file": "openssh-keygen-10.2_p1-r1.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-keygen-10.2_p1-r1.apk",
+      "sha256": "0decd1e7744b65c203782ff07ccf738235caa647ec3b2bfe996db914cafa6c9f"
     },
     {
       "name": "openssh-server",
-      "version": "10.2_p1-r0",
-      "file": "openssh-server-10.2_p1-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-server-10.2_p1-r0.apk",
-      "sha256": "1278c49ae28a5d66ea4b17fd9d9056bb5fa4cdb03404bc02daa638fc00bc07b1"
+      "version": "10.2_p1-r1",
+      "file": "openssh-server-10.2_p1-r1.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-server-10.2_p1-r1.apk",
+      "sha256": "6dd24213d9e79d62c363df974eb4170236a3e9439b0708c6bad507e1f8ef45b5"
     },
     {
       "name": "openssh-server-common",
-      "version": "10.2_p1-r0",
-      "file": "openssh-server-common-10.2_p1-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-server-common-10.2_p1-r0.apk",
-      "sha256": "007ca09a152c7d284b9f142f926c927bb7dea981b6bce7fe221b409a5090aaa8"
+      "version": "10.2_p1-r1",
+      "file": "openssh-server-common-10.2_p1-r1.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-server-common-10.2_p1-r1.apk",
+      "sha256": "1b377513f03b8a7b5fffd09de44e1d81e79f8fd5b3d2b3db928d4e7bb38aed0b"
     },
     {
       "name": "openssh-server-common-openrc",
-      "version": "10.2_p1-r0",
-      "file": "openssh-server-common-openrc-10.2_p1-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-server-common-openrc-10.2_p1-r0.apk",
-      "sha256": "dc6861662eef91fbe5e0ad2885db51cbb92155b3b74d17def7a4a68c21e24c37"
+      "version": "10.2_p1-r1",
+      "file": "openssh-server-common-openrc-10.2_p1-r1.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-server-common-openrc-10.2_p1-r1.apk",
+      "sha256": "960f084efaeabfa188958c4331a6085f22fa6ddbb960d02eccb422948b421300"
     },
     {
       "name": "openssh-server-pam",
-      "version": "10.2_p1-r0",
-      "file": "openssh-server-pam-10.2_p1-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-server-pam-10.2_p1-r0.apk",
-      "sha256": "370f9c76ec9442b5e57f883d5f5599c24e9550aed0f6a30a75eaa45662b33b82"
+      "version": "10.2_p1-r1",
+      "file": "openssh-server-pam-10.2_p1-r1.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-server-pam-10.2_p1-r1.apk",
+      "sha256": "e570eb00284830290d816636cd67585fe4586f230870b84171ad34a33e04d822"
     },
     {
       "name": "openssh-sftp-server",
-      "version": "10.2_p1-r0",
-      "file": "openssh-sftp-server-10.2_p1-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-sftp-server-10.2_p1-r0.apk",
-      "sha256": "4e18f8d5d380b9000d1d615b387bcf9a03448d6ec8cde40866c389a5f2f5c83e"
+      "version": "10.2_p1-r1",
+      "file": "openssh-sftp-server-10.2_p1-r1.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/openssh-sftp-server-10.2_p1-r1.apk",
+      "sha256": "240141a4e7e5d45b5faf4cee208ad1ffd0f9cb21c2e1373809b5d3f4b5638a18"
     },
     {
       "name": "openssl",
@@ -1730,17 +1779,17 @@
     },
     {
       "name": "tor",
-      "version": "0.4.9.14-r0",
-      "file": "tor-0.4.9.14-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/community/aarch64/tor-0.4.9.14-r0.apk",
-      "sha256": "0933234542cc0b98c9b09e91a361291c76558cd42d8f1e59f40c6950bf52d0da"
+      "version": "0.4.9.17-r0",
+      "file": "tor-0.4.9.17-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/community/aarch64/tor-0.4.9.17-r0.apk",
+      "sha256": "9d5a8025f57d22cdc3ef4b4fe43209e5db3105eaa6bec6804642e719d669ba63"
     },
     {
       "name": "tor-openrc",
-      "version": "0.4.9.14-r0",
-      "file": "tor-openrc-0.4.9.14-r0.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/community/aarch64/tor-openrc-0.4.9.14-r0.apk",
-      "sha256": "1c950749fe34e64123cdef8adc117fe5bf7c6d050d668c3a67b1f71b156ce6c0"
+      "version": "0.4.9.17-r0",
+      "file": "tor-openrc-0.4.9.17-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/community/aarch64/tor-openrc-0.4.9.17-r0.apk",
+      "sha256": "833ccf33e241d2a5d6b96ee2919d0e21f77bd3aff33c70dd3f8edb8e6e3b1baf"
     },
     {
       "name": "umount",
@@ -1835,10 +1884,10 @@
     },
     {
       "name": "zlib",
-      "version": "1.3.2-r1",
-      "file": "zlib-1.3.2-r1.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/zlib-1.3.2-r1.apk",
-      "sha256": "82d52fa82a46c73aae8b9f95d7f31a196137f3ce4a000980cdbbfc05c245e7bf"
+      "version": "1.4-r0",
+      "file": "zlib-1.4-r0.apk",
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.23/main/aarch64/zlib-1.4-r0.apk",
+      "sha256": "c9bc3c75104ffba5785277b38eb83bf90ea83539e3bb26c617864fb78dcb4462"
     },
     {
       "name": "zstd-libs",
