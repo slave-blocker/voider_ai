@@ -1,34 +1,103 @@
-\page{start}{01}{Your Voider}
-Voider connects supported Ethernet phones through paired appliances. You speak on the phone. Voider's screen and four buttons control setup.
-
-\heading{What you need}
-At each end: a Voider with its supported screen and buttons, a prepared microSD card, a Grandstream GXP1610 in factory settings, suitable power supplies and Ethernet cables.
-
-At different places, each Voider needs wired Internet through a router. Paired Voiders also work on the same local network without Internet.
-
-For pairing: one erasable USB stick. Keep each Voider's check code separately. This is not a package contents list.
-
-\heading{Find the next step}
+\page{start}{01}{Start here with a blank card.}
+The box comes assembled. Its blank card needs a local build of the Voider software before the first installation. The supplied Pi can do the build using a separate Alpine boot card.
+\emergency
+\heading{From blank card to first call}
+\entry{kit}{Gather the equipment}
+\entry{desktop}{Prepare the Alpine boot card on a computer}
+\entry{build}{Build Voider on the Pi}
+\entry{target}{Identify and write the blank card}
 \entry{wire}{Connect the cables}
-\entry{install}{First installation}
+\entry{install}{Install Voider from its display}
 \entry{share}{Pair two Voiders}
-\entry{call}{Make a call}
-\entry{help}{If something does not work}
+\entry{call}{Place a call}
+\entry{help}{Troubleshooting}
 \entry{backup}{Backup and restore}
-\note{Review edition}{Updated source, 11 October 2026. Read the open issues on page \pageref{en:security} before use.}
 
-\page{wire}{02}{Connect the cables}
-\wiring{Router / local network}{Voider network connection (eth0)}{Voider phone connection (eth1)}{Phone: network socket}{Functional diagram. It does not show socket positions.}
+\page{kit}{02}{Equipment for each step}
+\heading{In the box}
+An assembled Raspberry Pi 3 Model B Rev 1.2 with an Adafruit PiTFT 2.2-inch HAT Mini Kit (product 2315, 320 × 240), four physical buttons and a blank microSD card for Voider.
+
+\heading{Supply or borrow for the build}
+A Windows, macOS or Linux computer, Internet access, a USB microSD reader and a \textbf{separate erasable microSD card} for Alpine (16 GB suggested). For the Pi console, use an HDMI monitor and cable, a USB keyboard, power and wired Internet. Set the blank Voider card aside.
+
+\heading{For a call}
+Each end needs a paired Voider and a compatible Ethernet phone. The tested phone is the Grandstream GXP1610 at factory settings. Provide suitable supplies for Pi and phone, a compatible USB Ethernet adapter for the Pi's phone link and two Ethernet cables per end. Pairing uses one erasable USB stick.
+
+At separate sites, connect each Voider to a router with Internet access. A pair on the same local network can call without Internet.
+
+\page{desktop}{03}{Prepare the Alpine boot card}
+On the desktop computer, download the Raspberry Pi disk image below and its matching \texttt{.img.sha256} file into an empty folder. These files start the Alpine builder.
+
+\alpineSource
+
+\alpineFile
+
+Open the folder in a terminal. Compare the entire SHA-256 result with the 64 digits in the checksum file. If they differ, download again.
+\begin{itemize}
+\item \textbf{Windows · PowerShell}\par\verb|(Get-FileHash .\alpine*.img).Hash|
+\item \textbf{macOS · Terminal}\par\verb|shasum -a 256 alpine*.img|
+\item \textbf{Linux · Terminal}\par\verb|sha256sum alpine*.img|
+\end{itemize}
+
+Get Raspberry Pi Imager from \imagerSite
+
+On Windows, run the installer. On macOS, open the disk image and drag Imager to Applications. On Linux, use the Imager package or executable AppImage. Open Imager. Insert only the erasable Alpine card into the reader. Choose Pi 3, \textbf{Use Custom}, the downloaded image and the card identified by size. Skip customisation. Confirm erasure, wait for writing and verification, then eject the card.
+
+\page{alpine}{04}{Start Alpine on the Pi}
+With power disconnected, insert only the Alpine card into the Pi's card slot. Connect HDMI, keyboard and the built-in Ethernet port to the router. Apply power. The login prompt appears on HDMI. For an existing disk-installed Alpine build Pi, start with the checks below.
 \begin{enumerate}
-\item Connect cables with power disconnected.
-\item Connect the phone's network socket to Voider's phone connection, not to the router.
-\item Connect Voider's network connection to a router LAN socket.
-\item Connect the intended power supplies to Voider and phone. Repeat at the other end.
+\item Log in locally as \texttt{root} with an empty password. Run \texttt{setup-alpine}. Select the keyboard, \texttt{eth0} with DHCP, a root password and a 3.24 package mirror. Enable the community repository.
+\item Create the first regular user with a password for administrator access via \texttt{doas}. Select \texttt{none} for SSH.
+\item At \textbf{Try boot media?} choose \texttt{y}. Select the sole Alpine card (\texttt{mmcblk0}), choose \texttt{sys} and confirm that this card may be erased. Once installed, run \texttt{reboot} with the same card in place. Log in as the new user.
 \end{enumerate}
-You should see setup or \UI{DEVICE CHECK}. After startup checks, \UI{NET} shows \UI{PHONE}: \UI{CONNECTED} when the phone is reachable. A call still needs testing.
-\note{Confirm hardware first}{Enclosure labels, socket positions, and power ratings are not documented. Have them confirmed before connecting. Do not assume Ethernet supplies power.}
+In the home directory, run these checks. Enter the user's password for \texttt{doas} when prompted.
+\envCommands
+Expect \texttt{aarch64}, \texttt{3.24.x}, then \texttt{0}. The root filesystem must be on disk. Allow about 4 GB free on the drive holding the clone. The initial RAM session cannot run the flasher.
 
-\page{controls}{03}{Buttons and language}
+\page{build}{05}{Build Voider on the Pi}
+\sourceURL
+
+At the Alpine Pi's terminal, start in the user's home directory. Run one command at a time. Stop at the first error.
+\buildCommands
+The checkout selects the 3.24.4 build revision. Preparation fetches the locked archives, checks SHA-256 and Alpine signatures, and installs the pinned tools. After compilation, staging packs the installer. The image builds offline using the verified cache in \texttt{image-work/packages/}.
+
+\heading{Keep the three files together}
+The files contain the compressed image, its layout and hashes, and the checksum of the compressed image, respectively.
+\outputFiles
+
+\page{target}{06}{Identify the blank card}
+Leave the Alpine boot card in the running Pi's slot. The USB reader is for the \textbf{blank Voider target}. Disconnect other USB storage.
+
+\begin{enumerate}
+\item In the clone directory on the Pi, list disks before connecting the reader. Sizes are in bytes.
+\listCards
+\item Insert the blank Voider card in the reader and plug it into the Pi. Run the same command again. Match the new USB disk by model and size. Some readers report the reader model. If uncertain, unplug and compare again.
+\item The target must hold at least \textbf{940,572,672 bytes} (897 MiB) with 512-byte logical sectors. Larger cards retain unused space.
+\item Note the whole disk path, for example \texttt{/dev/sda} on a row of type \texttt{disk}. A name such as \texttt{/dev/sda1} identifies a partition. The internal \texttt{/dev/mmcblk0} holds the running Alpine system.
+\end{enumerate}
+\note{The target card will be erased}{Continue only when the whole USB disk is identified and all data on it can be lost.}
+
+\page{flash}{07}{Write and read back}
+In the same Pi terminal, inside \texttt{voider\_ai}, run the commands below. At the USB card prompt enter the whole disk path identified on page \pageref{en:target}.
+\flashCommands
+The script validates the image and sidecars. Check the printed disk, model and byte capacity again. To erase it, type \texttt{FLASH}, a space and the exact displayed device path. Any other answer cancels before writing.
+
+Wait for \texttt{Verified all 940572672 bytes} with a hash, followed by \texttt{Flash complete}. Run \texttt{doas poweroff}. Once shutdown finishes, disconnect power. Store the Alpine boot card and move the verified Voider card from the reader to the Pi slot. Connect the cables on page \pageref{en:wire}.
+
+\heading{If a step fails}
+For a build error, check the first message, Alpine version, Internet and disk space. Keep verified packages. If output already exists, start a fresh clone in another empty directory. Use the locked versions. After a write or readback error, keep the target out of the Pi slot. Reseat or replace the reader or card, identify the target again and repeat with readback.
+
+\page{wire}{08}{Connect the cables}
+\wiring{Router / local network}{Built-in Ethernet (eth0)}{USB Ethernet adapter (eth1)}{Phone network socket}{The identifiers eth0 and eth1 are Alpine interface names.}
+\begin{enumerate}
+\item With power disconnected, check that the verified Voider card is in the Pi slot and the PiTFT and buttons are attached.
+\item Connect the USB Ethernet adapter to the Pi. Cable the adapter to the factory-reset phone's network socket.
+\item Connect the Pi's built-in Ethernet port to a router LAN socket.
+\item Power the phone and Pi using supplies specified for each device. Check the device markings if a socket or supply is unclear.
+\end{enumerate}
+On a fresh card, the PiTFT shows \UI{INSTALL VOIDER}. Continue on page \pageref{en:install}. An installed Voider starts at \UI{DEVICE CHECK}.
+
+\page{controls}{09}{Buttons and language}
 The four buttons match the labels below them, left to right. Empty fields do nothing. Press and release for a normal action. Hold about one second, then release for a held action, marked by two white bars. A pressed label lights up immediately.
 \shot{language}{Real display rendering with example data.}
 \begin{enumerate}
@@ -38,31 +107,31 @@ The four buttons match the labels below them, left to right. Empty fields do not
 \end{enumerate}
 During first setup, press \textbf{Language}, then \textbf{Next}, \textbf{Try} and \textbf{Back}. There is no Save yet. Save after the startup checks. The starting language is English.
 
-\page{install}{04}{First installation}
-Do this only if the screen shows \UI{INSTALL VOIDER}. An already installed Voider starts with \UI{DEVICE CHECK}; continue on the next page.
+\page{install}{10}{First installation}
+Begin only if the screen shows \UI{INSTALL VOIDER}. An already installed Voider starts with \UI{DEVICE CHECK}; continue on the next page.
 \shot{factory-READY}{The installation screen. Hold the second button to start.}
 \begin{enumerate}
-\item Select your language if needed (page \pageref{en:controls}). Hold \UI{INSTALL}.
-\item Wait while the phase and percentage change. Keep power connected. The installer is already on the card; it does not need an Internet download.
-\item At \UI{INSTALL COMPLETE}, write down the displayed check code. Label your note for this particular Voider. It is your first reference.
+\item Select a language if needed (page \pageref{en:controls}). Hold \UI{INSTALL}.
+\item Wait while the phase and percentage change. Keep power connected. The card contains the installer for offline use.
+\item At \UI{INSTALL COMPLETE}, write down the displayed check code. Label the note for this particular Voider. Keep this first reference separately.
 \item Press \UI{REBOOT} once. The display goes black during the restart. Wait for \UI{DEVICE CHECK}.
 \end{enumerate}
-Installation creates a unique identity. Repeat on the other Voider; keep its code separately. The restart needs your button press.
+Installation creates a unique identity. Repeat on the other Voider; keep its code separately. Press the button to restart.
 
 If \UI{INSTALL FAILED} appears, note the message. Hold \UI{RETRY} after the cause is resolved, or hold \UI{POWER} to switch off.
 
-\page{check}{05}{Check at every start}
+\page{check}{11}{Check at every start}
 \begin{enumerate}
 \item Wait for \UI{DEVICE CHECK} to show \UI{PASSED}. This checks the installed system. Press \UI{NEXT}.
-\item At \UI{YOUR CHECK}, compare the code with your separate record for \emph{this} Voider. \UI{FULL} shows the full fingerprint; \UI{BACK} returns.
-\item If it matches, press \UI{MATCH}. You should see \UI{PASSED}. Press \UI{HOME}. Normal connections can now start.
+\item At \UI{YOUR CHECK}, compare the code with the separate record for \emph{this} Voider. \UI{FULL} shows the full fingerprint; \UI{BACK} returns.
+\item If it matches, press \UI{MATCH}. The screen shows \UI{PASSED}. Press \UI{HOME}. Normal connections can now start.
 \end{enumerate}
-\shot{integrity_state}{Example only. Never use the code in this picture as your reference.}
+\shot{integrity_state}{Example only. Never use the code in this picture as a reference.}
 \textbf{Different or missing record?} Do not guess. If the code differs unexpectedly, hold \UI{DIFFER}, then hold \UI{POWER}. Have the cause checked. A failed device check also blocks normal operation.
 
-\textbf{After your own saved change:} \UI{STATE UPDATED} shows a new code. Write it down, check your copy, then press \UI{I RECORDED IT}. The previous screen returns directly. Use \UI{MATCH}/\UI{DIFFER} only when comparing with your saved record at startup. Pairing, saved settings and deletion can change it. Keep the old note with the reason for the change. A normal clean restart does not change it.
+\textbf{After saving a change:} \UI{STATE UPDATED} shows a new code. Write it down, check the copy, then press \UI{I RECORDED IT}. The previous screen returns directly. Use \UI{MATCH}/\UI{DIFFER} only when comparing with the saved record at startup. Pairing, saved settings and deletion can change it. Keep the old note with the reason for the change. A normal clean restart does not change it.
 
-\page{share}{06}{Pair: first Voider}
+\page{share}{12}{Pair: first Voider}
 Pairing gives two Voiders the information they need to connect. Choose one as A and the other as B. These are names for this guide, not screen labels. One transfer allows calls in both directions.
 \transfer{A: \UI{SHARE}}{Carry the stick}{B: \UI{ADD}}
 \begin{enumerate}
@@ -73,7 +142,7 @@ Pairing gives two Voiders the information they need to connect. Choose one as A 
 \end{enumerate}
 \note{Keep this stick private}{It contains secret connection information and is not encrypted by Voider. Do not lend it to anyone else. Use a new Share operation for each different relationship.}
 
-\page{add}{07}{Pair: second Voider}
+\page{add}{13}{Pair: second Voider}
 \begin{enumerate}
 \item Insert the stick from A. On B, press \UI{LINKS}, then \UI{ADD}. Voider selects the stick immediately. If it is missing, insert it and press \UI{RETRY}. A confirmation screen shows \UI{VALID VOIDER KEY}. This screen does not show a pairing fingerprint. The bundle has been read and validated without changing the stick.
 \item Hold \UI{ADD} again to import. This reads the stick; it does not erase it. Wait for \UI{STATE UPDATED}.
@@ -82,11 +151,11 @@ Pairing gives two Voiders the information they need to connect. Choose one as A 
 \end{enumerate}
 \note{Two different checks}{A's and B's startup check codes belong to different devices. They need not match each other. Compare each only with its own record.}
 \heading{Pairing fingerprint: current limit}
-The software records a separate fingerprint for the USB bundle. This candidate has no display page for comparing that fingerprint between A and B. \UI{VALID VOIDER KEY} is not a human identity check. If you require that comparison, stop here and have the product gap resolved. Do not substitute the startup codes.
+The software records a separate fingerprint for the USB bundle. This candidate has no display page for comparing that fingerprint between A and B. \UI{VALID VOIDER KEY} is not a human identity check. If that comparison is required, stop here. Do not substitute the startup codes.
 
 If an error appears, follow page \pageref{en:help}. Do not repeat Share just because the connection is still waiting.
 
-\page{find}{08}{Go straight to a number}
+\page{find}{14}{Go straight to a number}
 \begin{enumerate}
 \item From Home, press \UI{LINKS}, then \UI{OPEN}. Choose \UI{CLIENTS} or \UI{SERVERS}.
 \item Three cards show the connection number. The first three buttons advance the hundreds, tens and units separately. The left card cycles 0–2; the other two cycle 0–9.
@@ -96,21 +165,21 @@ If an error appears, follow page \pageref{en:help}. Do not repeat Share just bec
 \shot{contact_select-040}{Example: Client 40 is saved and ready to open.}
 \UI{PREV}/\UI{NEXT} browse nearby entries. For another number: \UI{MORE} \arr \UI{FIND}. Keep a note of each person's role and number: Client 40 and Server 40 differ.
 
-\page{call}{09}{Call with the GXP1610}
-Open the saved connection as on the previous page. Wait for \UI{CONNECTED} and read the large address below \UI{DIAL}.
-\shot{contact-040}{Example: Client 40. Dial your own displayed address.}
+\page{call}{15}{Call with the GXP1610}
+\emergency
+\callview{Open the saved connection (page \pageref{en:find}). When \UI{CONNECTED} appears, read the address beneath it. The example shows Client 40.}
 \begin{enumerate}
 \item On the idle Grandstream GXP1610, press \textbf{MENU}. Use the arrows to select \textbf{Direct IP Call}, then press \textbf{MENU} again.
 \item Enter the displayed address, using \textbf{*} for each dot. For 10.1.41.1 enter \textbf{10*1*41*1}. No port suffix is needed.
 \item Use \textbf{More} to check that \textbf{IPv4} is selected. Press the \textbf{OK} softkey to dial.
 \item When the other phone rings, lift its handset. Check sound both ways; hang up to end.
 \end{enumerate}
-Either person can call. Voider's buttons do not dial. For a return call, use the Voider address, not a changing incoming 172.16.x.x caller address. No phone web login or configuration is needed.
+Either end can place a call. Voider's buttons do not dial. For a return call, use the Voider address, not a changing incoming 172.16.x.x caller address. No phone web login or configuration is needed.
 
-\page{manage}{10}{Manage relationships}
-\textbf{Add another person:} repeat pages \pageref{en:share}–\pageref{en:add} with a new \UI{SHARE} on the chosen A. The existing list still offers \UI{SHARE} and \UI{ADD}. You do not need to pair twice for two-way calls.
+\page{manage}{16}{Manage relationships}
+\textbf{Add another person:} repeat pages \pageref{en:share}–\pageref{en:add} with a new \UI{SHARE} on the chosen A. The existing list still offers \UI{SHARE} and \UI{ADD}. One pairing permits calls in either direction.
 
-\UI{CLIENT} and \UI{SERVER} describe local roles, not people. A Share creates a Client entry on A; Add creates a Server entry on B. Keep your own note of who uses each entry. The display does not offer renaming.
+\UI{CLIENT} and \UI{SERVER} describe local roles, not people. A Share creates a Client entry on A; Add creates a Server entry on B. Keep a note of who uses each entry. The display does not offer renaming.
 
 \textbf{Delete one relationship:}
 \begin{enumerate}
@@ -123,13 +192,13 @@ Either person can call. Voider's buttons do not dial. For a return call, use the
 
 \textbf{Factory reset:} \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{RESET}, then \UI{NEXT} and held \UI{RESET}. This removes all relationships and the SSH access key, switches SSH off and creates new device identities. Old peers need new pairing. Some settings, including language, remain. Record the new code. Do not use reset to fix a slow connection.
 
-\page{status}{11}{Read the connection status}
+\page{status}{17}{Read the connection status}
 \textbf{\UI{NET}} opens Internet and phone status. \UI{PHONE}: \UI{CONNECTED} means Voider can reach the phone.
 \textbf{Home totals:} 1/2 means one of two saved relationships is connected. Clients and Servers are counted separately. It is not a count of calls.
 
 \textbf{\UI{CONNECTED}:} a path to the other Voider is active. \textbf{\UI{CONNECTING}:} it is trying. \textbf{\UI{OFFLINE}:} no active path is shown. This alone does not prove that the other Voider is switched off.
 
-Voider normally tries \UI{LAN}, then \UI{DIRECT}, then \UI{PRIVATE} (WireGuard through routers), then \UI{TOR}. The selected method appears under \UI{MORE}. A healthy connection keeps its method until it fails, or you remove or disable it. LAN also uses WireGuard. Connections show \UI{LAN4}, \UI{LAN6}, \UI{DIRECT4} or \UI{DIRECT6} for the selected IP version.
+Voider normally tries \UI{LAN}, then \UI{DIRECT}, then \UI{PRIVATE} (WireGuard through routers), then \UI{TOR}. The selected method appears under \UI{MORE}. A healthy connection keeps its method until it fails, or until removal or deactivation. LAN also uses WireGuard. Connections show \UI{LAN4}, \UI{LAN6}, \UI{DIRECT4} or \UI{DIRECT6} for the selected IP version.
 
 \textbf{Give it time.} Clock checks and Tor startup can take minutes. A Tor recovery attempt has 90 seconds; the whole connection process can take longer. Leave both devices on. Re-pairing does not speed this up.
 
@@ -137,7 +206,7 @@ A same-network LAN connection can work without Internet. Phone readiness is chec
 
 \textbf{\UI{PATHS}:} normally leave all seven paths on. For an intentional change: \UI{UP}/\UI{DOWN} selects, \UI{REMOVE}/\UI{ADD} switches availability. \UI{BACK} then held \UI{APPLY} saves; confirm the new code. \UI{CANCEL} returns to editing. At least one path must remain on. Restricting paths can prevent calls.
 
-\page{help}{12}{If something does not work}
+\page{help}{18}{If something does not work}
 \begin{enumerate}
 \item Complete both startup checks on both Voiders.
 \item Press \UI{NET}. Check the phone's power and cable if missing; check the uplink cable and router if the network is missing.
@@ -152,8 +221,8 @@ A same-network LAN connection can work without Internet. Phone readiness is chec
 
 \textbf{Restart:} Home \arr \UI{POWER} \arr \UI{REBOOT}, then hold \UI{REBOOT}. Pairing stays saved. Complete the normal checks after boot.
 
-\page{backup}{13}{Save a backup}
-A backup contains this device's saved identity, relationships, keys and settings. It does not back up the phone or the whole system card. The files are not encrypted. Keep the stick as carefully as a key to your device.
+\page{backup}{19}{Save a backup}
+A backup contains this device's saved identity, relationships, keys and settings. It does not back up the phone or the whole system card. The files are not encrypted. Keep the stick as carefully as a key to the device.
 \begin{enumerate}
 \item From Home: \UI{NET} \arr \UI{SYSTEM} \arr \UI{BACKUP}.
 \item Insert one spare USB stick. Hold \UI{BACKUP}.
@@ -165,7 +234,7 @@ Insert the backup stick. Open \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{
 
 Hold \UI{RESTOR} only to replace all saved settings, identities and connections with this backup. Later changes are lost. Record the new check code and press \UI{I RECORDED IT}. Remove the stick, then hold \UI{REBOOT} to apply. Old running settings cannot overwrite the restored backup. After restart, compare the recorded code using \UI{MATCH} or \UI{DIFFER}.
 
-\page{ssh}{14}{Optional: remote access}
+\page{ssh}{20}{Optional: remote access}
 SSH lets a trusted administrator manage Voider from a computer. It is not needed for calls. Open \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{SSH}. The screen shows \UI{MANAGEMENT ON} or \UI{MANAGEMENT OFF}.
 
 \textbf{Switch on or off:} press \UI{ON} or \UI{OFF}, then hold the same label on the confirmation screen. Record and confirm the new code. Off blocks new management logins but keeps the key. Existing sessions may remain. The internal call transport is separate.
@@ -178,8 +247,8 @@ SSH lets a trusted administrator manage Voider from a computer. It is not needed
 \end{enumerate}
 \textbf{Remove permanently:} select \UI{REMOVE}, then hold \UI{REMOVE}. This revokes the login key and leaves SSH off. Record the new code. A USB failure keeps the previous key and access setting. Voider keeps only the public half; it cannot recover a lost private key.
 
-\page{security}{15}{What the checks mean}
-\textbf{Device check} checks the installed system against its recorded values. \textbf{Your check} lets you compare saved state with your own separate record. Neither proves the identity of the person holding the other phone.
+\page{security}{21}{What the checks mean}
+\textbf{Device check} checks the installed system against its recorded values. At \textbf{Your check}, compare the displayed state code with the separate record for this device. Neither proves the identity of the person holding the other phone.
 
 \textbf{Pairing} establishes shared secrets. The current display cannot show the pairing fingerprint for human comparison (page \pageref{en:add}). Protect pairing sticks and backups.
 
@@ -189,4 +258,4 @@ The custom protocol has not been independently audited. Voider does not guarante
 
 \textbf{SSH boundary:} root access needs a key and a private network on the Ethernet uplink. No passwords, phone-side, public-WAN or Tor login, or forwarding. A prepared key enables installation SSH; no key means off. Installed devices require both startup checks. The administrator must verify the host key. The display has no host-key page or factory SSH switch.
 
-\mini{\textbf{Before customer release:} confirm ports, power and factory SSH controls; resolve pairing verification. Native language and beginner review remain needed. Fresh installations and physical acceptance remain open. The Tor observation was 601 seconds, not one hour. This manual does not declare the image ready for sale.}
+\mini{\textbf{Before customer release:} confirm ports, power and factory SSH controls; resolve pairing verification. Native language and beginner review remain needed. The three desktop routes still require an end-to-end test on the Pi 3 Model B Rev 1.2 through Alpine setup, build, write/readback, card swap, installation, pairing and a two-way call.}

@@ -8,6 +8,8 @@
 \usepackage[bulgarian,ngerman,english]{babel}
 \usepackage[a5paper,inner=14mm,outer=14mm,top=13mm,bottom=17mm,footskip=9mm]{geometry}
 \usepackage{graphicx,xcolor,tikz,enumitem,ragged2e,fancyhdr}
+\usepackage[protrusion=false,expansion=false]{microtype}
+\DisableLigatures{encoding=T1,family=lmtt}
 \usetikzlibrary{arrows.meta,positioning}
 \usepackage[unicode,hidelinks]{hyperref}
 \input{ui-labels.tex}
@@ -37,6 +39,9 @@
 \newcommand{\note}[2]{\par\smallskip{\color{orange}\rule{\linewidth}{2pt}}\par\textbf{#1}\enspace #2\par}
 \newcommand{\mini}[1]{{\fontsize{10}{12}\selectfont #1\par}}
 \newcommand{\shot}[2]{\par\smallskip{\centering\includegraphics[width=65mm]{assets/\Lang/#1.png}\par\vspace{2pt}\mini{#2}}\smallskip}
+\newcommand{\callview}[1]{\par\smallskip\noindent
+  \begin{minipage}[c]{.35\linewidth}\includegraphics[width=\linewidth]{assets/\Lang/contact-040.png}\end{minipage}\hfill
+  \begin{minipage}[c]{.61\linewidth}\RaggedRight #1\end{minipage}\par\smallskip}
 \newcommand{\heading}[1]{\par\medskip{\large\bfseries #1}\par\smallskip}
 \newcommand{\page}[3]{\clearpage\phantomsection\label{\Lang:#1}%
   \ifstrequal{#1}{start}{\pdfbookmark[0]{\LangName}{part-\Lang}}{}%
@@ -59,23 +64,69 @@
 \node[fill=green,text=navy,minimum width=27mm,minimum height=12mm,right=15mm of u] (b) {Voider B};
 \draw[->,thick] (a)--(u);\draw[->,thick] (u)--(b);
 \end{tikzpicture}\par\mini{#1\enspace\arr\enspace #2\enspace\arr\enspace #3}\end{center}}
+
+% Keep the printed shell commands identical in the three editions.
+\newcommand{\cmdline}[1]{\noindent\mbox{\detokenize{#1}}\par}
+\newenvironment{commands}{\par\smallskip\begingroup\fontencoding{T1}\fontfamily{lmtt}\fontsize{10.5}{13}\selectfont\setlength{\parskip}{0pt}}{\endgroup\smallskip}
+\newcommand{\sourceURL}{\url{https://github.com/slave-blocker/voider_ai}}
+\newcommand{\imagerSite}{\url{https://www.raspberrypi.com/software/}}
+\newcommand{\alpineSource}{\href{https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/aarch64/}{\nolinkurl{https://dl-cdn.alpinelinux.org/alpine/}\allowbreak\nolinkurl{v3.24/releases/aarch64/}}}
+\newcommand{\alpineFile}{\href{https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/aarch64/alpine-rpi-3.24.4-aarch64.img}{\texttt{alpine-rpi-3.24.4-aarch64.img}}}
+\newcommand{\envCommands}{\begin{commands}
+\cmdline{uname -m}
+\cmdline{cat /etc/alpine-release}
+\cmdline{doas id -u}
+\cmdline{df -h . /}
+\end{commands}}
+\newcommand{\buildCommands}{\begin{commands}
+\cmdline{doas apk add git python3}
+\cmdline{git clone https://github.com/slave-blocker/voider_ai.git}
+\cmdline{cd voider_ai}
+\cmdline{git checkout --detach 2355a3cb41bf}
+\cmdline{doas ./scripts/prepare-build.sh}
+\cmdline{make clean}
+\cmdline{make -j2}
+\cmdline{doas ./scripts/stage-release-payload.sh}
+\cmdline{doas ./scripts/build-release-image.sh}
+\end{commands}}
+\newcommand{\outputFiles}{\begin{commands}
+\cmdline{release/voider-aarch64.img.gz}
+\cmdline{release/voider-aarch64.img.gz.meta}
+\cmdline{release/voider-aarch64.img.gz.sha256}
+\end{commands}}
+\newcommand{\listCards}{\begin{commands}
+\cmdline{lsblk -b -o NAME,SIZE,MODEL,TRAN,TYPE,MOUNTPOINTS}
+\end{commands}}
+\newcommand{\flashCommands}{\begin{commands}
+\cmdline{printf "USB card device: "; read -r CARD}
+\cmdline{IMG=release/voider-aarch64.img.gz}
+\cmdline{F=./scripts/flash-release-image.sh}
+\cmdline{doas "$F" "$IMG" "$CARD" --readback}
+\end{commands}}
+\newcommand{\danger}[2]{\par\smallskip{\color{black}\setlength{\fboxsep}{5pt}\setlength{\fboxrule}{1.2pt}%
+\noindent\fbox{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{\raggedright\textbf{#1} #2}}}\par\smallskip}
+\newcommand{\warningEN}{\danger{Emergency calls are unavailable.}{A phone connected through Voider cannot call 112 or 911. In an emergency, use another phone with access to emergency services.}}
+\newcommand{\warningDE}{\danger{Notrufe sind nicht möglich.}{Mit einem an Voider angeschlossenen Telefon lassen sich weder 112 noch 911 erreichen. Im Notfall ein anderes Telefon verwenden, mit dem der Notruf erreichbar ist.}}
+\newcommand{\warningBG}{\danger{Спешни повиквания не са възможни.}{От телефон, свързан чрез Voider, не може да се набере 112 или 911. При спешен случай се използва друг телефон с достъп до службите за спешна помощ.}}
+\newcommand{\emergency}{\ifx\Lang\de\warningDE\else\ifx\Lang\bg\warningBG\else\warningEN\fi\fi}
 \newcommand{\languagepart}[3]{\clearpage\def\Lang{#1}\def\LangName{#2}\selectlanguage{#3}\input{#1.tex}}
 \providecommand{\ManualLanguage}{all}
 \def\all{all}\def\de{de}\def\en{en}\def\bg{bg}
-\hypersetup{pdftitle={Voider — Deutsch / English / Български},pdfauthor={Voider},pdfsubject={Customer instructions, Number selection and phone guide, 2026-10-11}}
+\hypersetup{pdftitle={Voider — Deutsch / English / Български},pdfauthor={Voider},pdfsubject={Blank card, installation and calling}}
 \begin{document}\RaggedRight
 \ifx\ManualLanguage\all
 \def\LangName{DE / EN / BG}
-{\color{blue}\rule{\linewidth}{7mm}}\par\vspace{13mm}
-{\fontsize{40}{44}\selectfont\bfseries VOIDER}\par\vspace{7mm}
-{\fontsize{21}{26}\selectfont Anleitung\par User manual\par\foreignlanguage{bulgarian}{Ръководство}}\par\vspace{13mm}
-\hyperref[de:start]{\textbf{Deutsch}}\hfill\pageref{de:start}\par\medskip
-\hyperref[en:start]{\textbf{English}}\hfill\pageref{en:start}\par\medskip
-\hyperref[bg:start]{\foreignlanguage{bulgarian}{\textbf{Български}}}\hfill\pageref{bg:start}
+{\color{blue}\rule{\linewidth}{3pt}}\par\medskip
+{\fontsize{33}{36}\selectfont\bfseries VOIDER}\par\smallskip
+{\large Anleitung / User manual / \foreignlanguage{bulgarian}{Ръководство}}\par
+\hyperref[de:start]{\textbf{Deutsch}}\hfill\pageref{de:start}\par
+\hyperref[en:start]{\textbf{English}}\hfill\pageref{en:start}\par
+\hyperref[bg:start]{\foreignlanguage{bulgarian}{\textbf{Български}}}\hfill\pageref{bg:start}\par\medskip
+{\selectlanguage{ngerman}\warningDE}
+\warningEN
+{\selectlanguage{bulgarian}\warningBG}
 \vfill
-\mini{11.10.2026\enspace /\enspace GXP1610}
-\mini{Prüffassung · Review edition · \foreignlanguage{bulgarian}{Издание за преглед}}
-\mini{Offene Punkte am Ende jeder Sprache.\par Open issues at the end of each language.\par\foreignlanguage{bulgarian}{Отворените въпроси са в края на всеки език.}}
+\mini{Raspberry Pi 3 Model B Rev 1.2 · Grandstream GXP1610}
 \languagepart{de}{Deutsch}{ngerman}
 \languagepart{en}{English}{english}
 \languagepart{bg}{Български}{bulgarian}

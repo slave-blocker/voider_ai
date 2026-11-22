@@ -1,32 +1,101 @@
-\page{start}{01}{Ihr Voider}
-Voider verbindet unterstützte Ethernet-Telefone über gekoppelte Geräte. Sie sprechen am Telefon. Die Einrichtung steuern Sie am Voider-Display mit vier Tasten.
-\heading{Das brauchen Sie}
-Auf jeder Seite: einen Voider mit unterstütztem Display und Tasten, eine vorbereitete microSD-Karte, ein Grandstream GXP1610 in Werkseinstellung, passende Netzteile und Ethernet-Kabel.
-
-An getrennten Orten braucht jeder Voider Internet über ein Kabel zum Router. Gekoppelte Geräte funktionieren auch im selben lokalen Netz ohne Internet.
-
-Zum Koppeln: einen USB-Stick, der gelöscht werden darf. Bewahren Sie jeden Prüfcode separat auf. Dies ist keine Liste des Lieferumfangs.
-\heading{Der nächste Schritt}
+\page{start}{01}{Mit der leeren Karte beginnen}
+Der Voider wird mit einer leeren microSD-Karte geliefert. Zum Erstellen der Software kann der mitgelieferte Pi von einer zweiten Karte mit Alpine Linux starten.
+\emergency
+\heading{Von der leeren Karte zum Anruf}
+\entry{kit}{Geräte und Zubehör bereitlegen}
+\entry{desktop}{Alpine-Startkarte am Computer vorbereiten}
+\entry{build}{Voider auf dem Pi bauen}
+\entry{target}{Zielkarte erkennen und beschreiben}
 \entry{wire}{Kabel anschließen}
-\entry{install}{Erste Installation}
-\entry{share}{Zwei Voider koppeln}
-\entry{call}{Telefonieren}
-\entry{help}{Wenn etwas nicht funktioniert}
-\entry{backup}{Sichern und Laden}
-\note{Prüffassung}{Aktualisierter Quellstand, 11. Oktober 2026. Beachten Sie die offenen Punkte auf Seite \pageref{de:security}.}
+\entry{install}{Voider zum ersten Mal starten}
+\entry{share}{Zwei Geräte koppeln}
+\entry{call}{Am Telefon anrufen}
+\entry{help}{Störungen beheben}
+\entry{backup}{Sichern und Wiederherstellen}
 
-\page{wire}{02}{Kabel anschließen}
-\wiring{Router / lokales Netz}{Netzwerkanschluss (eth0)}{Telefonanschluss (eth1)}{Telefon: Netzwerkbuchse}{Funktionsplan. Die Lage der Buchsen ist nicht dargestellt.}
+\page{kit}{02}{Geräte und Zubehör}
+\heading{Lieferumfang}
+Ein montierter Raspberry Pi 3 Model B Rev. 1.2 mit Adafruit PiTFT 2,2~Zoll (HAT Mini Kit, Nr.~2315, 320~×~240 Pixel), vier physischen Tasten und einer leeren microSD-Karte für Voider.
+\heading{Zum Bauen bereitstellen oder ausleihen}
+Computer mit Windows, macOS oder Linux und Internetzugang, USB-microSD-Leser, separate löschbare microSD-Karte für Alpine (16~GB empfohlen), HDMI-Bildschirm mit Kabel und USB-Tastatur. Der Pi braucht Strom und Internet per Ethernet. Bei vorhandenem Alpine-Pi direkt die Voraussetzungen auf Seite \pageref{de:alpine} prüfen.
+\heading{Zum Telefonieren}
+Ein Anruf erfordert zwei gekoppelte Voider mit je einem kompatiblen Ethernet-Telefon. Das Grandstream GXP1610 wurde mit Voider getestet. Das Telefon in Werkseinstellung anschließen. Je Seite passende Stromversorgung für Pi und Telefon, zwei Ethernet-Kabel und einen kompatiblen USB-Ethernet-Adapter als Telefonanschluss am Pi bereithalten. Zum Koppeln beider Voider wird ein löschbarer USB-Stick benötigt.
+
+An getrennten Standorten braucht jeder Voider Zugang zum Internet. Im selben lokalen Netz funktionieren gekoppelte Geräte auch ohne Internet.
+
+\page{desktop}{03}{Alpine-Startkarte vorbereiten}
+Am Computer einen leeren Ordner anlegen. Von Alpine das Raspberry-Pi-Abbild für aarch64 und die gleichnamige Datei mit der Endung \texttt{.sha256} dort speichern.
+
+\alpineSource
+
+\alpineFile
+
+Die Prüfsumme im Downloadordner berechnen. Alle 64 Stellen müssen mit dem Wert in der geöffneten \texttt{.sha256}-Datei übereinstimmen. Bei Abweichung erneut laden.
+\begin{itemize}
+\item \textbf{Windows.} Im Ordner PowerShell öffnen.\par
+\verb|(Get-FileHash .\alpine*.img).Hash|
+\item \textbf{macOS.} Terminal im Ordner öffnen.\par
+\verb|shasum -a 256 alpine*.img|
+\item \textbf{Linux.} Terminal im Ordner öffnen.\par
+\verb|sha256sum alpine*.img|
+\end{itemize}
+Raspberry Pi Imager installieren und starten (Windows: Startmenü, macOS: Programme, Linux: Anwendungsmenü). \imagerSite
+
+Nur die Alpine-Karte einstecken. Im Imager Pi~3 wählen, mit \textbf{Use Custom} das lokale Abbild öffnen und die Karte nach Größe wählen. Anpassungen überspringen. Löschen bestätigen, Schreiben und Prüfen abwarten. Karte sicher auswerfen.
+
+\page{alpine}{04}{Alpine auf dem Pi einrichten}
+Nur die Alpine-Karte in den ausgeschalteten Pi einsetzen. HDMI-Bildschirm, USB-Tastatur und Netzwerkkabel zum Router anschließen, dann Strom zuführen. Das Terminal erscheint auf dem HDMI-Bildschirm.
 \begin{enumerate}
-\item Schließen Sie die Kabel ohne Stromversorgung an.
-\item Verbinden Sie die Netzwerkbuchse des Telefons mit Voiders Telefonanschluss, nicht mit dem Router.
-\item Verbinden Sie Voiders Netzwerkanschluss mit einer LAN-Buchse des Routers.
-\item Schließen Sie die vorgesehenen Netzteile an Voider und Telefon an. Wiederholen Sie dies auf der anderen Seite.
+\item Beim ersten Login \texttt{root} eingeben, das Passwort leer lassen. \texttt{setup-alpine} starten. Tastatur wählen, bei \texttt{eth0} die automatische Adresse (DHCP) verwenden und ein Root-Passwort setzen.
+\item Einen Paketspiegel für 3.24 wählen und \texttt{community} aktivieren. Das erste Benutzerkonto mit Passwort für \texttt{doas} anlegen. Für SSH genügt \texttt{none}.
+\item Bei \texttt{Try boot media} mit \texttt{y} antworten. Nur die Alpine-Karte (\texttt{mmcblk0}) wählen, dann \texttt{sys}. Das Löschen dieser Karte bestätigen. Nach Abschluss \texttt{reboot} eingeben und von derselben Karte starten.
 \end{enumerate}
-Sie sehen die Einrichtung oder \UI{DEVICE CHECK}. Nach den Startprüfungen zeigt \UI{NET} bei \UI{PHONE}: \UI{CONNECTED}, sobald das Telefon erreichbar ist. Ein Anruf muss noch geprüft werden.
-\note{Hardware zuerst klären}{Gehäusebeschriftung, Buchsenlage, und Stromversorgung sind nicht dokumentiert. Vor dem Anschluss klären lassen. Ethernet liefert nicht automatisch Strom.}
+Mit dem neuen Konto anmelden. Im persönlichen Ordner prüfen. Für \texttt{doas} bei Bedarf das Passwort dieses Kontos eingeben:
+\envCommands
+Erwartet: \texttt{aarch64}, Alpine \texttt{3.24.x}, Benutzerkennung \texttt{0} und etwa 4~GB frei auf dem Laufwerk für den Quellcode. Der Schreibvorgang erfordert ein System auf einem Datenträger. Der erste Alpine-Start aus dem RAM genügt dafür nicht.
 
-\page{controls}{03}{Tasten und Sprache}
+\page{build}{05}{Voider auf dem Pi bauen}
+Quelle: \sourceURL
+
+Am Alpine-Pi im persönlichen Ordner beginnen. Die Befehle der Reihe nach ausführen. Bei jedem Fehler anhalten.
+\buildCommands
+Der ausgewählte Quellstand verwendet Alpine 3.24.4. Die Vorbereitung lädt die festgelegten Paketversionen, prüft SHA-256 und Alpine-Signaturen und installiert die Werkzeuge. Nach dem Übersetzen verpackt das nächste Skript die Programme für die Installation. Das letzte baut das Abbild offline aus den geprüften Paketen in \texttt{image-work/packages/}.
+
+\textbf{Ergebnis} — Abbild, Metadaten und SHA-256-Prüfsumme zusammen aufbewahren:
+\outputFiles
+
+\page{target}{06}{Die Zielkarte erkennen}
+Die Alpine-Startkarte bleibt im Kartenschacht des laufenden Pi. Die leere Karte für Voider wird über den USB-Leser beschrieben.
+\begin{enumerate}
+\item Andere USB-Datenträger abziehen. Im Quellordner auf dem Pi zunächst die vorhandenen Geräte anzeigen:
+\listCards
+\item Die leere Voider-Karte in den Leser stecken und den Leser am Pi anschließen. Denselben Befehl wiederholen. Die neue Zeile vom Typ \texttt{disk} nach Modell, Größe in Byte und USB-Anschluss zuordnen. Manche Leser melden das Lesermodell.
+\item Mindestens \textbf{940\,572\,672 Byte} und logische Sektoren mit 512 Byte sind erforderlich. Eine größere Karte behält ungenutzten Platz.
+\item Den vollständigen Pfad des neuen Datenträgers notieren. Beispiel: \texttt{/dev/sda} bezeichnet ein ganzes Laufwerk, \texttt{/dev/sda1} nur eine Partition. Die interne Karte \texttt{/dev/mmcblk0} muss unangetastet bleiben.
+\end{enumerate}
+\note{Alle Daten auf der Zielkarte gehen verloren}{Falls Modell oder Größe keine eindeutige Zuordnung erlauben, den Leser abziehen und erneut vergleichen. Erst bei eindeutigem Ergebnis fortfahren.}
+
+\page{flash}{07}{Schreiben und zurücklesen}
+Im Ordner \texttt{voider\_ai} auf dem Pi ausführen. Sobald \texttt{USB card device} erscheint, den geprüften Pfad der ganzen Karte eingeben.
+\flashCommands
+Das Skript prüft Abbild, Prüfsumme, Metadaten und Zielkarte. Modell, Kapazität und Gerätepfad auf dem Bildschirm nochmals mit der Karte vergleichen. Zum Löschen genau \texttt{FLASH}, ein Leerzeichen und den angezeigten Pfad eingeben. Jede andere Antwort bricht vor dem Schreiben ab.
+
+Erfolg: \texttt{Verified all 940572672 bytes} mit Prüfsumme, danach \texttt{Flash complete}. Danach \texttt{doas poweroff} eingeben. Das Herunterfahren abwarten und den Strom trennen. Alpine-Karte entnehmen und aufbewahren. Die beschriebene Karte vom Leser in den Pi umstecken. Anschlüsse und Start: Seite \pageref{de:wire}.
+\heading{Wenn ein Schritt fehlschlägt}
+Beim Bauen die erste Fehlermeldung prüfen: Alpine-Version, Internet und Speicherplatz kontrollieren. Nur die festgelegten Archive verwenden. Bei vorhandenen Ausgabedateien in einem neuen leeren Ordner ab \texttt{git clone} wiederholen. Bei Schreib- oder Lesefehlern die Karte nicht starten. Leser neu verbinden oder andere Karte verwenden, Ziel erneut prüfen und mit Rücklesen wiederholen.
+
+\page{wire}{08}{Kabel anschließen}
+\wiring{Router / lokales Netz}{Netzwerkanschluss (eth0)}{Telefonanschluss (eth1)}{Telefon: Netzwerkbuchse}{eth0 und eth1 sind die Schnittstellennamen im System.}
+\begin{enumerate}
+\item Vor dem Verkabeln die Stromversorgung trennen. Die geprüfte Voider-Karte gehört in den microSD-Schacht.
+\item Den USB-Ethernet-Adapter am Voider einstecken. Seine Ethernet-Buchse mit der Netzwerkbuchse des Telefons verbinden.
+\item Die eingebaute Ethernet-Buchse des Pi mit einer LAN-Buchse des Routers verbinden.
+\item Display und Tasten angeschlossen lassen. Telefon und Voider mit passenden Netzteilen einschalten.
+\end{enumerate}
+Auf dem PiTFT erscheint bei der ersten Inbetriebnahme \UI{INSTALL VOIDER}. Weiter auf Seite \pageref{de:install}. Nach der Installation erscheint beim Start \UI{DEVICE CHECK}.
+
+
+\page{controls}{09}{Tasten und Sprache}
 Die vier Tasten gehören zu den Feldern darüber, von links nach rechts. Leere Felder tun nichts. Kurz drücken und loslassen; zum Halten etwa eine Sekunde drücken, dann loslassen. Zwei weiße Balken markieren Halten. Das Feld reagiert sofort beim Drücken.
 \shot{language}{Ansicht aus der echten Display-Software mit Beispieldaten.}
 \begin{enumerate}
@@ -36,23 +105,23 @@ Die vier Tasten gehören zu den Feldern darüber, von links nach rechts. Leere F
 \end{enumerate}
 Die Einrichtung startet auf Englisch: \textbf{Language}, \textbf{Next}, \textbf{Try}, dann \UI{BACK}. Erst nach den Startprüfungen speichern.
 
-\page{install}{04}{Erste Installation}
+\page{install}{10}{Erste Installation}
 Nur bei \UI{INSTALL VOIDER} ausführen. Bei \UI{DEVICE CHECK} auf der nächsten Seite weiterlesen.
 \shot{factory-READY}{Zum Starten die zweite Taste halten.}
 \begin{enumerate}
 \item Bei Bedarf Sprache wählen (Seite \pageref{de:controls}). \UI{INSTALL} halten.
 \item Warten, während Arbeitsschritt und Prozentzahl wechseln. Strom angeschlossen lassen. Alles liegt bereits auf der Karte; ein Download ist nicht nötig.
-\item Bei \UI{INSTALL COMPLETE} den Prüfcode mit Gerätenamen notieren. Dies ist Ihre erste Vergleichskopie.
+\item Bei \UI{INSTALL COMPLETE} den Prüfcode mit Gerätenamen notieren. Diese Notiz beim nächsten Start zum Vergleich bereithalten.
 \item Einmal \UI{REBOOT} drücken. Das Display wird beim Neustart schwarz. Auf \UI{DEVICE CHECK} warten.
 \end{enumerate}
 Die Installation erzeugt eine eigene Identität. Am zweiten Voider wiederholen; Code separat notieren. Kein automatischer Neustart.
 
 Bei \UI{INSTALL FAILED} Meldung notieren. Nach Fehlerbehebung \UI{RETRY} halten oder mit gehaltenem \UI{POWER} ausschalten.
 
-\page{check}{05}{Bei jedem Start prüfen}
+\page{check}{11}{Bei jedem Start prüfen}
 \begin{enumerate}
 \item Warten, bis \UI{DEVICE CHECK} den Text \UI{PASSED} zeigt. Das installierte System wurde geprüft. \UI{NEXT} drücken.
-\item Unter \UI{YOUR CHECK} den Code mit Ihrer Notiz für \emph{diesen} Voider vergleichen. \UI{FULL} zeigt den ganzen Fingerabdruck; \UI{BACK} führt zurück.
+\item Unter \UI{YOUR CHECK} den Code mit der Notiz für \emph{diesen} Voider vergleichen. \UI{FULL} zeigt den ganzen Fingerabdruck; \UI{BACK} führt zurück.
 \item Wenn er stimmt: \UI{MATCH} drücken. Es erscheint \UI{PASSED}. \UI{HOME} drücken. Verbindungen können jetzt starten.
 \end{enumerate}
 \shot{integrity_state}{Nur ein Beispiel. Diesen Code niemals als eigene Vergleichskopie verwenden.}
@@ -60,8 +129,8 @@ Bei \UI{INSTALL FAILED} Meldung notieren. Nach Fehlerbehebung \UI{RETRY} halten 
 
 \textbf{Nach einer eigenen Änderung:} Bei \UI{STATE UPDATED} den neuen Code notieren. Die Abschrift prüfen und \UI{I RECORDED IT} drücken. Beim Start dienen \UI{MATCH} und \UI{DIFFER} dem Vergleich. Änderungen können einen neuen Code erzeugen; ein Neustart allein nicht. Alte Notiz samt Grund behalten.
 
-\page{share}{06}{Koppeln: erster Voider}
-Beim Koppeln erhalten zwei Voider die Daten für ihre Verbindung. Nennen wir sie A und B. Diese Namen stehen nicht im Display. Ein Transfer reicht für Anrufe in beide Richtungen.
+\page{share}{12}{Koppeln: erster Voider}
+Beim Koppeln erhalten zwei Voider die Daten für ihre Verbindung. Hier heißen die Geräte A und B. Diese Namen stehen nicht im Display. Ein Transfer reicht für Anrufe in beide Richtungen.
 \transfer{A: \UI{SHARE}}{Stick weitergeben}{B: \UI{ADD}}
 \begin{enumerate}
 \item Einen USB-Speicherstick einstecken und andere Speichersticks entfernen. Auf A: \UI{LINKS}, dann \UI{SHARE} drücken. Voider wählt den Stick sofort aus. Fehlt er, einstecken und \UI{RETRY} drücken.
@@ -69,9 +138,9 @@ Beim Koppeln erhalten zwei Voider die Daten für ihre Verbindung. Nennen wir sie
 \item Auf \UI{STATE UPDATED} warten. Neuen Code von A wie auf Seite \pageref{de:check} notieren und bestätigen.
 \item Bei \UI{SAFE TO REMOVE} den Stick entfernen und \UI{DONE} drücken. Den Stick direkt zu B bringen.
 \end{enumerate}
-\note{Stick privat halten}{Er enthält geheime Verbindungsdaten. Voider verschlüsselt ihn nicht. Geben Sie ihn nicht an andere weiter. Für jede weitere Beziehung einen neuen Vorgang mit \UI{SHARE} starten.}
+\note{Stick privat halten}{Er enthält geheime Verbindungsdaten. Voider verschlüsselt ihn nicht. Den Stick nur an die vorgesehene Gegenstelle übergeben. Für jede weitere Beziehung einen neuen Vorgang mit \UI{SHARE} starten.}
 
-\page{add}{07}{Koppeln: zweiter Voider}
+\page{add}{13}{Koppeln: zweiter Voider}
 \begin{enumerate}
 \item Den Stick von A einstecken. Auf B: \UI{LINKS}, dann \UI{ADD} drücken. Voider wählt den Stick sofort aus. Fehlt er, einstecken und \UI{RETRY} drücken. Es erscheint \UI{VALID VOIDER KEY}. Hier steht kein Kopplungsfingerabdruck. Die Datei wurde ohne Änderung am Stick gelesen und geprüft.
 \item Zum Import erneut \UI{ADD} halten. Der Stick wird gelesen, nicht gelöscht. Auf \UI{STATE UPDATED} warten.
@@ -80,11 +149,11 @@ Beim Koppeln erhalten zwei Voider die Daten für ihre Verbindung. Nennen wir sie
 \end{enumerate}
 \note{Zwei verschiedene Prüfungen}{Die Startprüfcodes von A und B gehören zu verschiedenen Geräten. Sie müssen nicht gleich sein. Jeden nur mit seiner eigenen Notiz vergleichen.}
 \heading{Kopplungsfingerabdruck fehlt}
-Die Software speichert einen eigenen Fingerabdruck der USB-Datei. Dieser Kandidat hat keine Display-Seite zum Vergleichen zwischen A und B. \UI{VALID VOIDER KEY} bestätigt nicht die Identität einer Person. Wenn Sie diesen Vergleich benötigen, hier stoppen und die Produktlücke klären lassen. Die Startprüfcodes ersetzen ihn nicht.
+Die Software speichert einen eigenen Fingerabdruck der USB-Datei. Dieser Kandidat hat keine Display-Seite zum Vergleichen zwischen A und B. \UI{VALID VOIDER KEY} bestätigt nicht die Identität einer Person. Ist ein solcher Vergleich erforderlich, die Kopplung hier unterbrechen. Die Startprüfcodes ersetzen ihn nicht.
 
 Bei Fehlern: Seite \pageref{de:help}. Nicht erneut teilen, nur weil die Verbindung noch wartet.
 
-\page{find}{08}{Direkt zur Nummer}
+\page{find}{14}{Direkt zur Nummer}
 \begin{enumerate}
 \item Auf der Startseite \UI{LINKS}, dann \UI{OPEN} drücken. \UI{CLIENTS} oder \UI{SERVERS} wählen.
 \item Drei Karten zeigen die Nummer. Die ersten drei Tasten erhöhen einzeln Hunderter, Zehner und Einer. Links wechseln 0–2, auf den anderen Karten 0–9.
@@ -94,21 +163,21 @@ Bei Fehlern: Seite \pageref{de:help}. Nicht erneut teilen, nur weil die Verbindu
 \shot{contact_select-040}{Beispiel: Client 40 ist gespeichert und kann geöffnet werden.}
 \UI{PREV}/\UI{NEXT} blättern zu benachbarten Einträgen. Andere Nummer: \UI{MORE} \arr \UI{FIND}. Person, Rolle und Nummer notieren: Client 40 und Server 40 sind verschieden.
 
-\page{call}{09}{Anrufen mit dem GXP1610}
-Die gespeicherte Verbindung wie auf der vorigen Seite öffnen. Auf \UI{CONNECTED} warten und die große Adresse unter \UI{DIAL} ablesen.
-\shot{contact-040}{Beispiel: Client 40. Ihre eigene angezeigte Adresse wählen.}
+\page{call}{15}{Anrufen mit dem GXP1610}
+\emergency
+\callview{Die gespeicherte Verbindung öffnen (Seite \pageref{de:find}). Bei \UI{CONNECTED} die Adresse darunter ablesen. Das Beispiel zeigt Client 40.}
 \begin{enumerate}
-\item Am ruhenden Grandstream GXP1610 \textbf{MENU} drücken. Mit den Pfeilen \textbf{Direct IP Call} wählen, erneut \textbf{MENU} drücken.
-\item Adresse eingeben, jeden Punkt durch \textbf{*} ersetzen. Für 10.1.41.1: \textbf{10*1*41*1}. Eine Portnummer ist nicht nötig.
-\item Mit \textbf{More} prüfen, dass \textbf{IPv4} gewählt ist. Mit der Display-Taste \textbf{OK} anrufen.
-\item Wenn das andere Telefon klingelt, dort den Hörer abheben. Ton in beide Richtungen prüfen; zum Beenden auflegen.
+\item Am Grandstream GXP1610 bei aufgelegtem Hörer \textbf{MENU} drücken. Mit den Pfeiltasten \textbf{Direct IP Call} wählen und mit \textbf{MENU} bestätigen.
+\item Die ganze Adresse eingeben. Jeden Punkt durch \textbf{*} ersetzen. Beispiel für 10.1.41.1: \textbf{10*1*41*1}. Die Portnummer entfällt.
+\item Unter \textbf{More} die Auswahl \textbf{IPv4} prüfen. Mit der Display-Taste \textbf{OK} anrufen.
+\item Wenn das andere Telefon klingelt, dort abheben. Ton in beiden Richtungen prüfen. Zum Beenden auflegen.
 \end{enumerate}
-Beide Seiten können anrufen. Voiders Tasten wählen nicht am Telefon. Für Rückrufe die Voider-Adresse verwenden, nicht eine wechselnde Anruferadresse mit 172.16.x.x. Keine Anmeldung oder Einrichtung über die Telefon-Webseite nötig.
+Beide Seiten können anrufen. Für einen Rückruf die Adresse vom Voider-Display wählen. Die Anruferanzeige kann eine wechselnde Adresse mit 172.16.x.x zeigen. Am Telefon ist keine Einrichtung über die Webseite nötig.
 
-\page{manage}{10}{Beziehungen verwalten}
+\page{manage}{16}{Beziehungen verwalten}
 \textbf{Weitere Person:} Seiten \pageref{de:share}–\pageref{de:add} mit neuem \UI{SHARE} auf A wiederholen. Auch die gefüllte Liste bietet \UI{SHARE} und \UI{ADD}. Für Anrufe in beide Richtungen nicht doppelt koppeln.
 
-\UI{CLIENT} und \UI{SERVER} sind lokale Rollen, keine Personennamen. Teilen erzeugt auf A einen Client-Eintrag, Hinzufügen auf B einen Server-Eintrag. Notieren Sie, wer zu welchem Eintrag gehört. Umbenennen ist im Display nicht möglich.
+\UI{CLIENT} und \UI{SERVER} sind lokale Rollen, keine Personennamen. Teilen erzeugt auf A einen Client-Eintrag, Hinzufügen auf B einen Server-Eintrag. Zu jedem Eintrag die zugehörige Person notieren. Umbenennen ist im Display nicht möglich.
 
 \textbf{Eine Beziehung löschen:}
 \begin{enumerate}
@@ -121,14 +190,14 @@ Beide Seiten können anrufen. Voiders Tasten wählen nicht am Telefon. Für Rüc
 
 \textbf{Reset:} \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{RESET}, dann \UI{NEXT} und \UI{RESET} halten. Löscht alle Beziehungen und den SSH-Zugangsschlüssel, schaltet SSH aus und erzeugt neue Geräteidentitäten. Gegenstellen brauchen neue Kopplungen. Manche Einstellungen, darunter Sprache, bleiben. Neuen Code notieren. Kein Mittel gegen langsame Verbindungen.
 
-\page{status}{11}{Verbindungsstatus lesen}
+\page{status}{17}{Verbindungsstatus lesen}
 \UI{NET} zeigt Internet und Telefon. \UI{PHONE}: \UI{CONNECTED} heißt: Voider erreicht das Telefon.
 
 \textbf{Zahlen auf der Startseite:} 1/2 bedeutet: Eine von zwei gespeicherten Beziehungen ist verbunden. Clients und Server werden getrennt gezählt. Es sind keine Anrufzahlen.
 
 \textbf{\UI{CONNECTED}:} Ein Weg zum anderen Voider ist aktiv. \textbf{\UI{CONNECTING}:} Ein Verbindungsversuch läuft. \textbf{\UI{OFFLINE}:} Kein aktiver Weg wird angezeigt. Das beweist nicht, dass der andere Voider ausgeschaltet ist.
 
-Voider versucht normalerweise \UI{LAN}, dann \UI{DIRECT}, dann \UI{PRIVATE} (WireGuard durch Router), dann \UI{TOR}. Der gewählte Weg steht unter \UI{MORE}. Eine gesunde Verbindung behält ihn bis zum Ausfall, Löschen oder Abschalten. Auch LAN verwendet WireGuard. Verbindungen zeigen \UI{LAN4}, \UI{LAN6}, \UI{DIRECT4} oder \UI{DIRECT6} für die gewählte IP-Version.
+Voider versucht normalerweise \UI{LAN}, dann \UI{DIRECT}, dann \UI{PRIVATE} (WireGuard durch Router), dann \UI{TOR}. Der gewählte Weg steht unter \UI{MORE}. Eine bestehende Verbindung behält ihn bis zum Ausfall, Löschen oder Abschalten. Auch LAN verwendet WireGuard. Verbindungen zeigen \UI{LAN4}, \UI{LAN6}, \UI{DIRECT4} oder \UI{DIRECT6} für die gewählte IP-Version.
 
 \textbf{Zeit lassen.} Uhrprüfung und Tor-Start können Minuten dauern. Ein Tor-Wiederverbindungsversuch hat 90 Sekunden; der gesamte Aufbau kann länger dauern. Beide Geräte eingeschaltet lassen. Neues Koppeln hilft nicht schneller.
 
@@ -136,7 +205,7 @@ Eine LAN-Verbindung kann ohne Internet arbeiten. Die Telefonbereitschaft wird se
 
 \textbf{\UI{PATHS}:} Normalerweise alle sieben eingeschaltet lassen. Bewusst ändern: \UI{UP}/\UI{DOWN} wählt, \UI{REMOVE}/\UI{ADD} schaltet um. \UI{BACK}, dann \UI{APPLY} halten speichert; neuen Code bestätigen. \UI{CANCEL} führt zur Bearbeitung zurück. Mindestens ein Weg muss an bleiben. Einschränkungen können Anrufe verhindern.
 
-\page{help}{12}{Wenn etwas nicht klappt}
+\page{help}{18}{Wenn etwas nicht klappt}
 \begin{enumerate}
 \item Auf beiden Voidern beide Startprüfungen abschließen.
 \item \UI{NET} drücken. Fehlt das Telefon: Strom und Kabel prüfen. Fehlt das Netz: Uplink-Kabel und Router prüfen.
@@ -147,11 +216,11 @@ Eine LAN-Verbindung kann ohne Internet arbeiten. Die Telefonbereitschaft wird se
 
 \textbf{Kein Ton oder Klingeln:} Adresse und beide Telefone prüfen. Eine grüne Verbindung oder ein Ping beweist keinen Ton. Telefon-Webverwaltung ist unnötig.
 
-\textbf{Ausschalten:} Startseite \arr \UI{POWER}, dann \UI{POWER} halten. Abschalten abwarten, bevor Sie Strom trennen. Ein schwarzes Display allein beweist keinen Abschluss.
+\textbf{Ausschalten:} Startseite \arr \UI{POWER}, dann \UI{POWER} halten. Erst nach abgeschlossenem Herunterfahren die Stromversorgung trennen. Ein schwarzes Display allein beweist keinen Abschluss.
 
 \textbf{Neustart:} Startseite \arr \UI{POWER} \arr \UI{REBOOT}, dann \UI{REBOOT} halten. Kopplung bleibt gespeichert; danach die Startprüfungen abschließen.
 
-\page{backup}{13}{Sicherung erstellen}
+\page{backup}{19}{Sicherung erstellen}
 Eine Sicherung enthält Geräteidentität, Beziehungen, Schlüssel und Einstellungen. Sie sichert weder das Telefon noch die ganze Systemkarte. Die Dateien sind unverschlüsselt. Den Stick wie einen Geräteschlüssel schützen.
 \begin{enumerate}
 \item Startseite: \UI{NET} \arr \UI{SYSTEM} \arr \UI{BACKUP}.
@@ -164,7 +233,7 @@ Sicherungsstick einstecken. \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{RE
 
 \UI{RESTOR} nur halten, wenn alle gespeicherten Einstellungen, Identitäten und Verbindungen durch diese Sicherung ersetzt werden sollen. Neuere Änderungen gehen verloren. Neuen Prüfcode notieren und \UI{I RECORDED IT} drücken. Stick entfernen, dann \UI{REBOOT} halten. Alte Betriebsdaten können die Sicherung nicht überschreiben. Nach dem Neustart den Code mit \UI{MATCH} oder \UI{DIFFER} vergleichen.
 
-\page{ssh}{14}{Optional: Fernzugriff}
+\page{ssh}{20}{Optional: Fernzugriff}
 Mit SSH verwaltet eine vertraute Fachperson Voider vom Computer. Für Anrufe unnötig. Öffnen: \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{SSH}. Anzeige: \UI{MANAGEMENT ON} oder \UI{MANAGEMENT OFF}.
 
 \textbf{An oder aus:} \UI{ON} oder \UI{OFF} drücken, dann dieselbe Taste zur Bestätigung halten. Neuen Code notieren und bestätigen. Aus sperrt neue Anmeldungen, behält aber den Schlüssel. Bestehende Sitzungen können bleiben. Der interne Anruftransport ist getrennt.
@@ -177,8 +246,8 @@ Mit SSH verwaltet eine vertraute Fachperson Voider vom Computer. Für Anrufe unn
 \end{enumerate}
 \textbf{Dauerhaft entfernen:} \UI{REMOVE} wählen, dann \UI{REMOVE} halten. Der Schlüssel wird widerrufen, SSH bleibt aus. Neuen Code notieren. Bei USB-Fehlern bleiben bisheriger Schlüssel und Zugangseinstellung erhalten. Voider behält nur den öffentlichen Teil; verlorene private Schlüssel sind nicht wiederherstellbar.
 
-\page{security}{15}{Was die Prüfungen sagen}
-\textbf{Geräteprüfung:} Vergleich des installierten Systems mit gespeicherten Werten. \textbf{Deine Prüfung:} Vergleich des gespeicherten Zustands mit Ihrer eigenen Notiz. Beides beweist nicht die Identität der Person am anderen Telefon.
+\page{security}{21}{Was die Prüfungen sagen}
+\textbf{Geräteprüfung:} Vergleich des installierten Systems mit gespeicherten Werten. \textbf{\UI{YOUR CHECK}:} Vergleich des gespeicherten Zustands mit der Notiz für dieses Gerät. Beides beweist nicht die Identität der Person am anderen Telefon.
 
 \textbf{Kopplung:} erzeugt gemeinsame Geheimnisse. Der Kopplungsfingerabdruck ist hier nicht zum Vergleichen sichtbar (Seite \pageref{de:add}). Kopplungssticks und Sicherungen schützen.
 
@@ -188,4 +257,4 @@ Das eigene Protokoll wurde nicht unabhängig geprüft. Voider garantiert keine A
 
 \textbf{SSH-Grenzen:} root-Zugang nur mit Schlüssel aus privaten Netzen am Ethernet-Uplink. Keine Passwörter, Telefon-, öffentliche WAN- oder Tor-Anmeldung; keine Weiterleitung. Ein vorbereiteter Schlüssel aktiviert Installations-SSH; ohne bleibt es aus. Danach gelten beide Startprüfungen. Hostschlüssel fachkundig prüfen lassen. Dafür und für Installations-SSH fehlt eine Display-Seite.
 
-\mini{\textbf{Vor Auslieferung:} Anschlüsse, Stromversorgung und Installations-SSH klären; Kopplungsprüfung klären. Muttersprachliche und Anfängerprüfung stehen aus. Frische Installationen und physische Abnahme sind offen. Die Tor-Beobachtung dauerte 601 Sekunden, keine Stunde. Dieses Handbuch erklärt das Abbild nicht für verkaufsfertig.}
+\mini{\textbf{Stand der Erprobung.} Auf dem Pi 3 Model B Rev. 1.2 steht der vollständige Durchlauf dieser Anleitung noch aus: separate Alpine-Karte unter Windows, macOS oder Linux vorbereiten, auf dem Pi bauen, per USB schreiben und zurücklesen, Karten tauschen und Voider installieren. Zur Abnahme gehören auch die Kopplung und ein Anruf mit Ton in beiden Richtungen.}
