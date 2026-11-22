@@ -25,11 +25,14 @@
   | WireGuard | Shared `wg0` at `172.31.0.1/24` |
   | Tor | `tcs` for slot `s` at `172.27.s.1/30` (first `172.27.2.1`, last `172.27.254.1`) |
 
-- **Routing.** Each import has one bridge subnet, from `172.30.2.0/30` through
-  `172.30.254.0/30`. Inside `netnsX`, `vethXb` uses `172.30.X.2/30`. Its gateway
-  is `brX` at `172.30.X.1/30` in the default namespace, where WireGuard keeps its
-  UDP sockets. SIP uses NOTRACK and stateless rewriting on NFQUEUE `1000 + X`
-  inside `netnsX`.
+- **Routing.** `X` selects the local namespace. Slot `s` identifies the client.
+  Calls use the same addresses over WireGuard and Tor.
+
+  | Purpose | One end | Other end |
+  | --- | --- | --- |
+  | Bridge link inside one box | `brX` in the default namespace · `172.30.X.1/30` | `vethXb` in `netnsX` · `172.30.X.2/30` |
+  | Call between boxes | Server · `172.29.1.1` | Client in slot `s` · `172.29.s.1` |
+
 - **Phone link.** The two blue arrows are dial targets on one cable. The appliance
   (`172.16.19.86/30` on `eth1`) pings the factory-reset phone at `172.16.19.85`.
 - **Tor fallback.** Imported-server namespaces reach Tor at `172.30.255.1:19050`
