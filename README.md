@@ -251,8 +251,8 @@ Both Wi-Fi interfaces were down when checked. Each card also held firmware for
 other chip models. The Bluetooth revisions confirm the controllers initialized;
 the exact Bluetooth patch files loaded from the card could not be verified.
 
-We identified source code for every running Linux application we observed on
-both appliances, including Voider's call software. The check did not cover
+Across all software installed on the two tested SD cards, only the vendor boot
+and wireless firmware was identified as closed source. The check did not cover
 firmware inside the phone, microSD controller or external USB Ethernet adapter.
 Finding proprietary firmware does not establish that a device has a backdoor.
 
