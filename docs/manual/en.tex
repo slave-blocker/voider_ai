@@ -230,7 +230,7 @@ A backup contains this device's saved identity, relationships, keys and settings
 \item Wait for \UI{SAFE TO REMOVE}, then remove the stick. Label it with the device, date and its current check code. Keep separate backups for A and B.
 \end{enumerate}
 \heading{Restore}
-Insert the backup stick. Open \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{RESTOR}, then press \UI{CHECK}. Voider reads and validates the backup without changing the stick. It must match the installed system.
+Insert the backup stick. Open \UI{NET} \arr \UI{SYSTEM} \arr \UI{MORE} \arr \UI{RESTOR}, then press \UI{CHECK}. Voider reads and validates the backup without changing the stick. Restore requires BOOT and SYSTEM to match the original installation exactly. An exact copy of the card also works. Contacts and settings in STATE may have changed. A fresh installation rejects the old backup, even on the same microSD card.
 
 Hold \UI{RESTOR} only to replace all saved settings, identities and connections with this backup. Later changes are lost. Record the new check code and press \UI{I RECORDED IT}. Remove the stick, then hold \UI{REBOOT} to apply. Old running settings cannot overwrite the restored backup. After restart, compare the recorded code using \UI{MATCH} or \UI{DIFFER}.
 
