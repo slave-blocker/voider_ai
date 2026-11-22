@@ -1,6 +1,7 @@
-# Voider
-
 ![Voider architecture: isolated phone paths, connection selection, boot integrity and USB pairing](docs/diagrams/voider-overview.png)
+
+Voider lets Ethernet phones on separate networks call each other by IP address
+as if they were on the same LAN.
 
 [Diagram source (SVG)](docs/diagrams/voider-overview.svg)
 
@@ -125,6 +126,18 @@ not detected.
 Use a Raspberry Pi with 64-bit/aarch64 boot support and a 2x20 GPIO header for
 the display. The release image uses Alpine's Raspberry Pi kernel and bootloader,
 64-bit boot mode.
+
+### Phones
+
+Start with a factory-reset phone and plug it into the appliance’s phone Ethernet port.
+
+- **Grandstream GXP1610** — tested with Voider.
+- **Yealink SIP-T53** — exchanged direct IP calls with a GXP1610 on an ordinary
+  LAN. The SIP-T53 has yet to be tested through Voider. Its SIP port during the
+  LAN test and its factory-default SIP port are both unconfirmed.
+
+Voider expects the phone to use SIP port `5060`. The appliance UI currently
+offers no setting to change that port.
 
 ## Build and flash
 
