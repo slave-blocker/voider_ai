@@ -7,20 +7,20 @@
 <details>
 <summary>Network and integrity details</summary>
 
-- **Indexes and routing:** `X` is the local imported-server slot; `s` comes from
-  the paired certificate/WireGuard address. They are independent. Each `netnsX`
-  contains `wgX = 172.31.0.s`, `vethXb`, and NFQUEUE `1000 + X`. The `.2` bridge
-  endpoint is inside `netnsX`; `.1` is in the default namespace. WireGuard UDP
-  sockets remain in the default namespace. SIP uses NOTRACK and stateless rewrite.
-- **Phone link:** the factory-reset phone uses `172.16.19.85`, with the appliance
-  gateway at `172.16.19.86/30` on `eth1`. Readiness is a ping; phone web
-  administration is not required. The two blue arrows show dial targets over
-  this one physical link. Clients of this appliance share `wg0`.
-- **Tor fallback:** `tcs+` serves paired clients and `tds+` serves imported servers;
-  the namespace SOCKS helper is `172.30.255.1`. Tor supplies encryption, and
-  tundup authenticates using the paired secret and USB fingerprint. Its two
-  bidirectional streams carry each voice packet; the first valid arrival is
-  forwarded and later duplicates are discarded.
+- **Servers we import.** We choose import slot `X`. Inside `netnsX`, WireGuard
+  uses `wgX` (`172.31.0.s`) and Tor uses `tdsX`. Each server assigns us a
+  certificate slot `s`. Separate namespaces let different servers assign the same `s`.
+- **Clients we serve.** We assign each client a slot `s`. In the default namespace,
+  clients share `wg0` for WireGuard. Each client using Tor gets its own interface.
+  Slots 2–254 allow **253 possible Tor interfaces**, `tcs2` through `tcs254`.
+- **Routing.** The bridge connects `vethXb` (.2) to the default namespace (.1),
+  where WireGuard keeps its UDP sockets. SIP uses NOTRACK and stateless rewriting
+  on NFQUEUE `1000 + X` inside `netnsX`.
+- **Phone link.** The two blue arrows are dial targets on one cable. The appliance
+  (`172.16.19.86/30` on `eth1`) pings the factory-reset phone at `172.16.19.85`.
+- **Tor fallback.** Imported-server namespaces reach Tor at `172.30.255.1:19050`
+  (SOCKS). Tor encrypts. Tundup authenticates with the paired secret and USB
+  fingerprint, sends each voice packet on both streams and forwards the first valid copy.
 - **CAP2 mailboxes:** each role and slot has a separate account, key path and
   chroot. Incoming CAP2 uses client accounts; server accounts have no authorized
   key. From the peer, OFFER and READY go to `/in`; ANSWER is read from `/out`.
