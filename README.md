@@ -233,6 +233,33 @@ Please do contact me for critiques, suggestions, questions, kudos, and even mobb
 
 Remember, if your hardware is backdoored anyway, backdoored you are...
 
+<details>
+<summary>Which proprietary firmware does Voider use?</summary>
+
+We checked two appliances running Alpine 3.24.4. The table lists the vendor
+firmware we identified from their boot configuration and live controller diagnostics.
+
+| Component | Raspberry Pi 4 Model B (rev. 1.4) | Raspberry Pi 3 Model B (rev. 1.2) |
+| --- | --- | --- |
+| Bootloader | The onboard EEPROM starts the board. | The board loads `bootcode.bin` from the microSD card. |
+| VideoCore | `start4.elf` on the card continues the boot process. | `start.elf` on the card continues the boot process. |
+| Wi-Fi | The BCM4345/6 radio loads firmware from the card. | The BCM43430/1 radio loads firmware from the card. |
+| Bluetooth | The controller reported firmware revision 382. | The controller reported firmware revision 508. |
+| USB 3 | The VIA VL805 controller reported firmware version `000138a1`. | This board has no VL805 controller. |
+
+Both Wi-Fi interfaces were down when checked. Each card also held firmware for
+other chip models. The Bluetooth revisions confirm the controllers initialized;
+the exact Bluetooth patch files loaded from the card could not be verified.
+
+We identified source code for every running Linux application we observed on
+both appliances, including Voider's call software. The check did not cover
+firmware inside the phone, microSD controller or external USB Ethernet adapter.
+Finding proprietary firmware does not establish that a device has a backdoor.
+
+[Raspberry Pi boot files](https://www.raspberrypi.com/documentation/computers/configuration.html#boot-folder-contents) · [Raspberry Pi firmware licence](https://github.com/raspberrypi/firmware/blob/master/boot/LICENCE.broadcom) · [Broadcom Wi-Fi driver and firmware](https://wireless.docs.kernel.org/en/latest/en/users/drivers/brcm80211.html)
+
+</details>
+
 @ IRC: **monero-pt**
 
 Special thanks to Andreas Hein!
