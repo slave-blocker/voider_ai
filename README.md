@@ -7,15 +7,23 @@
 <details>
 <summary>Network and integrity details</summary>
 
-- **Servers we import.** We choose import slot `X`. Inside `netnsX`, WireGuard
-  uses `wgX` (`172.31.0.s`) and Tor uses `tdsX`. Each server assigns us a
-  certificate slot `s`. Separate namespaces let different servers assign the same `s`.
-- **Clients we serve.** We assign each client a slot `s`. In the default namespace,
-  clients share `wg0` for WireGuard. Each client using Tor gets its own interface.
-  Slots 2–254 allow **253 possible Tor interfaces**, `tcs2` through `tcs254`.
-- **Routing.** The bridge connects `vethXb` (.2) to the default namespace (.1),
-  where WireGuard keeps its UDP sockets. SIP uses NOTRACK and stateless rewriting
-  on NFQUEUE `1000 + X` inside `netnsX`.
+- **Servers we import.** We choose import slot `X` (2–254). The server assigns us
+  certificate slot `s` (2–254). Different servers can assign the same `s` because
+  each import has its own `netnsX`.
+- **Clients we serve.** We assign each client its `s`. Clients share `wg0` for
+  WireGuard. Each client using Tor gets its own interface, giving **253 possible
+  Tor interfaces** from `tcs2` through `tcs254`.
+
+| Path | Importing box · inside `netnsX` | Serving box · default namespace |
+| --- | --- | --- |
+| WireGuard | `wgX` at `172.31.0.s/24` (first `172.31.0.2`, last `172.31.0.254`) | Shared `wg0` at `172.31.0.1/24` |
+| Tor | `tdsX` at `172.27.s.2/30` (first `172.27.2.2`, last `172.27.254.2`) | `tcs` for slot `s` at `172.27.s.1/30` (first `172.27.2.1`, last `172.27.254.1`) |
+
+- **Routing.** Each import has one bridge subnet, from `172.30.2.0/30` through
+  `172.30.254.0/30`. Inside `netnsX`, `vethXb` uses `172.30.X.2/30`. Its gateway
+  is `brX` at `172.30.X.1/30` in the default namespace, where WireGuard keeps its
+  UDP sockets. SIP uses NOTRACK and stateless rewriting on NFQUEUE `1000 + X`
+  inside `netnsX`.
 - **Phone link.** The two blue arrows are dial targets on one cable. The appliance
   (`172.16.19.86/30` on `eth1`) pings the factory-reset phone at `172.16.19.85`.
 - **Tor fallback.** Imported-server namespaces reach Tor at `172.30.255.1:19050`
